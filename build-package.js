@@ -22,7 +22,9 @@ const copyPackageJson = async () => {
 			scripts: {},
 		};
 		const currentVersion = process.env.CURRENT_NPM_VERSION;
+		console.log('env', process.env);
 
+		console.log('currentVersion', currentVersion);
 		if (currentVersion) {
 			newPackageJson.version = incrementVersion(currentVersion);
 		}
