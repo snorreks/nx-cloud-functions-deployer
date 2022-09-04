@@ -41,6 +41,11 @@ jobs:
             - name: Install dependencies
               run: pnpm install
 
-            - run: pnpm publish
+            - name: Build
+              run: pnpm build
+
+            - name: Publish
+              working-directory: dist
+              run: pnpm publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
