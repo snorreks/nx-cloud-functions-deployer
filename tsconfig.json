@@ -1,0 +1,40 @@
+{
+	"compilerOptions": {
+		"declaration": false,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"importHelpers": true,
+		"strictNullChecks": true,
+		"skipDefaultLibCheck": true,
+		"baseUrl": ".",
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"noImplicitUseStrict": false,
+		"noUnusedParameters": true,
+		"preserveConstEnums": true,
+		"removeComments": true,
+		"resolveJsonModule": true,
+		"stripInternal": true,
+
+		"importsNotUsedAsValues": "error",
+		"isolatedModules": true, // false?
+		"rootDir": ".",
+		"lib": ["es2021"],
+		"module": "CommonJS",
+		"target": "es2021",
+		"esModuleInterop": true,
+		"moduleResolution": "node",
+		"noUnusedLocals": true,
+		"allowSyntheticDefaultImports": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"sourceMap": true,
+		"outDir": "dist"
+	},
+	"include": ["**/*.ts"]
+}
