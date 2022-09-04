@@ -66,6 +66,20 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	);
 
 	const successfullyDeployedFunctionNames: string[] = [];
+	const failedDeployedFunctionNames: string[] = [];
+
+	const getRemainingFunctionsAmount = (): number => {
+		const functionsAmount = deployableFilePaths.length;
+		const successfullyDeployedFunctionsAmount =
+			successfullyDeployedFunctionNames.length;
+		const failedDeployedFunctionsAmount =
+			failedDeployedFunctionNames.length;
+		return (
+			functionsAmount -
+			successfullyDeployedFunctionsAmount -
+			failedDeployedFunctionsAmount
+		);
+	};
 
 	/**
 	 * Build the function and deploy with firebase-tools
@@ -77,8 +91,6 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	): Promise<void> => {
 		let functionName: string | undefined;
 		try {
-			console.log('buildAndDeployFunction', buildAndDeployFunction);
-
 			const relativePathToDeployFile =
 				toRelativeDeployFilePath(deployableFilePath);
 			functionName = await getFunctionName(deployableFilePath);
@@ -129,23 +141,33 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 			});
 
 			successfullyDeployedFunctionNames.push(functionName);
-			console.log(
-				chalk.green(
+			spinner.stop({
+				text: chalk.green(
 					`Successfully deployed function ${chalk.bold(
 						functionName,
 					)}`,
 				),
-			);
+			});
+			spinner.start({
+				text: `Deploying ${chalk.bold(
+					getRemainingFunctionsAmount(),
+				)}...`,
+			});
 		} catch (error) {
 			console.log('error', error);
 			if (functionName) {
-				console.log(
-					chalk.bold(
+				spinner.stop({
+					text: chalk.red(
 						`Function: ${chalk.bold(
 							functionName,
 						)} failed to deploy`,
 					),
-				);
+				});
+				spinner.start({
+					text: `Deploying ${chalk.bold(
+						getRemainingFunctionsAmount(),
+					)}...`,
+				});
 			}
 		}
 	};
@@ -153,7 +175,7 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	const deployableFunctionsAmount = deployableFilePaths.length;
 
 	const spinner = createSpinner(
-		`Deploying ${deployableFunctionsAmount} functions...`,
+		`Deploying ${chalk.bold(getRemainingFunctionsAmount())}...`,
 	).start();
 
 	await Promise.all(

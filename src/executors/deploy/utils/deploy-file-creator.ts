@@ -63,8 +63,6 @@ const toRootFunctionBuilder = (
 const getDocumentPath = (
 	relativeFilePath: RelativeDeployFilePath,
 ): string | undefined => {
-	console.log('---------relativeFilePath', relativeFilePath);
-
 	if (!relativeFilePath.startsWith('database')) {
 		return undefined;
 	}
@@ -89,7 +87,7 @@ const toDeployIndexCode = ({
 	const region = 'us-central1';
 	const rootFunctionBuilder = toRootFunctionBuilder(functionType);
 	deployableFilePath = deployableFilePath.replaceAll('\\', '/');
-	console.log('deployableFilePath', deployableFilePath);
+
 	const importCodeStartSection = `(await import('${deployableFilePath}')).default`;
 	const documentPath = getDocumentPath(relativePathToDeployFile);
 

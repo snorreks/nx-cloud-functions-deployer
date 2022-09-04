@@ -41,7 +41,6 @@ export const getFunctionName = async (filePath: string) => {
 	}
 
 	const relativeFilePath = toRelativeDeployFilePath(filePath);
-	console.log('relativeFilePath', relativeFilePath);
 	const paths = relativeFilePath.split('\\');
 	paths.shift(); // remove the first element, which is the directory type
 	for (const path of paths) {
