@@ -48,7 +48,7 @@ jobs:
             - name: Build
               run: pnpm build
               env:
-                  CURRENT_NPM_VERSION: ${{ steps.package-version.outputs.version }}
+                  CURRENT_NPM_VERSION: ${{ steps.package-version.outputs.current-version}}
 
             - name: Publish
               working-directory: dist
