@@ -2,6 +2,16 @@ import execa from 'execa';
 import { copy } from 'fs-extra';
 import { readFile, writeFile } from 'node:fs/promises';
 
+const incrementVersion = (currentVersion) => {
+	try {
+		const [major, minor, patch] = currentVersion.split('.');
+		const newPatch = Number.parseInt(patch) + 1;
+		return `${major}.${minor}.${newPatch}`;
+	} catch (error) {
+		console.error('incrementVersion', error);
+	}
+};
+
 const copyPackageJson = async () => {
 	try {
 		const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
@@ -11,6 +21,11 @@ const copyPackageJson = async () => {
 			devDependencies: {},
 			scripts: {},
 		};
+		const currentVersion = process.env.CURRENT_NPM_VERSION;
+
+		if (currentVersion) {
+			newPackageJson.version = incrementVersion(currentVersion);
+		}
 
 		await writeFile(
 			'dist/package.json',
