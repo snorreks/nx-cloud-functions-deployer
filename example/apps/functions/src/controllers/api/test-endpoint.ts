@@ -1,5 +1,5 @@
 import type { Request, Response } from 'firebase-functions';
-import { helloWorldFromSharedUtils } from '@shared/utils';
+import { helloWorldFromSharedUtils, weDemBoies } from '@shared/utils';
 // Validate the stripe webhook secret, then call the handler for the event type
 export default async (
 	request: Request,
@@ -8,7 +8,7 @@ export default async (
 	try {
 		console.log('test-endpoint', request);
 		helloWorldFromSharedUtils();
-		response.send({ received: true });
+		response.send({ received: true, w: weDemBoies() });
 
 		return;
 	} catch (error) {

@@ -21,7 +21,7 @@
 		"eslint-plugin-unicorn": "^43.0.2",
 		"firebase-tools": "^11.8.0",
 		"nx": "^14.6.4",
-		"nx-cloud-functions-deployer": "link:../dist",
+		"nx-cloud-functions-deployer": "file:../dist",
 		"prettier": "^2.7.1",
 		"prettier-plugin-jsdoc": "^0.4.2",
 		"tslib": "^2.4.0",

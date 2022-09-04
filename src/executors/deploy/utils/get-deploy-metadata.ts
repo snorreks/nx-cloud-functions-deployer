@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path';
 import {
 	type DeployDirectoryType,
 	deployDirectoryTypes,
+	EsbuildAlias,
 	FunctionType,
 	RelativeDeployFilePath,
 } from '../types';
@@ -103,5 +104,51 @@ const recursiveGetFunctions = async (
 				functionPaths.push(path);
 			}
 		}
+	}
+};
+
+export const getAliasFromBaseTsConfig = async (
+	workspaceRoot: string,
+	baseTsConfigFileName = 'tsconfig.base.json',
+): Promise<EsbuildAlias> => {
+	const baseTsConfig = await readFile(
+		join(workspaceRoot, baseTsConfigFileName),
+		'utf8',
+	);
+
+	const match = baseTsConfig.match(/("paths":)(.+?)(})/s);
+	if (!match) {
+		return {};
+	}
+
+	const match2 = match[0].match(/({)(.+?)(})/s);
+
+	if (!match2) {
+		return {};
+	}
+	try {
+		const paths = JSON.parse(match2[0]);
+		const alias: EsbuildAlias = {};
+
+		const fixPath = (path: string) => {
+			if (path.endsWith('index.ts')) {
+				return join(workspaceRoot, path);
+			}
+			return join(workspaceRoot, path, 'index.ts');
+		};
+
+		for (const [key, value] of Object.entries(paths)) {
+			if (Array.isArray(value) && typeof value[0] === 'string') {
+				alias[key] = fixPath(value[0]);
+			} else if (typeof value === 'string') {
+				alias[key] = fixPath(value);
+			}
+		}
+
+		console.log('base alias found:', alias);
+		return alias;
+	} catch (error) {
+		console.error(error);
+		return {};
 	}
 };

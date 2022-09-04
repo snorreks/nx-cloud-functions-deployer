@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 type BasePackageJson = { [key: string]: string | { [key: string]: string } };
@@ -13,7 +13,7 @@ export const createDeployFirebaseJson = async ({
 			source: '.',
 		},
 	};
-
+	await mkdir(outputRoot, { recursive: true });
 	await writeFile(
 		join(outputRoot, 'firebase.json'),
 		JSON.stringify(firebaseJson, undefined, 2),
@@ -41,6 +41,7 @@ export const createDeployPackageJson = async ({
 			...dependencies,
 		},
 	};
+	await mkdir(outputRoot, { recursive: true });
 
 	await writeFile(
 		join(outputRoot, 'package.json'),

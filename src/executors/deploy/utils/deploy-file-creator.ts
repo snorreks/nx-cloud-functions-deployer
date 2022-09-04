@@ -11,12 +11,12 @@ export const createTemporaryIndexFunctionFile = async ({
 	deployableFilePath,
 	functionName,
 	functionType,
-	projectRoot,
+	region,
 	relativePathToDeployFile,
-	workspaceRoot,
+	temporaryDirectory,
 }: {
-	workspaceRoot: string;
-	projectRoot: string;
+	temporaryDirectory: string;
+	region: string;
 	deployableFilePath: string;
 	relativePathToDeployFile: RelativeDeployFilePath;
 	functionName: string;
@@ -26,12 +26,12 @@ export const createTemporaryIndexFunctionFile = async ({
 		deployableFilePath,
 		functionName,
 		functionType,
+		region,
 		relativePathToDeployFile,
 	});
 	const temporaryFilePath = getTemporaryFilePath(
-		`${functionName}.ts`,
-		workspaceRoot,
-		projectRoot,
+		temporaryDirectory,
+		functionName,
 	);
 
 	await createTemporaryFile(temporaryFilePath, code);
@@ -39,10 +39,9 @@ export const createTemporaryIndexFunctionFile = async ({
 };
 
 const getTemporaryFilePath = (
-	fileName: string,
-	workspaceRoot: string,
-	projectRoot: string,
-) => join(workspaceRoot, 'tmp', projectRoot, fileName);
+	temporaryDirectory: string,
+	functionName: string,
+) => join(temporaryDirectory, `${functionName}.ts`);
 
 const toRootFunctionBuilder = (
 	functionType: FunctionType,
@@ -77,14 +76,15 @@ const toDeployIndexCode = ({
 	deployableFilePath,
 	functionName,
 	functionType,
+	region,
 	relativePathToDeployFile,
 }: {
 	functionType: FunctionType;
 	functionName: string;
 	relativePathToDeployFile: RelativeDeployFilePath;
 	deployableFilePath: string;
+	region: string;
 }) => {
-	const region = 'us-central1';
 	const rootFunctionBuilder = toRootFunctionBuilder(functionType);
 	deployableFilePath = deployableFilePath.replaceAll('\\', '/');
 
@@ -137,5 +137,6 @@ const createTemporaryFile = async (
 			console.log(error);
 		}
 	});
+
 	await writeFile(filePath, code);
 };

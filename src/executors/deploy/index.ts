@@ -1,12 +1,14 @@
 import type { Executor } from '@nrwl/devkit';
 import chalk from 'chalk';
 import { createSpinner } from 'nanospinner';
+import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { EsbuildAlias } from './types';
 import { createTemporaryIndexFunctionFile } from './utils/deploy-file-creator';
 import { deployFunction } from './utils/deployer';
 import { buildCloudFunctionCode } from './utils/esbuilder';
 import {
+	getAliasFromBaseTsConfig,
 	getDeployableFilePaths,
 	getFunctionName,
 	toFunctionType,
@@ -27,6 +29,7 @@ export interface ExecutorOptions {
 	alias?: EsbuildAlias;
 	prod?: boolean;
 	dev?: boolean;
+	region?: string;
 }
 
 const getFirebaseProjectId = (options: ExecutorOptions): string => {
@@ -50,7 +53,6 @@ const getFirebaseProjectId = (options: ExecutorOptions): string => {
 
 const executor: Executor<ExecutorOptions> = async (options, context) => {
 	const { projectName, root: workspaceRoot, workspace } = context;
-	const { alias } = options;
 	const firebaseProjectId = getFirebaseProjectId(options);
 	if (!projectName) {
 		throw new Error('Project name is not defined');
@@ -67,6 +69,18 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 
 	const successfullyDeployedFunctionNames: string[] = [];
 	const failedDeployedFunctionNames: string[] = [];
+
+	const temporaryDirectory = join(workspaceRoot, 'tmp', projectRoot);
+
+	await mkdir(outputDirectory, { recursive: true });
+	await mkdir(temporaryDirectory, { recursive: true });
+
+	const baseAlias = await getAliasFromBaseTsConfig(workspaceRoot);
+	const alias = {
+		...baseAlias,
+		...options.alias,
+	};
+	const region = options.region ?? 'us-central1';
 
 	const getRemainingFunctionsAmount = (): number => {
 		const functionsAmount = deployableFilePaths.length;
@@ -109,9 +123,9 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 						deployableFilePath,
 						functionName,
 						functionType,
-						projectRoot,
+						region,
 						relativePathToDeployFile,
-						workspaceRoot,
+						temporaryDirectory,
 					});
 
 					await buildCloudFunctionCode({
@@ -151,7 +165,7 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 			spinner.start({
 				text: `Deploying ${chalk.bold(
 					getRemainingFunctionsAmount(),
-				)}...`,
+				)} Functions...`,
 			});
 		} catch (error) {
 			console.log('error', error);
@@ -166,7 +180,7 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 				spinner.start({
 					text: `Deploying ${chalk.bold(
 						getRemainingFunctionsAmount(),
-					)}...`,
+					)} Functions...`,
 				});
 			}
 		}
@@ -175,7 +189,7 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	const deployableFunctionsAmount = deployableFilePaths.length;
 
 	const spinner = createSpinner(
-		`Deploying ${chalk.bold(getRemainingFunctionsAmount())}...`,
+		`Deploying ${chalk.bold(getRemainingFunctionsAmount())} Functions...`,
 	).start();
 
 	await Promise.all(
