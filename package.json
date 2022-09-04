@@ -9,6 +9,10 @@
 		"lint": "eslint . --ext .js,.ts"
 	},
 	"executors": "./executors.json",
+	"peerDependencies": {
+		"@nrwl/devkit": ">14.5.0",
+		"firebase-tools": ">11.8.0"
+	},
 	"devDependencies": {
 		"@nrwl/devkit": "^14.6.4",
 		"@types/node": "^18.7.14",
