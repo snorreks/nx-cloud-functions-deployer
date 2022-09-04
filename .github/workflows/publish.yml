@@ -40,15 +40,8 @@ jobs:
             - name: Install dependencies
               run: pnpm install
 
-            - name: get-npm-version
-              id: package-version
-              uses: martinbeentjes/npm-get-version-action@main
-              with:
-                  path: packages/nx-cloud-functions-deployer
             - name: Build
               run: pnpm build
-              env:
-                  CURRENT_NPM_VERSION: ${{ steps.package-version.outputs.current-version}}
 
             - name: Publish
               working-directory: dist
