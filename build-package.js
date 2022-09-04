@@ -20,6 +20,7 @@ const copyPackageJson = async () => {
 			dependencies: {},
 			devDependencies: {},
 			scripts: {},
+			type: 'commonjs',
 		};
 		const currentVersion = process.env.CURRENT_NPM_VERSION;
 		console.log('env', process.env);
