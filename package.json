@@ -4,9 +4,6 @@
 	"version": "0.1.6",
 	"license": "MIT",
 	"main": "src/index.js",
-	"publishConfig": {
-		"registry": "https://npm.pkg.github.com"
-	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/snorreks/nx-cloud-functions-deployer"
