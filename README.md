@@ -6,9 +6,42 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 
 ## Description
 
-This plugin adds a `deploy` executor to the `@nx-cloud-functions-deployer/deploy` builder. This executor will deploy your Cloud Functions to Google Cloud.
+This plugin adds a `deploy` executor that will build and deploy cloud functions. This executor will deploy your Cloud Functions to Google Cloud.
 
 It uses esbuild to bundle your functions and then uses the [firebase-tools](https://www.npmjs.com/package/firebase-tools) to deploy them.
+
+### Prerequisites
+
+-   It does not support javascript projects. You must use typescript.
+-   Currenty only supports pnpm workspaces.
+-   You will need to have the [firebase-tools](https://www.npmjs.com/package/firebase-tools) installed.
+
+```bash
+pnpm i -D firebase-tools
+```
+
+### Folder Structure
+
+The plugin expects your functions to be in a `functions` folder at the root of your workspace.
+
+```bash
+
+├── your-nx-project
+│   ├──src
+│   │  ├── controllers
+│   │  │  ├── api/callable/database
+```
+
+The folders in controllers will different deployment types:
+
+-   `api` - [HTTP requests](https://firebase.google.com/docs/functions/http-events) (functions.https.onRequest)
+-   `callable` - [Callable functions](https://firebase.google.com/docs/functions/callable) (functions.https.onCall)
+-   `database` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events) (functions.database.on\*)
+    -   files ends with `created.ts` will be deployed as `functions.database.onCreate`
+    -   files ends with `updated.ts` will be deployed as `functions.database.onUpdate`
+    -   files ends with `deleted.ts` will be deployed as `functions.database.onDelete`
+-   `scheduler` - [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions) (functions.pubsub.schedule) (not implemented yet)
+-   `storage` - [Cloud Storage triggers](https://firebase.google.com/docs/functions/gcp-storage-events) (functions.storage.object()) (not implemented yet)
 
 ## Install
 

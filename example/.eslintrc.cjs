@@ -17,11 +17,31 @@ const config = {
 		'plugin:sort/recommended',
 		'plugin:unicorn/recommended',
 	],
+	ignorePatterns: ['apps/**/*', 'libs/**/*'],
+	overrides: [
+		{
+			extends: ['plugin:@nrwl/nx/typescript'],
+			files: ['*.ts', '*.tsx', '*.svelte'],
+			rules: {},
+		},
+		{
+			extends: ['plugin:@nrwl/nx/javascript'],
+			files: ['*.js', '*.jsx', '*.svelte'],
+			rules: {},
+		},
+	],
 	parserOptions: {
 		ecmaVersion: 2020,
 		sourceType: 'module',
 	},
-	plugins: ['sort-class-members', 'sort', 'import', 'unicorn'],
+	plugins: [
+		'@nrwl/nx',
+		'sort-class-members',
+		'sort',
+		'import',
+		'unicorn',
+	],
+
 	root: true,
 	rules: {
 		'import/default': 2,

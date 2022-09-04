@@ -1,0 +1,13 @@
+{
+	"root": "apps/functions",
+	"sourceRoot": "apps/functions/src",
+	"projectType": "application",
+	"targets": {
+		"deploy": {
+			"executor": "nx-cloud-functions-deployer:deploy",
+			"options": {
+				"firebaseProjectId": "localekey-dev"
+			}
+		}
+	}
+}

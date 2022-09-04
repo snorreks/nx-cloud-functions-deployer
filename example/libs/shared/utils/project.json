@@ -1,0 +1,14 @@
+{
+	"root": "libs/shared/utils",
+	"sourceRoot": "libs/shared/utils/src",
+	"projectType": "library",
+	"targets": {
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": ["libs/shared/utils/**/*.ts"]
+			}
+		}
+	}
+}

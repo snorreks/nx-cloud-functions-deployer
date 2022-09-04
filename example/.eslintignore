@@ -1,0 +1,17 @@
+# Files with these extensions are often replaced within angular json and doesnt really exist inside the project
+**/*.mock.ts
+**/*.uat.ts
+**/*.prod.ts
+**/*.test.ts
+
+# Generics
+node_modules/**
+**/node_modules/**
+dist/**
+ssl/**
+
+**/*.aws-sam
+**/*.svelte-kit
+tools/**/*.js
+pnpm-lock.yaml
+storybook-static

@@ -1,40 +1,44 @@
 {
+	"compileOnSave": false,
 	"compilerOptions": {
+		"rootDir": ".",
+		"sourceMap": true,
 		"declaration": false,
+		"moduleResolution": "node",
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"importHelpers": true,
+		"target": "es2020",
+		"module": "esnext",
+		"lib": ["esnext", "dom"],
+		"skipLibCheck": true,
 		"strictNullChecks": true,
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
+		"allowSyntheticDefaultImports": true,
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitAny": true,
 		"noImplicitReturns": true,
 		"noImplicitThis": true,
 		"noImplicitUseStrict": false,
+		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"preserveConstEnums": true,
 		"removeComments": true,
 		"resolveJsonModule": true,
+		"strict": true,
 		"stripInternal": true,
 
 		"importsNotUsedAsValues": "error",
 		"isolatedModules": true, // false?
-		"rootDir": ".",
-		"lib": ["es2021"],
-		"module": "CommonJS",
-		"target": "es2021",
-		"esModuleInterop": true,
-		"moduleResolution": "node",
-		"noUnusedLocals": true,
-		"allowSyntheticDefaultImports": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
-		"strict": true,
-		"sourceMap": true,
-		"outDir": "dist"
+
+		"paths": {
+			"@shared/utils": ["libs/shared/utils/src"]
+		}
 	},
-	"include": ["src"]
+	"exclude": ["node_modules", "**/node_modules", "dist", "**/dist", "tmp"]
 }

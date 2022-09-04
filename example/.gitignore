@@ -1,0 +1,85 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+
+# compiled output
+/dist
+/tmp
+/out-tsc
+/build
+/reports
+/test-reports
+
+# dependencies
+/node_modules
+**/node_modules
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/i18n-ally-custom-framework.yml
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+
+**/build
+**/.svelte-kit
+**/package
+**.env
+**.env.*
+**!.env.example
+!**.env.development
+**.vercel
+**.output
+**.vercel_build_output
+**/.aws-sam
+
+
+# System Files
+.DS_Store
+Thumbs.db
+
+.runtimeconfig.json
+
+reports
+test-reports
+documentation
+.angular
+**/.aws-sam
+
+envs/**/**.prod.*
+tools/executors/utils/preference.json
+build-storybook.log
+ui-debug.log
+firestore-debug.log
+.pnpm-debug.log
+firebase-debug.log
+.firebase
+
+apps/**/**/dist
+**/**.nuxt
+apps/mailvideo/nuxt/static/*.js
+.firebase/hosting.YXBwc1xtYWlsdmlkZW9cbnV4dFxkaXN0.cache
+
+**/**firebase-debug*.log
+.vercel
+storybook-static
