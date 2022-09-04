@@ -2,7 +2,7 @@
 	"$schema": "http://json-schema.org/schema",
 	"executors": {
 		"deploy": {
-			"implementation": "./src/executors/deploy/executor",
+			"implementation": "./src/executors/deploy/index",
 			"schema": "./src/executors/deploy/schema.json",
 			"description": "Build and deploy Cloud Functions"
 		}

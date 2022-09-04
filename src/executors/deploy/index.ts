@@ -21,7 +21,7 @@ export interface ExecutorOptions {
 	firebaseProjectId?: string;
 	firebaseProjectProdId?: string;
 	firebaseProjectDevId?: string;
-	entryPoints: string[];
+	entryPoints?: string[];
 	outputDirectory?: string;
 	tsConfigPath?: string;
 	alias?: EsbuildAlias;
