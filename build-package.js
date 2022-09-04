@@ -25,6 +25,7 @@ const copyFilesToDistributionFolder = async () => {
 	try {
 		await Promise.all([
 			copy('./executors.json', 'dist/executors.json'),
+			copy('./README.md', 'dist/README.md'),
 			copy(
 				'src/executors/deploy/schema.json',
 				'dist/src/executors/deploy/schema.json',
