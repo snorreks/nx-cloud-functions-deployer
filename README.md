@@ -16,6 +16,13 @@ This plugin adds a `deploy` executor that will build and deploy cloud functions.
 
 It uses esbuild to bundle your functions and then uses the [firebase-tools](https://www.npmjs.com/package/firebase-tools) to deploy them.
 
+It is a work in progress and the following features are not yet implemented:
+
+-   [Firebase Realtime Database](https://firebase.google.com/products/realtime-database?gclsrc=ds&gclsrc=ds&gclid=CPfI982b_fkCFQtEHgId5zcCDA)
+-   [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions)
+-   [Cloud Storage triggers](https://firebase.google.com/docs/functions/gcp-storage-events)
+-   [runWith configuration](https://firebase.google.com/docs/reference/functions/function_configuration.runtimeoptions)
+
 ### Prerequisites
 
 -   It does not support javascript projects. You must use typescript.
@@ -27,6 +34,8 @@ pnpm i -D firebase-tools
 ```
 
 ### Folder Structure
+
+See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/functions/src/controllers) for a better understanding of the folder structure.
 
 The plugin expects your project to have the following structure:
 
@@ -51,6 +60,19 @@ The folders in controllers will different deployment types:
 
 The function names will be the path from the `api/callable/database/scheduler` folder to the file. For example, the function `controllers/api/stripe/webhook_endpoint.ts` will be deployed as `stripe_webhook_endpoint`.
 
+### Example
+
+```typescript
+// controllers/api/a_example_api.ts
+import type { Request, Response } from 'firebase-functions';
+export default async (
+	request: Request,
+	response: Response<unknown>,
+): Promise<void> => {
+	response.send('Hello from Api!');
+};
+```
+
 #### Database Structure
 
 The databse structure is a little different. The plugin expects the folder structure to match to structure in the database. For example, if you have a database structure like this:
@@ -65,20 +87,17 @@ The databse structure is a little different. The plugin expects the folder struc
 Then you would have the following folder structure:
 
 ```bash
-├── your-nx-project
-│   ├──src
-│   │  ├── controllers
-│   │  │  ├── database
-│   │  │  │  ├── users
-│   │  │  │  │  ├── [uid]
-│   │  │  │  │  │  ├── created.ts # will be called everytime a user document is created.
-│   │  │  │  │  │  ├── updated.ts # will be called everytime a user document is updated.
-│   │  │  │  │  │  ├── deleted.ts # will be called everytime a user document is deleted.
-│   │  │  │  │  │  ├── notifications
-│   │  │  │  │  │  │  ├── [notificationId]
-│   │  │  │  │  │  │  │  ├── created.ts # will be called everytime a notification document is created.
-│   │  │  │  │  │  │  │  ├── updated.ts # will be called everytime a notification document is updated.
-│   │  │  │  │  │  │  │  ├── deleted.ts # will be called everytime a notification document is deleted.
+├── database
+│  ├── users
+│  │  ├── [uid]
+│  │  │  ├── created.ts # will be called everytime a user document is created.
+│  │  │  ├── updated.ts # will be called everytime a user document is updated.
+│  │  │  ├── deleted.ts # will be called everytime a user document is deleted.
+│  │  │  ├── notifications
+│  │  │  │  ├── [notificationId]
+│  │  │  │  │  ├── created.ts # will be called everytime a notification document is created.
+│  │  │  │  │  ├── updated.ts # will be called everytime a notification document is updated.
+│  │  │  │  │  ├── deleted.ts # will be called everytime a notification document is deleted.
 ```
 
 Also the databse trigger functions will omit [id]. Example: `controllers/database/users/[id]/created.ts` will be deployed as `users_created`.
