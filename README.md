@@ -109,7 +109,7 @@ Also the databse trigger functions will omit [id]. Example: `controllers/databas
 ```json
 ...
 	"targets": {
-		"check": {
+		"deploy": {
 			"executor": "nx-cloud-functions-deployer:deploy",
 			"options": {
 				"firebaseProjectId": "my-firebase-project-id",
