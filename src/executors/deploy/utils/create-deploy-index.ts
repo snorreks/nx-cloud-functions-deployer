@@ -53,7 +53,7 @@ const toDeployIndexCode = ({
 		deployOptions,
 	} = deployableFileData;
 
-	const deployableFilePath = absolutePath.replaceAll('\\', '/');
+	const deployableFilePath = absolutePath;
 
 	// const importCodeStartSection = `(await import('${deployableFilePath}')).default`;
 

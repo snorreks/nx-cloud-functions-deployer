@@ -1,7 +1,7 @@
 {
 	"name": "nx-cloud-functions-deployer",
 	"type": "module",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"license": "MIT",
 	"main": "index.js",
 	"types": "index.d.ts",
@@ -40,6 +40,7 @@
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-prettier": "^4.2.1",
 		"execa": "^5.1.1",
+		"firebase": "^9.10.0",
 		"firebase-admin": "^11.0.1",
 		"firebase-functions": "^3.23.0",
 		"fs-extra": "^10.1.0",

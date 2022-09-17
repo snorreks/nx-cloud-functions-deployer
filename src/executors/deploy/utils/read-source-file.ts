@@ -2,7 +2,6 @@ import type {
 	DeployableFileData,
 	DeployOption,
 	DocumentFunctionType,
-	FunctionType,
 	RelativeDeployFilePath,
 	LimitedRuntimeOptions,
 	BaseDeployFunctionOptions,
@@ -10,33 +9,37 @@ import type {
 	HttpsDeployOptions,
 	FirestoreDeployOptions,
 	PubsubDeployOptions,
+	DeployableFileLiteData,
 } from '$types';
 import { readFile } from 'fs/promises';
-import { documentFunctionTypes, functionTypes } from '../../../constants';
+import { documentFunctionTypes } from '../../../constants';
 
 export const getDeployableFileData = async (
-	filePath: string,
+	deployableFileLiteData: DeployableFileLiteData,
 ): Promise<DeployableFileData> => {
-	const code = await readFile(filePath, 'utf8');
-	const functionType =
-		getFunctionTypeFromCode(code) ?? getFunctionTypeFromPath(filePath);
+	const { absolutePath, functionType, rootFunctionBuilder } =
+		deployableFileLiteData;
 
-	const rootFunctionBuilder = toRootFunctionType(functionType);
-
-	const deployOptions = validateDeployOptions(
-		rootFunctionBuilder,
-		getDeployOptionsFromCode(code),
-	);
+	let deployOptions = deployableFileLiteData.deployOptions;
+	if (!deployOptions) {
+		const code = await readFile(absolutePath, 'utf8');
+		deployOptions = validateDeployOptions(
+			rootFunctionBuilder,
+			getDeployOptionsFromCode(code),
+		);
+	}
 
 	const deployableFileData: DeployableFileData = {
-		absolutePath: filePath,
 		functionType,
-		deployOptions,
+		absolutePath,
 		rootFunctionBuilder,
+		deployOptions,
 		functionName:
-			deployOptions?.functionName ?? getFunctionNameFromPath(filePath),
+			deployOptions?.functionName ??
+			getFunctionNameFromPath(absolutePath),
 		documentPath: undefined,
 	};
+	console.log('functionName', deployableFileData.functionName);
 
 	if (
 		documentFunctionTypes.includes(
@@ -45,27 +48,9 @@ export const getDeployableFileData = async (
 	) {
 		deployableFileData.documentPath =
 			(deployOptions as FirestoreDeployOptions)?.documentPath ??
-			getDocumentFromPath(filePath);
+			getDocumentFromPath(absolutePath);
 	}
 	return deployableFileData;
-};
-
-const toRootFunctionType = (
-	functionType: FunctionType,
-): RootFunctionBuilder => {
-	switch (functionType) {
-		case 'onCreate':
-		case 'onUpdate':
-		case 'onDelete':
-			return 'firestore';
-		case 'onCall':
-		case 'onRequest':
-			return 'https';
-		case 'schedule':
-			return 'pubsub';
-		default:
-			throw new Error('Invalid function type');
-	}
 };
 
 /**
@@ -251,66 +236,22 @@ const getStringBetweenLastBracket = (code: string) => {
 	return strBetweenLastBrackets;
 };
 
-/**
- * Get the function type from the code of a deploy file.
- *
- * It reads what is after the `export default` and returns the function type.
- *
- * @param code The code of the deploy file
- * @returns The function type
- */
-const getFunctionTypeFromCode = (code: string): FunctionType | undefined => {
-	try {
-		const exportDefault = code.match(/export default (\w+)\(/);
-		if (!exportDefault) {
-			return;
-		}
-		const [, functionType] = exportDefault;
-		if (!functionTypes.includes(functionType as FunctionType)) {
-			return;
-		}
-		console.log('getFunctionTypeFromCode', functionType);
-		return functionType as FunctionType;
-	} catch (error) {
-		console.log('getFunctionTypeFromCode', error);
-		return;
-	}
-};
-
-const getFunctionTypeFromPath = (path: string): FunctionType => {
-	switch (true) {
-		case path.includes('callable'):
-			return 'onCall';
-		case path.includes('scheduler'):
-			return 'schedule';
-		case path.includes('storage'):
-			throw new Error('Storage functions are not supported yet');
-		case path.endsWith('created.ts'):
-			return 'onCreate';
-		case path.endsWith('updated.ts'):
-			return 'onUpdate';
-		case path.endsWith('deleted.ts'):
-			return 'onDelete';
-		default:
-			return 'onRequest';
-	}
-};
-
-const getDocumentFromPath = (filePath: string): string | undefined => {
-	const relativeFilePath = toRelativeDeployFilePath(filePath);
+const getDocumentFromPath = (absolutePath: string): string | undefined => {
+	const relativeFilePath = toRelativeDeployFilePath(absolutePath);
 	if (!relativeFilePath.startsWith('database')) {
 		return undefined;
 	}
 
-	const paths = relativeFilePath.split('\\');
+	const paths = relativeFilePath.split('/');
 	paths.pop(); // Remove updated.ts | created.ts | deleted.ts
 	paths.shift(); // Remove database
 	return paths.join('/').replaceAll('[', '{').replaceAll(']', '}');
 };
 
-const getFunctionNameFromPath = (filePath: string) => {
-	const relativeFilePath = toRelativeDeployFilePath(filePath);
-	const paths = relativeFilePath.split('\\');
+const getFunctionNameFromPath = (absolutePath: string) => {
+	console.log('getFunctionNameFromPath', absolutePath);
+	const relativeFilePath = toRelativeDeployFilePath(absolutePath);
+	const paths = relativeFilePath.split('/');
 	paths.shift(); // remove the first element, which is the directory type
 	for (const path of paths) {
 		if (path.startsWith('[')) {
@@ -324,13 +265,13 @@ const getFunctionNameFromPath = (filePath: string) => {
 };
 
 export const toRelativeDeployFilePath = (
-	filePath: string,
+	absolutePath: string,
 ): RelativeDeployFilePath => {
-	const index = filePath.indexOf('controllers');
+	const index = absolutePath.indexOf('controllers');
 	if (index === -1) {
-		return filePath as RelativeDeployFilePath;
+		return absolutePath as RelativeDeployFilePath;
 	}
-	return filePath.slice(
+	return absolutePath.slice(
 		index + 'controllers'.length + 1,
 	) as RelativeDeployFilePath;
 };

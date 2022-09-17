@@ -99,27 +99,32 @@ type DeployOptions = {
 export type DeployOption<T extends RootFunctionBuilder = RootFunctionBuilder> =
 	DeployOptions[T];
 
-export interface DeployableFileData<
+export interface DeployableFileLiteData<
 	T extends RootFunctionBuilder = RootFunctionBuilder,
 > {
-	/** The absolute path of the deploy file */
-	absolutePath: string;
-	/** If the type is `onCreate`, `onUpdate`, or `onDelete`, this is required */
-	documentPath: T extends 'firestore' ? string : undefined;
-	/** The name of the function. */
-	functionName: string;
 	/**
 	 * The type of the function.
 	 *
 	 * @see {@link FunctionType}
 	 */
 	functionType: FunctionType;
-
 	rootFunctionBuilder: T;
+	/** The absolute path of the deploy file */
+	absolutePath: string;
+
 	/**
 	 * The options for deploying the function.
 	 *
 	 * @see {@link BaseDeployFunctionOptions}
 	 */
 	deployOptions?: DeployOption<T>;
+}
+
+export interface DeployableFileData<
+	T extends RootFunctionBuilder = RootFunctionBuilder,
+> extends DeployableFileLiteData<T> {
+	/** If the type is `onCreate`, `onUpdate`, or `onDelete`, this is required */
+	documentPath: T extends 'firestore' ? string : undefined;
+	/** The name of the function. */
+	functionName: string;
 }

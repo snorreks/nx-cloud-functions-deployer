@@ -1,5 +1,3 @@
-import type { DocumentData } from '@google-cloud/firestore';
-
 export type CallableFunctions = {
 	[key: string]: [unknown, unknown];
 };
@@ -12,5 +10,3 @@ export type RequestFunctions = {
 		unknown,
 	];
 };
-
-export type DocumentListenerData = DocumentData;

@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { createSpinner } from 'nanospinner';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { EsbuildAlias, LogLevel } from '$types';
+import type { EsbuildAlias, LogLevel, DeployableFileLiteData } from '$types';
 import { createTemporaryIndexFunctionFile } from './utils/create-deploy-index';
 import { deployFunction } from './utils/deploy-function';
 import { buildCloudFunctionCode } from './utils/build-function';
@@ -19,6 +19,7 @@ import {
 	getDeployableFileData,
 	toRelativeDeployFilePath,
 } from './utils/read-source-file';
+import { getDeployableFiles } from './utils/typescript-parser';
 
 export interface ExecutorOptions {
 	firebaseProjectId?: string;
@@ -71,9 +72,13 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	const outputDirectory =
 		options.outputDirectory ?? join(workspaceRoot, 'dist', projectRoot);
 
-	const deployableFilePaths = await getDeployableFilePaths(
-		join(workspaceRoot, projectRoot, 'src/controllers'),
-	);
+	const deployableFilePaths = (
+		await getDeployableFilePaths(
+			join(workspaceRoot, projectRoot, 'src/controllers'),
+		)
+	).splice(0, 1);
+
+	const deployableFiles = getDeployableFiles(deployableFilePaths);
 
 	const successfullyDeployedFunctionNames: string[] = [];
 	const failedDeployedFunctionNames: string[] = [];
@@ -99,7 +104,7 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	const defaultRegion = region ?? 'us-central1';
 	log('defaultRegion', defaultRegion);
 	const getRemainingFunctionsAmount = (): number => {
-		const functionsAmount = deployableFilePaths.length;
+		const functionsAmount = deployableFiles.length;
 		const successfullyDeployedFunctionsAmount =
 			successfullyDeployedFunctionNames.length;
 		const failedDeployedFunctionsAmount =
@@ -116,9 +121,13 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	 *
 	 * @param deployableFileData The metadata of the function to deploy
 	 */
-	const buildAndDeployFunction = async (filePath: string): Promise<void> => {
+	const buildAndDeployFunction = async (
+		deployableFileLiteData: DeployableFileLiteData,
+	): Promise<void> => {
 		try {
-			const deployableFileData = await getDeployableFileData(filePath);
+			const deployableFileData = await getDeployableFileData(
+				deployableFileLiteData,
+			);
 
 			const { functionName, deployOptions } = deployableFileData;
 			const outputRoot = join(outputDirectory, functionName);
@@ -149,8 +158,6 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 				})(),
 				createDeployPackageJson({
 					outputRoot,
-					projectRoot,
-					workspaceRoot,
 				}),
 				createDeployFirebaseJson({
 					outputRoot,
@@ -184,7 +191,9 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 			spinner.stop({
 				text: chalk.red(
 					`Function: ${chalk.bold(
-						toRelativeDeployFilePath(filePath),
+						toRelativeDeployFilePath(
+							deployableFileLiteData.absolutePath,
+						),
 					)} failed to deploy${
 						errorMessage ? `: ${errorMessage}` : ''
 					}`,
@@ -199,9 +208,8 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 		}
 	};
 
-	const deployableFunctionsAmount = deployableFilePaths.length;
+	const deployableFunctionsAmount = deployableFiles.length;
 
-	// await buildAndDeployFunction(deployableFilePaths[0]);
 	// if (deployableFunctionsAmount) {
 	// 	return { success: true };
 	// }
@@ -210,7 +218,7 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 		`Deploying ${chalk.bold(getRemainingFunctionsAmount())} Functions...`,
 	).start();
 
-	await Promise.all(deployableFilePaths.map(buildAndDeployFunction));
+	await Promise.all(deployableFiles.map(buildAndDeployFunction));
 
 	if (
 		successfullyDeployedFunctionNames.length === deployableFunctionsAmount
