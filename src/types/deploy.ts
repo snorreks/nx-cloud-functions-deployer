@@ -24,16 +24,49 @@ export type LimitedRuntimeOptions = Pick<
 >;
 
 export interface BaseDeployFunctionOptions {
+	/**
+	 * The name of the function. If not provided, the name of the function is
+	 * the path from the root of the {@link DeployDirectoryType} directory to the
+	 * file. Replacing all `/` and `-` with `_`.
+	 *
+	 * example // controllers/api/stripe/webhook.ts => stripe_webhook
+	 *
+	 * example // controllers/callable/auth/check-email.ts => auth_check_email
+	 */
 	functionName?: string;
+	/**
+	 * The region to deploy the function to. If not provided it will be the
+	 * region set in project.json. If that is not provided it will be
+	 * 'us-central1'
+	 *
+	 * @see https://firebase.google.com/docs/functions/locations
+	 */
 	region?: typeof SUPPORTED_REGIONS[number] | string;
+	/**
+	 * The runtime options for the function with `runWith`. If not provided
+	 * won't use `runWith`
+	 *
+	 * @see https://firebase.google.com/docs/functions/manage-functions#set_runtime_options
+	 */
 	runtimeOptions?: LimitedRuntimeOptions;
 }
 
-export interface HttpsDeployOptions extends BaseDeployFunctionOptions {
-	functionName?: string;
-}
+export type HttpsDeployOptions = BaseDeployFunctionOptions;
 
 export interface FirestoreDeployOptions extends BaseDeployFunctionOptions {
+	/**
+	 * The document path where the function will listen for changed in firestore
+	 *
+	 * If not provided, the document path is the path from the root of the
+	 * {@link DeployDirectoryType} to the file. Replacing all `/` and `-` with
+	 * `_`. And replacing all `[]` with `{}`
+	 *
+	 * example // controllers/database/users/[uid]/created.ts => 'users/{uid}'
+	 *
+	 * example //
+	 * controllers/database/users/[uid]/notifications/[notificationId] =>
+	 * 'users/{uid}/notifications/{notificationId}'
+	 */
 	documentPath?: string;
 }
 
@@ -43,11 +76,18 @@ export interface PubsubDeployOptions extends BaseDeployFunctionOptions {
 	 *
 	 * @param topic Name of Pub/Sub topic, must belong to the same project as
 	 *   the function.
+	 * @see https://firebase.google.com/docs/functions/pubsub-events
 	 */
 	topic?: string;
+	/**
+	 * When to execute the function. If the function is a scheduled function,
+	 * this property is required.
+	 *
+	 * @see https://firebase.google.com/docs/functions/schedule-functions
+	 */
 	schedule: string;
+	/** The timezone to use when determining the function's execution time. */
 	timeZone?: string;
-	// retryConfig?: ScheduleRetryConfig;
 }
 
 type DeployOptions = {
