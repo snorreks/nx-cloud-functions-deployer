@@ -2,9 +2,14 @@
 	"extends": "../../tsconfig.base.json",
 	"files": [],
 	"include": [],
-	"references": [
-		{
-			"path": "./tsconfig.app.json"
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@shared/utils": ["../../libs/shared/utils/src"],
+			"@shared/types": ["../../libs/shared/types/src"],
+			"$utils/*": ["src/utils/*"],
+			"$configs/*": ["src/configs/*"],
+			"$controllers/*": ["src/controllers/*"]
 		}
-	]
+	}
 }

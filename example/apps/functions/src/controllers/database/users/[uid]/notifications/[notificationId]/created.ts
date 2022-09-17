@@ -1,5 +1,6 @@
-import type { DocumentSnapshot } from 'firebase-admin/firestore';
+import { onCreate } from 'nx-cloud-functions-deployer';
+import type { NotificationData } from '@shared/types';
 
-export default async (documentSnap: DocumentSnapshot): Promise<void> => {
-	console.log('onNotificationCreate', documentSnap);
-};
+export default onCreate<NotificationData>((snapshot) => {
+	console.log(snapshot.data().message);
+});

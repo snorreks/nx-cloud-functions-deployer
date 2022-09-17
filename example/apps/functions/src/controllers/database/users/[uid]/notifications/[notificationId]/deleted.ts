@@ -1,5 +1,6 @@
-import type { DocumentSnapshot } from 'firebase-admin/firestore';
+import { onDelete } from 'nx-cloud-functions-deployer';
+import type { NotificationData } from '@shared/types';
 
-export default async (documentSnap: DocumentSnapshot): Promise<void> => {
-	console.log('onNotificationDelete', documentSnap);
-};
+export default onDelete<NotificationData>((snapshot) => {
+	console.log(snapshot.data().message);
+});

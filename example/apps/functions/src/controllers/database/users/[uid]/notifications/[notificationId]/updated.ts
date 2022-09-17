@@ -1,8 +1,8 @@
-import type { DocumentSnapshot } from 'firebase-admin/firestore';
-import type { Change } from 'firebase-functions';
+import { onUpdate } from 'nx-cloud-functions-deployer';
+import type { NotificationData } from '@shared/types';
 
-export default async (change: Change<DocumentSnapshot>): Promise<void> => {
-	const oldNotification = change.before;
-	const newNotification = change.after;
-	console.log('onNotificationUpdate', oldNotification, newNotification);
-};
+export default onUpdate<NotificationData>((change) => {
+	const before = change.before.data();
+	const after = change.after.data();
+	console.log(before.message, after.message);
+});

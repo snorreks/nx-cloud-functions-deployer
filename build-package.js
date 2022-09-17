@@ -1,6 +1,8 @@
-import execa from 'execa';
 import { copy } from 'fs-extra';
 import { readFile, writeFile } from 'node:fs/promises';
+import { build } from 'esbuild';
+import { nodeExternalsPlugin } from 'esbuild-node-externals';
+import execa from 'execa';
 
 const incrementVersion = (currentVersion) => {
 	try {
@@ -43,7 +45,7 @@ const copyFilesToDistributionFolder = async () => {
 			copy('./README.md', 'dist/README.md'),
 			copy(
 				'src/executors/deploy/schema.json',
-				'dist/src/executors/deploy/schema.json',
+				'dist/executors/deploy/schema.json',
 			),
 
 			copyPackageJson(),
@@ -55,7 +57,32 @@ const copyFilesToDistributionFolder = async () => {
 
 const compileTypescriptFiles = async () => {
 	try {
-		await execa('pnpm', ['tsc']);
+		await Promise.all([
+			build({
+				entryPoints: ['./src/index.ts'],
+				outfile: 'dist/index.js',
+				bundle: true,
+				minify: true,
+				platform: 'node',
+				sourcemap: true,
+				target: 'node14',
+				plugins: [nodeExternalsPlugin()],
+			}),
+			build({
+				entryPoints: ['./src/executors/deploy/index.ts'],
+				outfile: 'dist/executors/deploy/index.js',
+				bundle: true,
+				minify: true,
+				platform: 'node',
+				sourcemap: true,
+				target: 'node14',
+				external: ['esbuild'],
+				plugins: [nodeExternalsPlugin()],
+			}),
+			execa('pnpm', ['tsc']),
+		]);
+
+		// await execa('pnpm', ['tsc']);
 	} catch (error) {
 		console.error('compileTypescriptFiles', error);
 	}

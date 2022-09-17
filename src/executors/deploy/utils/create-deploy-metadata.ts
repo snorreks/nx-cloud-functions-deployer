@@ -1,8 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-type BasePackageJson = { [key: string]: string | { [key: string]: string } };
-
 export const createDeployFirebaseJson = async ({
 	outputRoot,
 }: {
@@ -29,7 +27,6 @@ export const createDeployPackageJson = async ({
 	workspaceRoot: string;
 	projectRoot: string;
 	dependencies?: { [key: string]: string };
-	basePackageJson?: BasePackageJson;
 	outputRoot: string;
 }) => {
 	const packageJsonPath = join(workspaceRoot, projectRoot, 'package.json');
@@ -40,6 +37,7 @@ export const createDeployPackageJson = async ({
 			...packageJson.dependencies,
 			...dependencies,
 		},
+		main: 'src/index.js',
 	};
 	await mkdir(outputRoot, { recursive: true });
 
@@ -47,16 +45,4 @@ export const createDeployPackageJson = async ({
 		join(outputRoot, 'package.json'),
 		JSON.stringify(newPackageJson, undefined, 2),
 	);
-};
-
-export const getBasePackage = async ({
-	projectRoot,
-	workspaceRoot,
-}: {
-	workspaceRoot: string;
-	projectRoot: string;
-}): Promise<BasePackageJson> => {
-	const packageJsonPath = join(workspaceRoot, projectRoot, 'package.json');
-	const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
-	return packageJson as BasePackageJson;
 };

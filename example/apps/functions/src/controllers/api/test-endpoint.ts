@@ -1,14 +1,15 @@
-import type { Request, Response } from 'firebase-functions';
-import { helloWorldFromSharedUtils, weDemBoies } from '@shared/utils';
+import { onRequest } from 'nx-cloud-functions-deployer';
+import type { RequestFunctions } from '@shared/types';
+import { helloWorldFromSharedUtils } from '@shared/utils';
+
 // Validate the stripe webhook secret, then call the handler for the event type
-export default async (
-	request: Request,
-	response: Response<unknown>,
-): Promise<void> => {
+
+export default onRequest<RequestFunctions, 'test'>((request, response) => {
 	try {
+		request.params.message;
 		console.log('test-endpoint', request);
 		helloWorldFromSharedUtils();
-		response.send({ received: true, w: weDemBoies() });
+		response.send({ success: true });
 
 		return;
 	} catch (error) {
@@ -16,4 +17,4 @@ export default async (
 		response.status(400);
 		return;
 	}
-};
+});

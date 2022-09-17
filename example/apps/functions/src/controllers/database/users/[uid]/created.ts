@@ -1,5 +1,6 @@
-import type { DocumentSnapshot } from 'firebase-admin/firestore';
+import { onCreate } from 'nx-cloud-functions-deployer';
+import type { UserData } from '@shared/types';
 
-export default async (documentSnap: DocumentSnapshot): Promise<void> => {
-	console.log('onUserCreate', documentSnap);
-};
+export default onCreate<UserData>((snapshot) => {
+	console.log(snapshot.data().name);
+});

@@ -3,21 +3,22 @@ import chalk from 'chalk';
 import { createSpinner } from 'nanospinner';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { EsbuildAlias } from './types';
-import { createTemporaryIndexFunctionFile } from './utils/deploy-file-creator';
-import { deployFunction } from './utils/deployer';
-import { buildCloudFunctionCode } from './utils/esbuilder';
+import type { EsbuildAlias, LogLevel } from '$types';
+import { createTemporaryIndexFunctionFile } from './utils/create-deploy-index';
+import { deployFunction } from './utils/deploy-function';
+import { buildCloudFunctionCode } from './utils/build-function';
 import {
-	getAliasFromBaseTsConfig,
+	getEsbuildAliasFromTsConfig,
 	getDeployableFilePaths,
-	getFunctionName,
-	toFunctionType,
-	toRelativeDeployFilePath,
-} from './utils/get-deploy-metadata';
+} from './utils/read-project';
 import {
 	createDeployFirebaseJson,
 	createDeployPackageJson,
-} from './utils/output-metadata-creator';
+} from './utils/create-deploy-metadata';
+import {
+	getDeployableFileData,
+	toRelativeDeployFilePath,
+} from './utils/read-source-file';
 
 export interface ExecutorOptions {
 	firebaseProjectId?: string;
@@ -52,11 +53,18 @@ const getFirebaseProjectId = (options: ExecutorOptions): string => {
 };
 
 const executor: Executor<ExecutorOptions> = async (options, context) => {
-	const { projectName, root: workspaceRoot, workspace } = context;
+	const { region } = options;
+	const { projectName, root: workspaceRoot, workspace, isVerbose } = context;
 	const firebaseProjectId = getFirebaseProjectId(options);
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
+	const logLevel: LogLevel = isVerbose ? 'info' : 'silent';
+	const log = (message?: unknown, ...optionalParams: unknown[]): void => {
+		if (logLevel !== 'silent') {
+			console.log(message, optionalParams);
+		}
+	};
 
 	const projectRoot = workspace.projects[projectName].root;
 
@@ -74,14 +82,22 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 
 	await mkdir(outputDirectory, { recursive: true });
 	await mkdir(temporaryDirectory, { recursive: true });
-
-	const baseAlias = await getAliasFromBaseTsConfig(workspaceRoot);
+	let baseAlias = await getEsbuildAliasFromTsConfig(
+		join(workspaceRoot, projectRoot),
+	);
+	if (!baseAlias) {
+		baseAlias = await getEsbuildAliasFromTsConfig(
+			workspaceRoot,
+			'tsconfig.base.json',
+		);
+	}
 	const alias = {
 		...baseAlias,
 		...options.alias,
 	};
-	const region = options.region ?? 'us-central1';
-
+	log('alias', alias);
+	const defaultRegion = region ?? 'us-central1';
+	log('defaultRegion', defaultRegion);
 	const getRemainingFunctionsAmount = (): number => {
 		const functionsAmount = deployableFilePaths.length;
 		const successfullyDeployedFunctionsAmount =
@@ -98,19 +114,15 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	/**
 	 * Build the function and deploy with firebase-tools
 	 *
-	 * @param deployableFilePath The path to the function to deploy
+	 * @param deployableFileData The metadata of the function to deploy
 	 */
-	const buildAndDeployFunction = async (
-		deployableFilePath: string,
-	): Promise<void> => {
-		let functionName: string | undefined;
+	const buildAndDeployFunction = async (filePath: string): Promise<void> => {
 		try {
-			const relativePathToDeployFile =
-				toRelativeDeployFilePath(deployableFilePath);
-			functionName = await getFunctionName(deployableFilePath);
-			const functionType = toFunctionType(deployableFilePath);
-			const outputRoot = join(outputDirectory, functionName);
+			const deployableFileData = await getDeployableFileData(filePath);
 
+			const { functionName, deployOptions } = deployableFileData;
+			const outputRoot = join(outputDirectory, functionName);
+			const region = deployOptions?.region ?? defaultRegion;
 			// We can do 3 things in parallel:
 			// - Build the function code:
 			// 		1. Create a temporary index.ts file
@@ -120,11 +132,8 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 			const buildPromises: Promise<void>[] = [
 				(async () => {
 					const inputPath = await createTemporaryIndexFunctionFile({
-						deployableFilePath,
-						functionName,
-						functionType,
+						deployableFileData,
 						region,
-						relativePathToDeployFile,
 						temporaryDirectory,
 					});
 
@@ -134,6 +143,8 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 						outputRoot,
 						projectRoot,
 						workspaceRoot,
+						logLevel: logLevel === 'silent' ? 'silent' : 'info',
+						// external: ['nx-cloud-functions-deployer'],
 					});
 				})(),
 				createDeployPackageJson({
@@ -147,7 +158,6 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 			];
 
 			await Promise.all(buildPromises);
-
 			await deployFunction({
 				firebaseProjectId,
 				functionName,
@@ -168,35 +178,40 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 				)} Functions...`,
 			});
 		} catch (error) {
-			console.log('error', error);
-			if (functionName) {
-				spinner.stop({
-					text: chalk.red(
-						`Function: ${chalk.bold(
-							functionName,
-						)} failed to deploy`,
-					),
-				});
-				spinner.start({
-					text: `Deploying ${chalk.bold(
-						getRemainingFunctionsAmount(),
-					)} Functions...`,
-				});
-			}
+			const errorMessage = (error as { message?: string } | undefined)
+				?.message;
+
+			spinner.stop({
+				text: chalk.red(
+					`Function: ${chalk.bold(
+						toRelativeDeployFilePath(filePath),
+					)} failed to deploy${
+						errorMessage ? `: ${errorMessage}` : ''
+					}`,
+				),
+			});
+
+			spinner.start({
+				text: `Deploying ${chalk.bold(
+					getRemainingFunctionsAmount(),
+				)} Functions...`,
+			});
 		}
 	};
 
 	const deployableFunctionsAmount = deployableFilePaths.length;
 
+	// await buildAndDeployFunction(deployableFilePaths[0]);
+	// if (deployableFunctionsAmount) {
+	// 	return { success: true };
+	// }
+
 	const spinner = createSpinner(
 		`Deploying ${chalk.bold(getRemainingFunctionsAmount())} Functions...`,
 	).start();
 
-	await Promise.all(
-		deployableFilePaths.map((deployableFilePath) =>
-			buildAndDeployFunction(deployableFilePath),
-		),
-	);
+	await Promise.all(deployableFilePaths.map(buildAndDeployFunction));
+
 	if (
 		successfullyDeployedFunctionNames.length === deployableFunctionsAmount
 	) {

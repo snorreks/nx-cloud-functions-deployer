@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"declaration": false,
+		"declaration": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"importHelpers": true,
@@ -19,10 +19,10 @@
 		"removeComments": true,
 		"resolveJsonModule": true,
 		"stripInternal": true,
-
+		"emitDeclarationOnly": true,
 		"importsNotUsedAsValues": "error",
-		"isolatedModules": true, // false?
-		"rootDir": ".",
+		"isolatedModules": true,
+		"rootDir": "src",
 		"lib": ["es2021"],
 		"module": "CommonJS",
 		"target": "es2021",
@@ -34,7 +34,10 @@
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
 		"sourceMap": true,
-		"outDir": "dist"
+		"outDir": "dist",
+		"paths": {
+			"$types": ["src/types"]
+		}
 	},
-	"include": ["src"]
+	"include": ["src/index.ts"]
 }

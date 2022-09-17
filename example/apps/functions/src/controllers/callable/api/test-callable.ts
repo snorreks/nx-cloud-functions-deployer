@@ -1,11 +1,17 @@
-import type { https } from 'firebase-functions';
+import { onCall } from 'nx-cloud-functions-deployer';
+import type { CallableFunctions } from '@shared/types';
 
-export default async (
-	payload: unknown,
-	context: https.CallableContext,
-): Promise<string> => {
-	console.log('test-callable', payload, context);
-	const uid = context.auth?.uid;
-
-	return 'Hello, ' + uid;
-};
+export default onCall<CallableFunctions, 'test'>(
+	(payload, context) => {
+		console.log('test-callable', payload, context);
+		const uid = context.auth?.uid;
+		console.log('uid', uid);
+		console.log('message', payload.message);
+		return {
+			success: true,
+		};
+	},
+	{
+		functionName: 'new_name',
+	},
+);

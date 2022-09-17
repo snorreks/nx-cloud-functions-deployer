@@ -1,5 +1,6 @@
-import type { DocumentSnapshot } from 'firebase-admin/firestore';
+import { onDelete } from 'nx-cloud-functions-deployer';
+import type { UserData } from '@shared/types';
 
-export default async (documentSnap: DocumentSnapshot): Promise<void> => {
-	console.log('onUserDelete', documentSnap);
-};
+export default onDelete<UserData>((snapshot) => {
+	console.log(snapshot.data().name);
+});

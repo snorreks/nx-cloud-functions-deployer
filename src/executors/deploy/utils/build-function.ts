@@ -1,7 +1,7 @@
 import { build } from 'esbuild';
 import alias from 'esbuild-plugin-alias';
 import { join } from 'node:path';
-import type { EsbuildAlias } from '../types';
+import type { EsbuildAlias, LogLevel } from '$types';
 
 export interface EsBuildCloudFunction {
 	inputPath: string;
@@ -11,13 +11,20 @@ export interface EsBuildCloudFunction {
 	external?: string[];
 	tsConfigPath?: string;
 	alias?: EsbuildAlias;
+	logLevel?: LogLevel;
 }
 
 export const buildCloudFunctionCode = async (
 	options: EsBuildCloudFunction,
 ): Promise<boolean> => {
-	const { external, inputPath, outputRoot, tsConfigPath, workspaceRoot } =
-		options;
+	const {
+		external,
+		inputPath,
+		outputRoot,
+		tsConfigPath,
+		workspaceRoot,
+		logLevel,
+	} = options;
 
 	const outputPath = join(outputRoot, 'src/index.js');
 	const result = await build({
@@ -28,7 +35,7 @@ export const buildCloudFunctionCode = async (
 		entryPoints: [inputPath],
 		external,
 		format: 'esm',
-		logLevel: 'info',
+		logLevel,
 		metafile: true,
 		minify: true,
 		outExtension: {

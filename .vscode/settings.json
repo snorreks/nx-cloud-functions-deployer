@@ -1,9 +1,10 @@
 {
-	"editor.formatOnSave": true,
 	"editor.codeActionsOnSave": {
-		"source.fixAll": true
+		"source.fixAll.eslint": true
 		// "source.sortImports": true
 	},
+	"eslint.validate": ["typescript"],
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"cSpell.enabled": false
+	"files.maxMemoryForLargeFilesMB": 6144,
+	"cSpell.words": ["Esbuild", "firestore"]
 }

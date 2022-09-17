@@ -19,9 +19,7 @@ It uses esbuild to bundle your functions and then uses the [firebase-tools](http
 It is a work in progress and the following features are not yet implemented:
 
 -   [Firebase Realtime Database](https://firebase.google.com/products/realtime-database?gclsrc=ds&gclsrc=ds&gclid=CPfI982b_fkCFQtEHgId5zcCDA)
--   [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions)
 -   [Cloud Storage triggers](https://firebase.google.com/docs/functions/gcp-storage-events)
--   [runWith configuration](https://firebase.google.com/docs/reference/functions/function_configuration.runtimeoptions)
 
 ### Prerequisites
 
@@ -55,7 +53,7 @@ The folders in controllers will different deployment types:
     -   files ends with `created.ts` will be deployed as `functions.database.onCreate`
     -   files ends with `updated.ts` will be deployed as `functions.database.onUpdate`
     -   files ends with `deleted.ts` will be deployed as `functions.database.onDelete`
--   `scheduler` - [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions) (functions.pubsub.schedule) (not implemented yet)
+-   `scheduler` - [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions) (functions.pubsub.schedule)
 -   `storage` - [Cloud Storage triggers](https://firebase.google.com/docs/functions/gcp-storage-events) (functions.storage.object()) (not implemented yet)
 
 The function names will be the path from the `api/callable/database/scheduler` folder to the file. For example, the function `controllers/api/stripe/webhook_endpoint.ts` will be deployed as `stripe_webhook_endpoint`.
@@ -63,14 +61,19 @@ The function names will be the path from the `api/callable/database/scheduler` f
 ### Example
 
 ```typescript
-// controllers/api/a_example_api.ts
-import type { Request, Response } from 'firebase-functions';
-export default async (
-	request: Request,
-	response: Response<unknown>,
-): Promise<void> => {
-	response.send('Hello from Api!');
-};
+// controllers/scheduler/daily.ts
+import { schedule } from 'nx-cloud-functions-deployer';
+
+export default schedule(
+	// do something with your function
+	(context) => {
+		console.log('daily', context);
+	},
+	// configure your function
+	{
+		schedule: 'every day 00:00',
+	},
+);
 ```
 
 #### Database Structure
@@ -130,7 +133,7 @@ Also the databse trigger functions will omit [id]. Example: `controllers/databas
 | `alias`                 | Support for alias. See [esbuild-plugin-alias](https://www.npmjs.com/package/esbuild-plugin-alias)                               | The paths in tsconfig.base.json |
 | `region`                | The region where to host the cloud funciton. See [Cloud Functions Locations](https://cloud.google.com/functions/docs/locations) | `us-central1`                   |
 
-It is reccommended to leave firebaseProjectId undefined and have firebaseProjectProdId and firebaseProjectDevId set. This will allow you to change target in cli:
+It is recommended to leave firebaseProjectId undefined and have firebaseProjectProdId and firebaseProjectDevId set. This will allow you to change target in cli:
 
 ```bash
 pnpm nx deploy functions --prod
@@ -138,4 +141,74 @@ pnpm nx deploy functions --prod
 
 ```bash
 pnpm nx deploy functions --dev
+```
+
+### Helper Options
+
+If is recommended to import the helper functions from `nx-cloud-functions-deployer`. This will allow you to configure your functions and make the functions stronger typed. The helper functions are: `onCall`, `onRequest`, `onCreate`, `onUpdate`, `onDelete` and `schedule`.
+
+#### Schedule Example
+
+```typescript
+import { schedule } from 'nx-cloud-functions-deployer';
+
+export default schedule(
+	// do something with your function
+	(context) => {
+		console.log('daily', context);
+	},
+	// configure your function
+	{
+		schedule: 'every day 00:00',
+	},
+);
+```
+
+#### Database Example
+
+You can use the helper functions to make your functions stronger typed when reading the .data(). The helper functions are: `onCreate`, `onUpdate`, `onDelete`.
+
+NB: Remember that the document id will not be included in the data. You will have to get the id from the snapshot.
+
+```typescript
+import { onCreate } from 'nx-cloud-functions-deployer';
+import type { UserData } from '@my-project/shared';
+
+export default onCreate<UserData>(
+	// do something with your function
+	(snapshot) => {
+		snapshot.data(); // => UserData
+	},
+	// configure your function
+	{
+		// optional
+	},
+);
+```
+
+#### OnCall/onRequest Example
+
+onCall and onRequest can give even better typing with frontend. By importing a interface from a shared file.
+
+```typescript
+export type MyFunctions = {
+	my_function_name: [
+		{
+			message: string; // request data
+		},
+		{
+			response: boolean; // response data
+		},
+	];
+};
+```
+
+```typescript
+import { onCall } from 'nx-cloud-functions-deployer';
+import type { MyFunctions } from '@my-project/shared';
+
+export default onCall<MyFunctions, 'my_function_name'>((data, context) => {
+	console.log(data); // { message: string }
+	return { response: true };
+});
 ```
