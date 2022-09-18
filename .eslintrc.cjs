@@ -1,5 +1,3 @@
-/* jshint esversion: 9 */
-
 /** @type {import('eslint').ESLint} */
 const config = {
 	env: {
@@ -19,7 +17,6 @@ const config = {
 	},
 	root: true,
 	rules: {
-		// 'prettier/prettier': 'error',
 		'require-jsdoc': 'off',
 		'spaced-comment': [2, 'always', { exceptions: ['-'], markers: ['/'] }],
 		'valid-jsdoc': [

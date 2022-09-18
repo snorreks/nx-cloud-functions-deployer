@@ -83,3 +83,6 @@ apps/mailvideo/nuxt/static/*.js
 **/**firebase-debug*.log
 .vercel
 storybook-static
+
+!apps/functions/.env.dev
+!apps/functions/.env.prod

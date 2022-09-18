@@ -36,8 +36,10 @@
 		"sourceMap": true,
 		"outDir": "dist",
 		"paths": {
-			"$types": ["src/types"]
+			"$types": ["src/types"],
+			"$constants": ["src/constants"],
+			"$utils": ["src/utils"]
 		}
 	},
-	"include": ["src/index.ts", "src/types"]
+	"include": ["src"]
 }

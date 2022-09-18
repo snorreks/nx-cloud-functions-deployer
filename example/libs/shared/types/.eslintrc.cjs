@@ -15,14 +15,6 @@ const config = {
 			},
 			rules: {},
 		},
-		{
-			files: ['*.ts'],
-			rules: {},
-		},
-		{
-			files: ['*.js'],
-			rules: {},
-		},
 	],
 };
 

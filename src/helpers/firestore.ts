@@ -3,6 +3,7 @@ import type { QueryDocumentSnapshot } from '@google-cloud/firestore';
 import type { Change, EventContext } from 'firebase-functions';
 import type { CoreData, FirestoreDeployOptions } from '$types';
 
+/** Respond only to document creations. */
 export const onCreate = <T extends CoreData>(
 	handler: (data: T, context: EventContext) => PromiseLike<unknown> | unknown,
 	_options?: FirestoreDeployOptions,
@@ -18,6 +19,7 @@ export const onCreate = <T extends CoreData>(
 	};
 };
 
+/** Respond only to document deletions. */
 export const onDelete = <T extends CoreData>(
 	handler: (data: T, context: EventContext) => PromiseLike<unknown> | unknown,
 	_options?: FirestoreDeployOptions,
@@ -33,9 +35,10 @@ export const onDelete = <T extends CoreData>(
 	};
 };
 
+/** Respond only to document updates. */
 export const onUpdate = <T extends CoreData>(
 	handler: (
-		change: { before: T; after: T },
+		change: { beforeData: T; afterData: T },
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
 	_options?: FirestoreDeployOptions,
@@ -49,8 +52,37 @@ export const onUpdate = <T extends CoreData>(
 	) => {
 		return handler(
 			{
-				before: toCoreData(change.after),
-				after: toCoreData(change.after),
+				beforeData: toCoreData(change.before),
+				afterData: toCoreData(change.after),
+			},
+			context,
+		);
+	};
+};
+
+/** Respond to all document writes (creates, updates, or deletes). */
+export const onWrite = <T extends CoreData>(
+	handler: (
+		change: { beforeData?: T; afterData?: T },
+		context: EventContext,
+	) => PromiseLike<unknown> | unknown,
+	_options?: FirestoreDeployOptions,
+): ((
+	change: Change<QueryDocumentSnapshot<Omit<T, 'id'>>>,
+	context: EventContext,
+) => PromiseLike<unknown> | unknown) => {
+	return (
+		change: Change<QueryDocumentSnapshot<Omit<T, 'id'>>>,
+		context: EventContext,
+	) => {
+		return handler(
+			{
+				beforeData: change.before.exists
+					? toCoreData(change.before)
+					: undefined,
+				afterData: change.after.exists
+					? toCoreData(change.after)
+					: undefined,
 			},
 			context,
 		);
@@ -64,30 +96,3 @@ export const toCoreData = <T extends CoreData>(
 		...documentSnap.data(),
 		id: documentSnap.id,
 	} as T);
-
-/*
-Old helper methods. I am keeping it here if people want access to snapshot or don't want CoreData type.
-	export const onCreate = <T extends DocumentListenerData>(
-		handler: (
-			snapshot: QueryDocumentSnapshot<T>,
-			context: EventContext,
-		) => PromiseLike<unknown> | unknown,
-		_options?: FirestoreDeployOptions,
-	) => handler;
-	
-	export const onDelete = <T extends DocumentListenerData>(
-		handler: (
-			snapshot: QueryDocumentSnapshot<T>,
-			context: EventContext,
-		) => PromiseLike<unknown> | unknown,
-		_options?: FirestoreDeployOptions,
-	) => handler;
-	
-	export const onUpdate = <T extends DocumentListenerData>(
-		handler: (
-			change: Change<QueryDocumentSnapshot<T>>,
-			context: EventContext,
-		) => PromiseLike<unknown> | unknown,
-		_options?: FirestoreDeployOptions,
-	) => handler;
-	*/

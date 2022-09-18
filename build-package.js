@@ -1,8 +1,10 @@
 import { copy } from 'fs-extra';
 import { readFile, writeFile } from 'node:fs/promises';
 import { build } from 'esbuild';
+import alias from 'esbuild-plugin-alias';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
 import execa from 'execa';
+import { replaceTscAliasPaths } from 'tsc-alias';
 
 const incrementVersion = (currentVersion) => {
 	try {
@@ -57,32 +59,48 @@ const copyFilesToDistributionFolder = async () => {
 
 const compileTypescriptFiles = async () => {
 	try {
+		/** @type {import('esbuild').BuildOptions} */
+		const baseBuildOptions = {
+			bundle: true,
+			minify: true,
+			platform: 'node',
+			sourcemap: true,
+			plugins: [
+				alias({
+					entries: {
+						$types: './src/types/index.ts',
+						$utils: './src/utils/index.ts',
+						$constants: './src/constants/index.ts',
+					},
+				}),
+				nodeExternalsPlugin(),
+			],
+			target: 'node14',
+		};
+
 		await Promise.all([
+			(async () => {
+				await execa('pnpm', [
+					'tsc',
+					'--project',
+					'./tsconfig.types.json',
+				]);
+				replaceTscAliasPaths({
+					options: './tsconfig.types.json',
+				});
+			})(),
 			build({
+				...baseBuildOptions,
 				entryPoints: ['./src/index.ts'],
 				outfile: 'dist/index.js',
-				bundle: true,
-				minify: true,
-				platform: 'node',
-				sourcemap: true,
-				target: 'node14',
-				plugins: [nodeExternalsPlugin()],
 			}),
 			build({
+				...baseBuildOptions,
 				entryPoints: ['./src/executors/deploy/index.ts'],
 				outfile: 'dist/executors/deploy/index.js',
-				bundle: true,
-				minify: true,
-				platform: 'node',
-				sourcemap: true,
-				target: 'node14',
-				external: ['esbuild'],
-				plugins: [nodeExternalsPlugin()],
+				external: ['esbuild', 'esbuild-plugin-alias'],
 			}),
-			execa('pnpm', ['tsc']),
 		]);
-
-		// await execa('pnpm', ['tsc']);
 	} catch (error) {
 		console.error('compileTypescriptFiles', error);
 	}

@@ -1,55 +1,65 @@
 import type {
 	DeployableFileData,
 	DeployOption,
-	DocumentFunctionType,
-	RelativeDeployFilePath,
 	LimitedRuntimeOptions,
 	BaseDeployFunctionOptions,
-	RootFunctionBuilder,
-	HttpsDeployOptions,
 	FirestoreDeployOptions,
-	PubsubDeployOptions,
 	DeployableFileLiteData,
+	ScheduleDeployOptions,
+	TopicDeployOptions,
+	FunctionType,
+	RealtimeDatabaseDeployOptions,
 } from '$types';
+import { logger } from '$utils';
+import chalk from 'chalk';
 import { readFile } from 'fs/promises';
-import { documentFunctionTypes } from '../../../constants';
+import { join } from 'node:path';
 
 export const getDeployableFileData = async (
 	deployableFileLiteData: DeployableFileLiteData,
 ): Promise<DeployableFileData> => {
-	const { absolutePath, functionType, rootFunctionBuilder } =
-		deployableFileLiteData;
-
-	let deployOptions = deployableFileLiteData.deployOptions;
-	if (!deployOptions) {
-		const code = await readFile(absolutePath, 'utf8');
-		deployOptions = validateDeployOptions(
-			rootFunctionBuilder,
-			getDeployOptionsFromCode(code),
-		);
-	}
-
-	const deployableFileData: DeployableFileData = {
+	const {
 		functionType,
 		absolutePath,
 		rootFunctionBuilder,
+		relativeDeployFilePath,
+		outputDirectory,
+	} = deployableFileLiteData;
+
+	const code = await readFile(absolutePath, 'utf8');
+	const deployOptions = validateDeployOptions(
+		functionType,
+		getDeployOptionsFromCode(code),
+	);
+	const functionName =
+		deployOptions?.functionName ??
+		getFunctionNameFromPath(relativeDeployFilePath);
+
+	const deployableFileData: DeployableFileData = {
+		...deployableFileLiteData,
+		rootFunctionBuilder,
 		deployOptions,
-		functionName:
-			deployOptions?.functionName ??
-			getFunctionNameFromPath(absolutePath),
-		documentPath: undefined,
+		outputRoot: join(outputDirectory, functionName),
+		functionName,
+		path: undefined,
 	};
-	console.log('functionName', deployableFileData.functionName);
 
 	if (
-		documentFunctionTypes.includes(
-			deployableFileData.functionType as DocumentFunctionType,
-		)
+		rootFunctionBuilder === 'database' ||
+		rootFunctionBuilder === 'firestore'
 	) {
-		deployableFileData.documentPath =
+		deployableFileData.path =
 			(deployOptions as FirestoreDeployOptions)?.documentPath ??
-			getDocumentFromPath(absolutePath);
+			(deployOptions as RealtimeDatabaseDeployOptions)?.ref ??
+			getPath(relativeDeployFilePath);
 	}
+
+	logger.spinnerLog(
+		` --- ${logger.isDryRun ? 'Building' : 'Deploying'}: ${chalk.bold(
+			deployableFileData.functionName,
+		)}\n${relativeDeployFilePath}`,
+	);
+
 	return deployableFileData;
 };
 
@@ -85,10 +95,10 @@ const getDeployOptionsFromCode = (
 	}
 };
 
-const validateDeployOptions = <T extends RootFunctionBuilder>(
-	rootFunctionBuilder: T,
+const validateDeployOptions = (
+	functionType: FunctionType,
 	object?: Record<string, unknown>,
-): DeployOption<T> | undefined => {
+): DeployOption | undefined => {
 	if (!object) {
 		return;
 	}
@@ -106,40 +116,38 @@ const validateDeployOptions = <T extends RootFunctionBuilder>(
 		runtimeOptions: getRunTimeDeployOptions(object),
 	};
 
-	switch (rootFunctionBuilder) {
-		case 'https':
-			return getHttpsOptions(baseOptions) as DeployOption<T>;
-		case 'firestore':
-			return getFirestoreOptions(baseOptions, object) as DeployOption<T>;
-		case 'pubsub':
-			return getScheduleDeployOptions(
-				baseOptions,
-				object,
-			) as DeployOption<T>;
+	switch (functionType) {
+		case 'onCreate':
+		case 'onUpdate':
+		case 'onDelete':
+		case 'onWrite':
+			return getFirestoreOptions(baseOptions, object);
+		case 'onRealtimeDatabaseCreate':
+		case 'onRealtimeDatabaseUpdate':
+		case 'onRealtimeDatabaseDelete':
+		case 'onRealtimeDatabaseWrite':
+			return getRealtimeDatabaseOptions(baseOptions, object);
+
+		case 'schedule':
+			return getScheduleDeployOptions(baseOptions, object);
+		case 'topic':
+			return getTopicDeployOptions(baseOptions, object);
+
 		default:
-			throw new Error('Invalid function type');
+			return baseOptions;
 	}
 };
 
-const getValueFromObject = <Value, Key extends string>(
+const getValueFromObject = <Value>(
 	object: Record<string, unknown>,
-	key: Key,
+	key: string,
 ): Value | undefined => {
 	if (!(key in object)) {
 		return;
 	}
 
-	const value = (object as { [key in Key]: unknown })[key];
+	const value = object[key];
 	return value as Value;
-};
-
-const getHttpsOptions = (
-	baseDeployOptions: BaseDeployFunctionOptions,
-): HttpsDeployOptions => {
-	const httpsDeployOptions: HttpsDeployOptions = {
-		...baseDeployOptions,
-	};
-	return httpsDeployOptions;
 };
 
 const getFirestoreOptions = (
@@ -148,10 +156,26 @@ const getFirestoreOptions = (
 ): FirestoreDeployOptions => {
 	const firestoreDeployOptions: FirestoreDeployOptions = {
 		...baseDeployOptions,
-		documentPath: getValueFromObject<'firestore', 'documentPath'>(
-			object,
-			'documentPath',
-		),
+		documentPath: getValueFromObject<string>(object, 'documentPath'),
+	};
+
+	return firestoreDeployOptions;
+};
+
+const getRealtimeDatabaseOptions = (
+	baseDeployOptions: BaseDeployFunctionOptions,
+	object: Record<string, unknown>,
+): RealtimeDatabaseDeployOptions => {
+	const ref = getValueFromObject<string>(object, 'ref');
+	if (!ref) {
+		throw new Error(
+			'Schedule option is required for realtime database functions',
+		);
+	}
+
+	const firestoreDeployOptions: RealtimeDatabaseDeployOptions = {
+		...baseDeployOptions,
+		ref,
 	};
 
 	return firestoreDeployOptions;
@@ -160,20 +184,33 @@ const getFirestoreOptions = (
 const getScheduleDeployOptions = (
 	baseDeployOptions: BaseDeployFunctionOptions,
 	object: Record<string, unknown>,
-): PubsubDeployOptions => {
-	const schedule = getValueFromObject<'pubsub', 'schedule'>(
-		object,
-		'schedule',
-	);
+): ScheduleDeployOptions => {
+	const schedule = getValueFromObject<string>(object, 'schedule');
 	if (!schedule) {
 		throw new Error('Schedule option is required for schedule functions');
 	}
 
-	const firestoreDeployOptions: PubsubDeployOptions = {
+	const firestoreDeployOptions: ScheduleDeployOptions = {
 		...baseDeployOptions,
 		schedule,
-		topic: getValueFromObject<'pubsub', 'topic'>(object, 'topic'),
-		timeZone: getValueFromObject<'pubsub', 'timeZone'>(object, 'timeZone'),
+		timeZone: getValueFromObject<string>(object, 'timeZone'),
+	};
+
+	return firestoreDeployOptions;
+};
+
+const getTopicDeployOptions = (
+	baseDeployOptions: BaseDeployFunctionOptions,
+	object: Record<string, unknown>,
+): TopicDeployOptions => {
+	const topic = getValueFromObject<string>(object, 'topic');
+	if (!topic) {
+		throw new Error('Topic option is required for topic functions');
+	}
+
+	const firestoreDeployOptions: TopicDeployOptions = {
+		...baseDeployOptions,
+		topic,
 	};
 
 	return firestoreDeployOptions;
@@ -236,22 +273,21 @@ const getStringBetweenLastBracket = (code: string) => {
 	return strBetweenLastBrackets;
 };
 
-const getDocumentFromPath = (absolutePath: string): string | undefined => {
-	const relativeFilePath = toRelativeDeployFilePath(absolutePath);
-	if (!relativeFilePath.startsWith('database')) {
-		return undefined;
-	}
-
-	const paths = relativeFilePath.split('/');
+/**
+ * Use this to get document path / database ref from a relativeDeployFilePath
+ *
+ * @param relativeDeployFilePath - relative path to deploy file
+ * @returns document path / database ref
+ */
+const getPath = (relativeDeployFilePath: string): string => {
+	const paths = relativeDeployFilePath.split('/');
 	paths.pop(); // Remove updated.ts | created.ts | deleted.ts
-	paths.shift(); // Remove database
+	paths.shift(); // Remove database / firestore
 	return paths.join('/').replaceAll('[', '{').replaceAll(']', '}');
 };
 
-const getFunctionNameFromPath = (absolutePath: string) => {
-	console.log('getFunctionNameFromPath', absolutePath);
-	const relativeFilePath = toRelativeDeployFilePath(absolutePath);
-	const paths = relativeFilePath.split('/');
+const getFunctionNameFromPath = (relativeDeployFilePath: string) => {
+	const paths = relativeDeployFilePath.split('/');
 	paths.shift(); // remove the first element, which is the directory type
 	for (const path of paths) {
 		if (path.startsWith('[')) {
@@ -262,16 +298,4 @@ const getFunctionNameFromPath = (absolutePath: string) => {
 
 	const functionName = paths.join('_').replace(/\.ts$/, '');
 	return functionName.replaceAll('-', '_');
-};
-
-export const toRelativeDeployFilePath = (
-	absolutePath: string,
-): RelativeDeployFilePath => {
-	const index = absolutePath.indexOf('controllers');
-	if (index === -1) {
-		return absolutePath as RelativeDeployFilePath;
-	}
-	return absolutePath.slice(
-		index + 'controllers'.length + 1,
-	) as RelativeDeployFilePath;
 };

@@ -1,295 +1,101 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "definitions": {
-        "Charset": {
-            "enum": ["ascii", "utf8"],
-            "type": "string"
-        },
-        "Format": {
-            "enum": ["cjs", "esm", "iife"],
-            "type": "string"
-        },
-        "Loader": {
-            "enum": [
-                "base64",
-                "binary",
-                "css",
-                "dataurl",
-                "default",
-                "file",
-                "js",
-                "json",
-                "jsx",
-                "text",
-                "ts",
-                "tsx"
-            ],
-            "type": "string"
-        },
-        "LogLevel": {
-            "enum": ["debug", "error", "info", "silent", "verbose", "warning"],
-            "type": "string"
-        },
-        "Platform": {
-            "enum": ["browser", "neutral", "node"],
-            "type": "string"
-        },
-        "Record<string,string>": {
-            "type": "object"
-        },
-        "StdinOptions": {
-            "properties": {
-                "contents": {
-                    "type": "string"
-                },
-                "loader": {
-                    "$ref": "#/definitions/Loader"
-                },
-                "resolveDir": {
-                    "type": "string"
-                },
-                "sourcefile": {
-                    "type": "string"
-                }
-            },
-            "type": "object"
-        },
-        "WatchMode": {
-            "properties": {
-                "onRebuild": {
-                    "type": "object"
-                }
-            },
-            "type": "object"
-        }
-    },
-    "properties": {
-        "absWorkingDir": {
-            "type": "string"
-        },
-        "allowOverwrite": {
-            "type": "boolean"
-        },
-        "assetNames": {
-            "type": "string"
-        },
-        "banner": {
-            "additionalProperties": {
-                "type": "string"
-            },
-            "type": "object"
-        },
-        "bundle": {
-            "type": "boolean"
-        },
-        "charset": {
-            "$ref": "#/definitions/Charset"
-        },
-        "chunkNames": {
-            "type": "string"
-        },
-        "color": {
-            "type": "boolean"
-        },
-        "conditions": {
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "define": {
-            "additionalProperties": {
-                "type": "string"
-            },
-            "type": "object"
-        },
-        "entryNames": {
-            "type": "string"
-        },
-        "entryPoints": {
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "external": {
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "footer": {
-            "additionalProperties": {
-                "type": "string"
-            },
-            "type": "object"
-        },
-        "format": {
-            "$ref": "#/definitions/Format"
-        },
-        "globalName": {
-            "type": "string"
-        },
-        "incremental": {
-            "type": "boolean"
-        },
-        "inject": {
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "jsxFactory": {
-            "type": "string"
-        },
-        "jsxFragment": {
-            "type": "string"
-        },
-        "keepNames": {
-            "type": "boolean"
-        },
-        "legalComments": {
-            "enum": ["eof", "external", "inline", "linked", "none"],
-            "type": "string"
-        },
-        "loader": {
-            "additionalProperties": {
-                "enum": [
-                    "base64",
-                    "binary",
-                    "css",
-                    "dataurl",
-                    "default",
-                    "file",
-                    "js",
-                    "json",
-                    "jsx",
-                    "text",
-                    "ts",
-                    "tsx"
-                ],
-                "type": "string"
-            },
-            "type": "object"
-        },
-        "logLevel": {
-            "$ref": "#/definitions/LogLevel"
-        },
-        "logLimit": {
-            "type": "number"
-        },
-        "mainFields": {
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "metafile": {
-            "type": "boolean"
-        },
-        "minify": {
-            "type": "boolean"
-        },
-        "minifyIdentifiers": {
-            "type": "boolean"
-        },
-        "minifySyntax": {
-            "type": "boolean"
-        },
-        "minifyWhitespace": {
-            "type": "boolean"
-        },
-        "nodePaths": {
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "outExtension": {
-            "additionalProperties": {
-                "type": "string"
-            },
-            "type": "object"
-        },
-        "outbase": {
-            "type": "string"
-        },
-        "outdir": {
-            "type": "string"
-        },
-        "outfile": {
-            "type": "string"
-        },
-        "platform": {
-            "$ref": "#/definitions/Platform"
-        },
-        "plugins": {
-            "items": {
-                "type": "object",
-                "properties": {
-                    "package": { "type": "string" },
-                    "args": { "type": "object" }
-                }
-            },
-            "type": "array"
-        },
-        "preserveSymlinks": {
-            "type": "boolean"
-        },
-        "publicPath": {
-            "type": "string"
-        },
-        "pure": {
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "resolveExtensions": {
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "sourceRoot": {
-            "type": "string"
-        },
-        "sourcemap": {
-            "enum": ["both", "external", false, "inline", true]
-        },
-        "sourcesContent": {
-            "type": "boolean"
-        },
-        "splitting": {
-            "type": "boolean"
-        },
-        "stdin": {
-            "$ref": "#/definitions/StdinOptions"
-        },
-        "target": {
-            "anyOf": [
-                {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                {
-                    "type": "string"
-                }
-            ]
-        },
-        "treeShaking": {
-            "enum": ["ignore-annotations", true]
-        },
-        "tsconfig": {
-            "type": "string"
-        },
-        "write": {
-            "type": "boolean"
-        }
-    },
-    "type": "object",
-    "cli": "nx",
-    "title": "ESBuild Build Executor"
+	"$schema": "http://json-schema.org/schema",
+	"type": "object",
+	"cli": "nx",
+	"description": "Executor to build and deploy cloud functions",
+	"additionalProperties": false,
+	"properties": {
+		"firebaseProjectProdId": {
+			"type": "string",
+			"description": "The firebase project id of the production flavor",
+			"aliases": ["prodId"]
+		},
+		"firebaseProjectDevId": {
+			"type": "string",
+			"description": "The firebase project id of the development flavor",
+			"aliases": ["devId"]
+		},
+		"outputDirectory": {
+			"type": "string",
+			"description": "The output directory of the build",
+			"aliases": ["outDir"]
+		},
+		"tsConfig": {
+			"type": "string",
+			"description": "The tsconfig file to use for the build",
+			"aliases": ["tsConfig"]
+		},
+		"region": {
+			"type": "string",
+			"description": "The default region to deploy the functions to",
+			"aliases": ["location"]
+		},
+		"silent": {
+			"type": "boolean",
+			"description": "Whether to suppress all logs",
+			"aliases": ["s"]
+		},
+		"dryRun": {
+			"type": "boolean",
+			"description": "Whether to run the command as a dry run",
+			"aliases": ["d", "dry"]
+		},
+		"verbose": {
+			"type": "boolean",
+			"description": "Whether to run the command with verbose logging",
+			"aliases": ["v"]
+		},
+		"concurrency": {
+			"type": "number",
+			"description": "The number of functions to deploy in parallel",
+			"aliases": ["c"]
+		},
+		"devEnvFileName": {
+			"type": "string",
+			"description": "The name of the environment file for the development flavor",
+			"aliases": ["devEnv"]
+		},
+		"prodEnvFileName": {
+			"type": "string",
+			"description": "The name of the environment file for the production flavor",
+			"aliases": ["prodEnv"]
+		},
+		"envString": {
+			"type": "string",
+			"description": "Stringify version of the environment.",
+			"aliases": ["ciEnv"]
+		},
+		"prod": {
+			"type": "boolean",
+			"description": "Whether to deploy the production flavor",
+			"aliases": ["production"]
+		},
+		"dev": {
+			"type": "boolean",
+			"description": "Whether to deploy the development flavor",
+			"aliases": ["development"]
+		},
+		"functionsDirectory": {
+			"type": "string",
+			"description": "The directory containing the functions to deploy",
+			"aliases": ["functionsDir", "inputDirectory", "inDir"]
+		},
+		"only": {
+			"type": "string",
+			"description": "Only deploy the given function names separated by comma",
+			"aliases": ["o"]
+		},
+		"force": {
+			"type": "boolean",
+			"description": "Force deploy all functions, even if no files changed",
+			"aliases": ["f"]
+		},
+		"packageManager": {
+			"type": "string",
+			"enum": ["pnpm", "npm", "yarn", "global"],
+			"description": "The package manager to use for deploying with firebase-tools",
+			"aliases": ["pm"]
+		}
+	},
+	"required": ["firebaseProjectProdId", "firebaseProjectDevId"]
 }

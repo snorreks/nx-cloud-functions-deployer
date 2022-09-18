@@ -1,252 +1,219 @@
-import type { Executor } from '@nrwl/devkit';
-import chalk from 'chalk';
-import { createSpinner } from 'nanospinner';
+import type { Executor, ExecutorContext } from '@nrwl/devkit';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { EsbuildAlias, LogLevel, DeployableFileLiteData } from '$types';
+import type {
+	BaseDeployOptions,
+	Flavor,
+	DeployExecutorOptions,
+	DeployableFileData,
+} from '$types';
 import { createTemporaryIndexFunctionFile } from './utils/create-deploy-index';
 import { deployFunction } from './utils/deploy-function';
 import { buildCloudFunctionCode } from './utils/build-function';
 import {
+	getDeployableFiles,
+	getEnvironmentFileCode,
 	getEsbuildAliasFromTsConfig,
-	getDeployableFilePaths,
 } from './utils/read-project';
 import {
 	createDeployFirebaseJson,
 	createDeployPackageJson,
+	createEnvironmentFile,
 } from './utils/create-deploy-metadata';
-import {
-	getDeployableFileData,
-	toRelativeDeployFilePath,
-} from './utils/read-source-file';
-import { getDeployableFiles } from './utils/typescript-parser';
+import { logger, getLimiter } from '$utils';
+import { cacheChecksum, checkForChanges } from './utils/checksum';
 
-export interface ExecutorOptions {
-	firebaseProjectId?: string;
-	firebaseProjectProdId?: string;
-	firebaseProjectDevId?: string;
-	entryPoints?: string[];
-	outputDirectory?: string;
-	tsConfigPath?: string;
-	alias?: EsbuildAlias;
-	prod?: boolean;
-	dev?: boolean;
-	region?: string;
-}
+const setLogSeverity = (options: DeployExecutorOptions) => {
+	if (options.silent) {
+		logger.setLogSeverity('silent');
+		return;
+	}
 
-const getFirebaseProjectId = (options: ExecutorOptions): string => {
-	if (options.firebaseProjectId) {
-		return options.firebaseProjectId;
+	if (options.verbose) {
+		logger.setLogSeverity('debug');
+		return;
 	}
-	if (options.prod) {
-		if (!options.firebaseProjectProdId) {
-			throw new Error('firebaseProjectProdId is required');
-		}
-		return options.firebaseProjectProdId;
-	}
-	if (options.dev) {
-		if (!options.firebaseProjectDevId) {
-			throw new Error('firebaseProjectDevId is required');
-		}
-		return options.firebaseProjectDevId;
-	}
-	throw new Error('firebaseProjectId is required');
 };
 
-const executor: Executor<ExecutorOptions> = async (options, context) => {
-	const { region } = options;
-	const { projectName, root: workspaceRoot, workspace, isVerbose } = context;
-	const firebaseProjectId = getFirebaseProjectId(options);
+/**
+ * Build the function and deploy with firebase-tools
+ *
+ * @param deployableFileData The metadata of the function to deploy
+ */
+const buildAndDeployFunction = async (
+	deployableFileData: DeployableFileData,
+): Promise<boolean> => {
+	const functionName = deployableFileData.functionName;
+	try {
+		// start timer
+		const startTime = Date.now();
+
+		await mkdir(deployableFileData.outputRoot, { recursive: true }); // Create the output directory if it doesn't exist
+
+		// We can do 3 things in parallel:
+		// - Build the function code:
+		// 		1. Create a temporary index.ts file
+		//		2. Build it with esbuild
+		// - Create the deploy package.json file
+		// - Create the deploy firebase.json file
+		await Promise.all([
+			(async () => {
+				const entryPointPath = await createTemporaryIndexFunctionFile(
+					deployableFileData,
+				);
+				await buildCloudFunctionCode(
+					deployableFileData,
+					entryPointPath,
+				);
+			})(),
+			createDeployPackageJson(deployableFileData),
+			createDeployFirebaseJson(deployableFileData),
+			createEnvironmentFile(deployableFileData),
+		]);
+		if (deployableFileData.dryRun) {
+			logger.spinnerLog(`Dry run: ${functionName} built`);
+			return true;
+		}
+
+		const [shouldDeploy, newChecksum] = await checkForChanges(
+			deployableFileData,
+		);
+
+		if (!shouldDeploy && !deployableFileData.force) {
+			logger.logFunctionSkipped(functionName);
+			return true;
+		}
+
+		await deployFunction(deployableFileData);
+
+		if (newChecksum) {
+			await cacheChecksum(deployableFileData, newChecksum);
+		}
+
+		logger.logFunctionDeployed(functionName, Date.now() - startTime);
+
+		return true;
+	} catch (error) {
+		const errorMessage = (error as { message?: string } | undefined)
+			?.message;
+
+		logger.logFunctionFailed(functionName, errorMessage);
+		logger.debug(error);
+
+		return false;
+	}
+};
+
+const getBaseDeployOptions = async (
+	options: DeployExecutorOptions,
+	context: ExecutorContext,
+): Promise<BaseDeployOptions> => {
+	const { region, dryRun, tsConfig, force } = options;
+	const { projectName, root: workspaceRoot, workspace } = context;
+
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
-	const logLevel: LogLevel = isVerbose ? 'info' : 'silent';
-	const log = (message?: unknown, ...optionalParams: unknown[]): void => {
-		if (logLevel !== 'silent') {
-			console.log(message, optionalParams);
-		}
-	};
+	const flavor: Flavor = options.prod ? 'prod' : 'dev';
 
-	const projectRoot = workspace.projects[projectName].root;
+	const firebaseProjectId =
+		flavor === 'prod'
+			? options.firebaseProjectProdId
+			: options.firebaseProjectDevId;
 
+	if (!firebaseProjectId) {
+		throw new Error(
+			`firebaseProject${
+				flavor.charAt(0).toUpperCase() + flavor.slice(1)
+			}Id is required`,
+		);
+	}
+
+	const relativeProjectPath = workspace.projects[projectName].root;
+	const projectRoot = join(workspaceRoot, relativeProjectPath);
 	const outputDirectory =
-		options.outputDirectory ?? join(workspaceRoot, 'dist', projectRoot);
+		options.outputDirectory ??
+		join(workspaceRoot, 'dist', relativeProjectPath);
+	const temporaryDirectory = join(workspaceRoot, 'tmp', relativeProjectPath);
 
-	const deployableFilePaths = (
-		await getDeployableFilePaths(
-			join(workspaceRoot, projectRoot, 'src/controllers'),
-		)
-	).splice(0, 1);
-
-	const deployableFiles = getDeployableFiles(deployableFilePaths);
-
-	const successfullyDeployedFunctionNames: string[] = [];
-	const failedDeployedFunctionNames: string[] = [];
-
-	const temporaryDirectory = join(workspaceRoot, 'tmp', projectRoot);
-
-	await mkdir(outputDirectory, { recursive: true });
-	await mkdir(temporaryDirectory, { recursive: true });
-	let baseAlias = await getEsbuildAliasFromTsConfig(
-		join(workspaceRoot, projectRoot),
-	);
-	if (!baseAlias) {
-		baseAlias = await getEsbuildAliasFromTsConfig(
-			workspaceRoot,
-			'tsconfig.base.json',
-		);
-	}
-	const alias = {
-		...baseAlias,
-		...options.alias,
-	};
-	log('alias', alias);
-	const defaultRegion = region ?? 'us-central1';
-	log('defaultRegion', defaultRegion);
-	const getRemainingFunctionsAmount = (): number => {
-		const functionsAmount = deployableFiles.length;
-		const successfullyDeployedFunctionsAmount =
-			successfullyDeployedFunctionNames.length;
-		const failedDeployedFunctionsAmount =
-			failedDeployedFunctionNames.length;
-		return (
-			functionsAmount -
-			successfullyDeployedFunctionsAmount -
-			failedDeployedFunctionsAmount
-		);
-	};
-
-	/**
-	 * Build the function and deploy with firebase-tools
-	 *
-	 * @param deployableFileData The metadata of the function to deploy
-	 */
-	const buildAndDeployFunction = async (
-		deployableFileLiteData: DeployableFileLiteData,
-	): Promise<void> => {
-		try {
-			const deployableFileData = await getDeployableFileData(
-				deployableFileLiteData,
+	const getAlias = async () => {
+		let alias = await getEsbuildAliasFromTsConfig(projectRoot, tsConfig);
+		if (!alias) {
+			alias = await getEsbuildAliasFromTsConfig(
+				workspaceRoot,
+				'tsconfig.base.json',
 			);
-
-			const { functionName, deployOptions } = deployableFileData;
-			const outputRoot = join(outputDirectory, functionName);
-			const region = deployOptions?.region ?? defaultRegion;
-			// We can do 3 things in parallel:
-			// - Build the function code:
-			// 		1. Create a temporary index.ts file
-			//		2. Build it with esbuild
-			// - Create the deploy package.json file
-			// - Create the deploy firebase.json file
-			const buildPromises: Promise<void>[] = [
-				(async () => {
-					const inputPath = await createTemporaryIndexFunctionFile({
-						deployableFileData,
-						region,
-						temporaryDirectory,
-					});
-
-					await buildCloudFunctionCode({
-						alias,
-						inputPath,
-						outputRoot,
-						projectRoot,
-						workspaceRoot,
-						logLevel: logLevel === 'silent' ? 'silent' : 'info',
-						// external: ['nx-cloud-functions-deployer'],
-					});
-				})(),
-				createDeployPackageJson({
-					outputRoot,
-				}),
-				createDeployFirebaseJson({
-					outputRoot,
-				}),
-			];
-
-			await Promise.all(buildPromises);
-			await deployFunction({
-				firebaseProjectId,
-				functionName,
-				outputRoot,
-			});
-
-			successfullyDeployedFunctionNames.push(functionName);
-			spinner.stop({
-				text: chalk.green(
-					`Successfully deployed function ${chalk.bold(
-						functionName,
-					)}`,
-				),
-			});
-			spinner.start({
-				text: `Deploying ${chalk.bold(
-					getRemainingFunctionsAmount(),
-				)} Functions...`,
-			});
-		} catch (error) {
-			const errorMessage = (error as { message?: string } | undefined)
-				?.message;
-
-			spinner.stop({
-				text: chalk.red(
-					`Function: ${chalk.bold(
-						toRelativeDeployFilePath(
-							deployableFileLiteData.absolutePath,
-						),
-					)} failed to deploy${
-						errorMessage ? `: ${errorMessage}` : ''
-					}`,
-				),
-			});
-
-			spinner.start({
-				text: `Deploying ${chalk.bold(
-					getRemainingFunctionsAmount(),
-				)} Functions...`,
-			});
 		}
+		return alias;
 	};
 
-	const deployableFunctionsAmount = deployableFiles.length;
+	const [environmentFileCode, alias] = await Promise.all([
+		getEnvironmentFileCode(options, projectRoot),
+		getAlias(),
+		mkdir(temporaryDirectory, { recursive: true }),
+	]);
+	return {
+		firebaseProjectId,
+		workspaceRoot,
+		projectRoot,
+		outputDirectory,
+		temporaryDirectory,
+		flavor,
+		dryRun,
+		force,
+		alias,
+		environmentFileCode,
+		functionsDirectory: options.functionsDirectory ?? 'src/controllers',
+		packageManager: options.packageManager ?? 'pnpm',
+		defaultRegion: region ?? 'us-central1',
+	};
+};
 
-	// if (deployableFunctionsAmount) {
-	// 	return { success: true };
-	// }
+const executor: Executor<DeployExecutorOptions> = async (options, context) => {
+	setLogSeverity(options);
 
-	const spinner = createSpinner(
-		`Deploying ${chalk.bold(getRemainingFunctionsAmount())} Functions...`,
-	).start();
+	const baseDeployOptions = await getBaseDeployOptions(options, context);
 
-	await Promise.all(deployableFiles.map(buildAndDeployFunction));
+	let deployableFiles = await getDeployableFiles(baseDeployOptions);
 
-	if (
-		successfullyDeployedFunctionNames.length === deployableFunctionsAmount
-	) {
-		spinner.success({
-			text: chalk.green(
-				`Successfully deployed ${chalk.bold(
-					deployableFunctionsAmount,
-				)} functions!`,
-			),
-		});
-		return {
-			success: true,
-		};
+	if (options.only) {
+		const onlyFunctionNames = options.only
+			?.split(',')
+			.map((name) => name.trim());
+
+		deployableFiles = deployableFiles.filter((deployableFile) =>
+			onlyFunctionNames.includes(deployableFile.functionName),
+		);
+		if (deployableFiles.length !== onlyFunctionNames.length) {
+			const missingFunctionNames = onlyFunctionNames.filter(
+				(name) =>
+					!deployableFiles.some((file) => file.functionName === name),
+			);
+			logger.warn(
+				`The following functions were not found: ${missingFunctionNames.join(
+					', ',
+				)}`,
+			);
+		}
 	}
 
-	const failedDeployedFunctionAmount =
-		deployableFunctionsAmount - successfullyDeployedFunctionNames.length;
-	spinner.error({
-		text: chalk.red(
-			`Failed to deploy ${chalk.bold(
-				failedDeployedFunctionAmount,
-			)} functions!`,
+	logger.startSpinner(
+		deployableFiles.length,
+		baseDeployOptions.firebaseProjectId,
+		baseDeployOptions.dryRun,
+	);
+
+	const limit = getLimiter(options.concurrency ?? 10);
+	const responsesOk = await Promise.all(
+		deployableFiles.map((deployableFileData) =>
+			limit(() => buildAndDeployFunction(deployableFileData)),
 		),
-	});
+	);
+
+	logger.endSpinner();
 
 	return {
-		success: false,
+		success: responsesOk.every((responseOk) => responseOk) ? true : false,
 	};
 };
 

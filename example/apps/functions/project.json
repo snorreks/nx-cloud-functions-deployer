@@ -6,7 +6,8 @@
 		"deploy": {
 			"executor": "../dist:deploy",
 			"options": {
-				"firebaseProjectId": "localekey-dev"
+				"firebaseProjectDevId": "localekey-dev",
+				"firebaseProjectProdId": "localekey-dev"
 			}
 		}
 	}

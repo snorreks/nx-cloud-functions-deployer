@@ -1,29 +1,59 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { deployDirectoryTypes } from '../../../constants';
-import type { DeployDirectoryType, EsbuildAlias } from '$types';
+import type {
+	BaseDeployOptions,
+	DeployableFileData,
+	DeployExecutorOptions,
+	EsbuildAlias,
+} from '$types';
+import { validateDeployFiles } from './typescript-parser';
+import { logger, toRelativeDeployFilePath } from '$utils';
+import { getDeployableFileData } from './read-source-file';
 
-export const getDeployableFilePaths = async (
-	sourceDirectory: string,
-): Promise<string[]> => {
+export const getDeployableFiles = async (
+	options: BaseDeployOptions,
+): Promise<DeployableFileData[]> => {
 	const functionPaths: string[] = [];
+	const functionsDirectoryPath = join(
+		options.projectRoot,
+		options.functionsDirectory,
+	);
 
-	const deployDirectories = await readdir(sourceDirectory, {
+	const functionDirectories = await readdir(functionsDirectoryPath, {
 		withFileTypes: true,
 	});
 
-	for (const deployDirectory of deployDirectories) {
-		if (!deployDirectory.isDirectory()) {
+	for (const directory of functionDirectories) {
+		if (!directory.isDirectory()) {
 			continue;
 		}
-		const name = deployDirectory.name;
-		if (!deployDirectoryTypes.includes(name as DeployDirectoryType)) {
-			continue;
-		}
+		const name = directory.name;
 
-		await recursiveGetFunctions(join(sourceDirectory, name), functionPaths);
+		await recursiveGetFunctions(
+			join(functionsDirectoryPath, name),
+			functionPaths,
+		);
 	}
-	return functionPaths;
+
+	const deployableFunctions = validateDeployFiles(functionPaths, options);
+
+	for (const functionPath of functionPaths) {
+		if (
+			!deployableFunctions.some(
+				(deployableFunction) =>
+					deployableFunction.absolutePath === functionPath,
+			)
+		) {
+			logger.warn(
+				`The file ${toRelativeDeployFilePath(
+					functionPath,
+					options.functionsDirectory,
+				)} is not a valid deployable function. It will not be deployed.`,
+			);
+		}
+	}
+
+	return await Promise.all(deployableFunctions.map(getDeployableFileData));
 };
 
 const recursiveGetFunctions = async (
@@ -40,7 +70,7 @@ const recursiveGetFunctions = async (
 		} else {
 			const path = resolve(directory, file.name);
 			if (path.endsWith('.ts') && !path.endsWith('utils.ts')) {
-				functionPaths.push(path);
+				functionPaths.push(path.replaceAll('\\', '/'));
 			}
 		}
 	}
@@ -112,6 +142,33 @@ export const getEsbuildAliasFromTsConfig = async (
 		return alias;
 	} catch (error) {
 		console.error(error);
+		return;
+	}
+};
+
+export const getEnvironmentFileCode = async (
+	options: DeployExecutorOptions,
+	projectRoot: string,
+): Promise<string | undefined> => {
+	const { prod, envString } = options;
+	const prodEnvFileName = options.prodEnvFileName || '.env.prod';
+	const devEnvFileName = options.devEnvFileName || '.env.dev';
+	const envFileName = prod ? prodEnvFileName : devEnvFileName;
+	try {
+		if (envString) {
+			return envString;
+		}
+
+		const environmentFileCode = await readFile(
+			join(projectRoot, envFileName),
+			'utf8',
+		);
+		return environmentFileCode;
+	} catch (error) {
+		logger.warn(
+			`Could not find environment file "${envFileName}", Environment variables will not be available in the deployed functions.`,
+		);
+		logger.debug(error);
 		return;
 	}
 };

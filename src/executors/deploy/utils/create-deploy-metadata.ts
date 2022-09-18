@@ -1,5 +1,6 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { DeployableFileData } from '$types';
 
 export const createDeployFirebaseJson = async ({
 	outputRoot,
@@ -11,7 +12,6 @@ export const createDeployFirebaseJson = async ({
 			source: '.',
 		},
 	};
-	await mkdir(outputRoot, { recursive: true });
 	await writeFile(
 		join(outputRoot, 'firebase.json'),
 		JSON.stringify(firebaseJson, undefined, 2),
@@ -32,10 +32,19 @@ export const createDeployPackageJson = async ({
 			node: '16',
 		},
 	};
-	await mkdir(outputRoot, { recursive: true });
 
 	await writeFile(
 		join(outputRoot, 'package.json'),
 		JSON.stringify(newPackageJson, undefined, 2),
 	);
+};
+
+export const createEnvironmentFile = async ({
+	environmentFileCode,
+	outputRoot,
+}: DeployableFileData): Promise<void> => {
+	if (!environmentFileCode) {
+		return;
+	}
+	await writeFile(join(outputRoot, '.env'), environmentFileCode);
 };

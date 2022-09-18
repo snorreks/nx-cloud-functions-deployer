@@ -7,9 +7,12 @@
 		"paths": {
 			"@shared/utils": ["../../libs/shared/utils/src"],
 			"@shared/types": ["../../libs/shared/types/src"],
-			"$utils/*": ["src/utils/*"],
-			"$configs/*": ["src/configs/*"],
-			"$controllers/*": ["src/controllers/*"]
+			"$configs/*": ["src/configs/*"]
 		}
-	}
+	},
+	"references": [
+		{
+			"path": "./tsconfig.app.json"
+		}
+	]
 }

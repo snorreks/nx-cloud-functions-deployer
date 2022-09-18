@@ -1,31 +1,31 @@
+import type { CoreData } from 'nx-cloud-functions-deployer';
+export interface UserData extends CoreData {
+	email: string;
+}
+export interface NotificationData extends CoreData {
+	message: string;
+}
+
 export type CallableFunctions = {
-	test: [
+	test_callable: [
 		{
 			message: string;
 		},
 		{
-			success: boolean;
+			flavor?: string;
+			dataFromSharedLib: string;
 		},
 	];
 };
 
 export type RequestFunctions = {
-	test: [
+	test_api: [
 		{
 			message: string;
 		},
 		{
-			success: boolean;
+			flavor?: string;
+			dataFromSharedLib: string;
 		},
 	];
 };
-
-export interface UserData {
-	uid: string;
-	name: string;
-}
-
-export interface NotificationData {
-	id: string;
-	message: string;
-}

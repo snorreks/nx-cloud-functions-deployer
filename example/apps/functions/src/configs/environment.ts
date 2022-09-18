@@ -1,4 +1,5 @@
-import { config } from 'firebase-functions';
-const environment = config();
+import { config } from 'dotenv';
 
-export const isDevelopmentFlavor = !!environment.dev;
+config(); // Load environment variables
+
+export const flavor = process.env.FLAVOR;
