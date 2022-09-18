@@ -12,7 +12,6 @@ importers:
       '@typescript-eslint/eslint-plugin': ^5.37.0
       '@typescript-eslint/parser': ^5.37.0
       chalk: 4.1.2
-      dts-alias: ^1.0.7
       esbuild: ^0.15.8
       esbuild-node-externals: ^1.5.0
       esbuild-plugin-alias: ^0.2.1
@@ -40,7 +39,6 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.37.0_22c5fnooleyfkzrkkgdmel5kmi
       '@typescript-eslint/parser': 5.37.0_irgkl5vooow2ydyo6aokmferha
       chalk: 4.1.2
-      dts-alias: 1.0.7
       esbuild: 0.15.8
       esbuild-node-externals: 1.5.0_esbuild@0.15.8
       esbuild-plugin-alias: 0.2.1
@@ -100,13 +98,6 @@ importers:
       tsup: 5.12.9
 
 packages:
-
-  /@alanscodelog/utils/3.2.0:
-    resolution: {integrity: sha512-udEVdhIKggGFPYPE0bRmxExHm9M7lz91TRnVR9XdShRK80RdrQyXpJbRuYxwq8+TnXs5sHLAyyy8y6HKIRqZ/g==}
-    engines: {node: '>=14.0.0'}
-    dependencies:
-      core-js: 3.25.2
-    dev: true
 
   /@babel/code-frame/7.18.6:
     resolution: {integrity: sha512-TDCmlK5eOvH+eH7cdAFlNXeVJqWIQ7gW9tY1GJIpUtFb6CmjVyq2VM3u71bOyR8CRihcCgMUYoDNyLXao3+70Q==}
@@ -1710,11 +1701,6 @@ packages:
     engines: {node: '>= 0.6'}
     dev: true
 
-  /core-js/3.25.2:
-    resolution: {integrity: sha512-YB4IAT1bjEfxTJ1XYy11hJAKskO+qmhuDBM8/guIfMz4JvdsAQAqvyb97zXX7JgSrfPLG5mRGFWJwJD39ruq2A==}
-    requiresBuild: true
-    dev: true
-
   /core-util-is/1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
     dev: true
@@ -1823,16 +1809,6 @@ packages:
   /dotenv/10.0.0:
     resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
     engines: {node: '>=10'}
-    dev: true
-
-  /dts-alias/1.0.7:
-    resolution: {integrity: sha512-SQIDuIwJSJ8h/1N3tsljMMrsYPKfDtq94XMB9iewdrHN/GgA9PL49Y4Ofp12wxNMPxqedxLsm2Jmcn9VsL7aWQ==}
-    engines: {node: '>=14.0.0'}
-    hasBin: true
-    dependencies:
-      '@alanscodelog/utils': 3.2.0
-      core-js: 3.25.2
-      fast-glob: 3.2.12
     dev: true
 
   /duplexify/4.1.2:
