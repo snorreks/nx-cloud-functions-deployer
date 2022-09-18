@@ -1,11 +1,36 @@
-# nx-cloud-functions-deployer
+# nx-cloud-functions-deployer<!-- omit in toc -->
 
 ![npm (nx-cloud-functions-deployer)](https://img.shields.io/npm/v/nx-cloud-functions-deployer)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/nx-cloud-functions-deployer)
 
 This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud Functions for Firebase](https://firebase.google.com/products/functions?gclsrc=ds&gclsrc=ds&gclid=CNmq16LU-_kCFa5IwgodA9cF8A).
 
-## Features
+<!-- vscode-markdown-toc -->
+
+-   [Features<!-- omit in toc -->](#Features--omitintoc--)
+-   [Install](#Install)
+-   [Description](#Description)
+    -   [Prerequisites](#Prerequisites)
+    -   [Helper Functions](#HelperFunctions)
+        -   [Schedule Example](#ScheduleExample)
+        -   [Firestore Example](#FirestoreExample)
+        -   [Https Example](#HttpsExample)
+        -   [Runtime Options](#RuntimeOptions)
+    -   [Folder Structure](#FolderStructure)
+        -   [Database/Firestore Structure](#DatabaseFirestoreStructure)
+        -   [Custom Structure](#CustomStructure)
+-   [Usage](#Usage)
+    -   [Add the plugin to your project.json](#Addtheplugintoyourproject.json)
+    -   [Options](#Options)
+        -   [Deploy examples](#Deployexamples)
+
+<!-- vscode-markdown-toc-config
+	numbering=false
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
+
+## Features<!-- omit in toc -->
 
 -   Alias support (both for internal in the project and shared libs)
 -   Support for multiple [environments](https://firebase.google.com/docs/functions/config-env)
@@ -15,19 +40,19 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 -   Configurable deploy options
 -   Deploy with Node 16 and esm
 
-## Install
+## <a name='Install'></a>Install
 
 ```bash
 pnpm i -D nx-cloud-functions-deployer
 ```
 
-## Description
+## <a name='Description'></a>Description
 
 This plugin adds a `deploy` executor that will build and deploy your cloud functions.
 
 It uses esbuild to bundle your functions and then uses the [firebase-tools](https://www.npmjs.com/package/firebase-tools) to deploy them.
 
-### Prerequisites
+### <a name='Prerequisites'></a>Prerequisites
 
 -   You will need to have the [firebase-tools](https://www.npmjs.com/package/firebase-tools) installed. Either globally or locally in your project. If you install it globally you have to set `packageManager` option to `global`.
 
@@ -35,11 +60,28 @@ It uses esbuild to bundle your functions and then uses the [firebase-tools](http
 pnpm i -D firebase-tools
 ```
 
-### Helper Options
+### <a name='HelperFunctions'></a>Helper Functions
 
-You need to import the helper functions from `nx-cloud-functions-deployer`. This will allow you to configure your functions and make the functions stronger typed. The helper functions are: `onCall`, `onRequest`, `onCreate`, `onUpdate`, `onDelete` and `schedule`.
+You need to import the helper functions from `nx-cloud-functions-deployer`. This will allow you to configure your functions and make the functions stronger typed. The helper functions are:
 
-#### Schedule Example
+-   `onCall` for `https.onCall` functions
+-   `onRequest` for `https.onRequest` functions
+-   `onWrite` for `firestore.document.onWrite` functions
+-   `onCreate` for `firestore.document.onCreate` functions
+-   `onUpdate` for `firestore.document.onUpdate` functions
+-   `onDelete` for `firestore.document.onDelete` functions
+-   `onRealtimeDatabaseWrite` for `database.ref.onWrite` functions
+-   `onRealtimeDatabaseCreate` for `database.ref.onCreate` functions
+-   `onRealtimeDatabaseUpdate` for `database.ref.onUpdate` functions
+-   `onRealtimeDatabaseDelete` for `database.ref.onDelete` functions
+-   `onObjectArchive` for `storage.object.onArchive` functions
+-   `onObjectDelete` for `storage.object.onDelete` functions
+-   `onObjectFinalize` for `storage.object.onFinalize` functions
+-   `onObjectMetadataUpdate` for `storage.object.onMetadataUpdate` functions
+-   `schedule` for `pubsub.schedule` functions
+-   `topic` for `pubsub.topic` functions
+
+#### <a name='ScheduleExample'></a>Schedule Example
 
 For schedule functions options.schedule is required.
 
@@ -56,7 +98,7 @@ export default schedule(
 );
 ```
 
-#### Firestore Example
+#### <a name='FirestoreExample'></a>Firestore Example
 
 When you use the firestore helper functions. The data will automatically convert the snapshot to
 
@@ -85,7 +127,7 @@ export default onCreate<UserData>((user) => {
 });
 ```
 
-#### OnCall/onRequest Example
+#### <a name='HttpsExample'></a>Https Example
 
 onCall and onRequest can give even better typing with frontend. By importing a interface from a shared file.
 
@@ -113,7 +155,27 @@ export default onCall<MyFunctions, 'my_function_name'>((data, context) => {
 });
 ```
 
-### Folder Structure
+#### <a name='RuntimeOptions'></a>Runtime Options
+
+To configure runtime options you can use the `runtimeOptions` option.
+
+```typescript
+import { onCall } from 'nx-cloud-functions-deployer';
+
+export default onCall(
+	(data, context) => {
+		return { response: true };
+	},
+	{
+		runtimeOptions: {
+			timeoutSeconds: 60,
+			memory: '2GB',
+		},
+	},
+);
+```
+
+### <a name='FolderStructure'></a>Folder Structure
 
 See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/functions/src/controllers) for a better understanding of the folder structure.
 
@@ -148,7 +210,7 @@ The folders in controllers will different deployment types:
 
 The default function names will be the path from the `api/callable/database/scheduler` folder to the file. For example, the function `controllers/api/stripe/webhook_endpoint.ts` will be deployed as `stripe_webhook_endpoint`.
 
-#### Database/Firestore Structure
+#### <a name='DatabaseFirestoreStructure'></a>Database/Firestore Structure
 
 The database/firestore structure is a little different. It is recommend the folder structure to match to structure in the database/firestore. For example, if you have a firestore structure like this:
 
@@ -175,7 +237,7 @@ Then you would have the following folder structure:
 
 The default function name for database/firestore functions will omit [id]. Example: `controllers/database/users/[id]/created.ts` will be deployed as `users_created`.
 
-#### Custom Structure
+#### <a name='CustomStructure'></a>Custom Structure
 
 To customize the folder structure, change the `functionsDirectory` in options.
 If you change the structure you have to specify the `documentPath` for firestore functions and `ref` for database functions.
@@ -198,9 +260,9 @@ export default onCreate<UserData>(
 );
 ```
 
-## Usage
+## <a name='Usage'></a>Usage
 
-### Add the plugin to your project.json
+### <a name='Addtheplugintoyourproject.json'></a>Add the plugin to your project.json
 
 ```json
 ...
@@ -214,7 +276,7 @@ export default onCreate<UserData>(
 		},
 ```
 
-### Options
+### <a name='Options'></a>Options
 
 | Option                  | Description                                                                                                                                                          | Default                           | Alias            |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------- |
@@ -237,7 +299,7 @@ export default onCreate<UserData>(
 | `dryRun`                | If true, then it will only build the function and not deploy them.                                                                                                   | `false`                           | `d`, `dry`       |
 | `functionsDirectory`    | Relative path from the project root to the functions directory.                                                                                                      | `src/controllers`                 | `inputDirectory` |
 
-#### Deploy examples
+#### <a name='Deployexamples'></a>Deploy examples
 
 ```bash
 pnpm nx deploy functions --prod
