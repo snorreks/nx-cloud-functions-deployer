@@ -143,7 +143,7 @@ The folders in controllers will different deployment types:
 -   `firestore` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events)
 -   `database` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events)
 -   `schedule` - [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions)
--   `topic` - [Topic functions](hhttps://firebase.google.com/docs/functions/pubsub-events)
+-   `topic` - [Topic functions](https://firebase.google.com/docs/functions/pubsub-events)
 -   `storage` - [Cloud Storage triggers](https://firebase.google.com/docs/functions/gcp-storage-events)
 
 The default function names will be the path from the `api/callable/database/scheduler` folder to the file. For example, the function `controllers/api/stripe/webhook_endpoint.ts` will be deployed as `stripe_webhook_endpoint`.
