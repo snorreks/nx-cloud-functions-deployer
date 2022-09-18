@@ -67,7 +67,7 @@ When you use the firestore helper functions. The data will automatically convert
 }
 ```
 
-The helper functions are: `onCreate`, `onUpdate`, `onDelete`.
+The helper functions are: `onCreate`, `onUpdate`, `onDelete` or `onWrite`.
 
 ```typescript
 // shared lib

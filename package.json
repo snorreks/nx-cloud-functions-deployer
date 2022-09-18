@@ -1,7 +1,7 @@
 {
 	"name": "nx-cloud-functions-deployer",
 	"type": "module",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"license": "MIT",
 	"main": "index.js",
 	"types": "index.d.ts",
@@ -14,7 +14,12 @@
 		"cloud",
 		"functions",
 		"firebase",
-		"deploy"
+		"deploy",
+		"esbuild",
+		"monorepo",
+		"typescript",
+		"esm",
+		"node"
 	],
 	"scripts": {
 		"build": "node ./build-package.js",
