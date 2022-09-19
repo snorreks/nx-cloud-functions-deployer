@@ -153,7 +153,9 @@ class LoggerService implements LoggerInterface {
 	logFunctionSkipped(functionName: string): void {
 		this._deployableFunctionsAmount--;
 		this.spinnerLog(
-			chalk.green(`No changes detected for ${functionName}, skipping`),
+			chalk.green(
+				`No changes detected for ${chalk.bold(functionName)}, skipping`,
+			),
 		);
 	}
 

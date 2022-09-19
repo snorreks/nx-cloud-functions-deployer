@@ -9,6 +9,7 @@ import type {
 import { validateDeployFiles } from './typescript-parser';
 import { logger, toRelativeDeployFilePath } from '$utils';
 import { getDeployableFileData } from './read-source-file';
+import chalk from 'chalk';
 
 export const getDeployableFiles = async (
 	options: BaseDeployOptions,
@@ -45,10 +46,12 @@ export const getDeployableFiles = async (
 			)
 		) {
 			logger.warn(
-				`The file ${toRelativeDeployFilePath(
-					functionPath,
-					options.functionsDirectory,
-				)} is not a valid deployable function. It will not be deployed.`,
+				`${chalk.bold(
+					toRelativeDeployFilePath(
+						functionPath,
+						options.functionsDirectory,
+					),
+				)} is not a valid deployable function, skipping.`,
 			);
 		}
 	}
@@ -69,7 +72,7 @@ const recursiveGetFunctions = async (
 			);
 		} else {
 			const path = resolve(directory, file.name);
-			if (path.endsWith('.ts') && !path.endsWith('utils.ts')) {
+			if (path.endsWith('.ts')) {
 				functionPaths.push(path.replaceAll('\\', '/'));
 			}
 		}

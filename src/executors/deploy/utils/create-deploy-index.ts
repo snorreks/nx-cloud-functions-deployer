@@ -181,12 +181,10 @@ const getScheduleDeployCode = (deployOptions?: DeployOption): string => {
 	}
 
 	const { timeZone, schedule } = deployOptions as ScheduleDeployOptions;
-	let pubsubCode = '';
+	let pubsubCode = `schedule('${schedule}').`;
+
 	if (timeZone) {
 		pubsubCode += `timeZone('${timeZone}').`;
-	}
-	if (schedule) {
-		pubsubCode += `schedule('${schedule}').`;
 	}
 
 	pubsubCode += `onRun(${functionStart})`;
@@ -200,11 +198,7 @@ const getTopicDeployCode = (deployOptions?: DeployOption): string => {
 	}
 
 	const { topic } = deployOptions as TopicDeployOptions;
-	let pubsubCode = '';
-
-	if (topic) {
-		pubsubCode += `topic('${topic}').`;
-	}
+	let pubsubCode = `topic('${topic}').`;
 
 	pubsubCode += `onRun(${functionStart})`;
 
