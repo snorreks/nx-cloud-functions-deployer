@@ -50,8 +50,14 @@ export const getDeployableFileData = async (
 	) {
 		deployableFileData.path =
 			(deployOptions as FirestoreDeployOptions)?.documentPath ??
-			(deployOptions as RealtimeDatabaseDeployOptions)?.ref ??
-			getPath(relativeDeployFilePath);
+			(deployOptions as RealtimeDatabaseDeployOptions)?.ref;
+		if (!deployableFileData.path) {
+			const defaultPath = getDefaultPath(relativeDeployFilePath);
+			logger.debug(
+				`No path found for ${functionName}, using default path ${defaultPath}`,
+			);
+			deployableFileData.path = defaultPath;
+		}
 	}
 
 	logger.spinnerLog(
@@ -90,7 +96,7 @@ const getDeployOptionsFromCode = (
 		strBetweenBracket = strBetweenBracket.replace(objKeysRegex, '$1"$2":'); // replace all object names with double quoted
 		return JSON.parse(strBetweenBracket);
 	} catch (error) {
-		console.error('getDeployOptionsFromCode', error);
+		logger.error('getDeployOptionsFromCode', error);
 		return;
 	}
 };
@@ -279,7 +285,7 @@ const getStringBetweenLastBracket = (code: string) => {
  * @param relativeDeployFilePath - relative path to deploy file
  * @returns document path / database ref
  */
-const getPath = (relativeDeployFilePath: string): string => {
+const getDefaultPath = (relativeDeployFilePath: string): string => {
 	const paths = relativeDeployFilePath.split('/');
 	paths.pop(); // Remove updated.ts | created.ts | deleted.ts
 	paths.shift(); // Remove database / firestore

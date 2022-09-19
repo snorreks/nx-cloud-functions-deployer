@@ -102,17 +102,8 @@ const getRunWithCode = (runtimeOptions: LimitedRuntimeOptions): string => {
 const toEndCode = ({
 	deployOptions,
 	functionType,
-	rootFunctionBuilder,
 	path,
 }: DeployableFileData): string => {
-	if (
-		(rootFunctionBuilder === 'database' ||
-			rootFunctionBuilder === 'firestore') &&
-		path
-	) {
-		throw new Error('Document path is required for firestore functions');
-	}
-
 	const functionCode = toFunctionCodeType(functionType);
 
 	switch (functionType) {

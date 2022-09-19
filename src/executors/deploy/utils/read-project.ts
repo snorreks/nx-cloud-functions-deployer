@@ -141,7 +141,7 @@ export const getEsbuildAliasFromTsConfig = async (
 		}
 		return alias;
 	} catch (error) {
-		console.error(error);
+		logger.error('getEsbuildAliasFromTsConfig', error);
 		return;
 	}
 };
