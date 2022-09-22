@@ -1,137 +1,144 @@
-import type { RuntimeOptions, SUPPORTED_REGIONS } from 'firebase-functions';
-import type {
-	deployDirectories,
-	functionTypes,
-	functionBuilders,
-	firestoreFunctionTypes,
-	storageFunctionTypes,
-	pubsubFunctionTypes,
-	httpsFunctionTypes,
-	realtimeDatabaseFunctionTypes,
-} from '../constants';
-import type { BaseDeployOptions } from './deploy-options';
+import type { DeployFunction, FunctionBuilder } from './function-types';
+import type { FunctionOptions } from './helper-options';
 
-export type RealtimeDatabaseFunctionType =
-	typeof realtimeDatabaseFunctionTypes[number];
+export type Flavor = 'dev' | 'prod';
+export type EsbuildAlias = { [key: string]: string };
 
-export type FirestoreFunctionType = typeof firestoreFunctionTypes[number];
+export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'global';
 
-export type StorageFunctionType = typeof storageFunctionTypes[number];
-
-export type PubsubFunctionType = typeof pubsubFunctionTypes[number];
-
-export type HttpsFunctionType = typeof httpsFunctionTypes[number];
-
-export type FunctionType = typeof functionTypes[number];
-
-export type RootFunctionBuilder = typeof functionBuilders[number];
-
-export type DeployDirectory = typeof deployDirectories[number];
-
-export type LimitedRuntimeOptions = Pick<
-	RuntimeOptions,
-	'minInstances' | 'maxInstances' | 'memory' | 'timeoutSeconds'
->;
-
-export interface BaseDeployFunctionOptions<T extends string = string> {
+interface SharedDeployExecutorBaseOptions {
 	/**
-	 * The name of the function. If not provided, the name of the function is
-	 * the path from the root of the {@link DeployDirectory} directory to the
-	 * file. Replacing all `/` and `-` with `_`.
+	 * The name of the tsconfig file in the project root.
 	 *
-	 * example // api/stripe/webhook.ts => stripe_webhook
-	 *
-	 * example // callable/auth/check-email.ts => auth_check_email
+	 * @default 'tsconfig.json'
 	 */
-	functionName?: T;
+	tsConfig?: string;
+	/** The default region is us-central1 */
+	region?: string;
+	/** Only build the function, don't deploy it */
+	dryRun?: boolean;
+	/** Force deploy all functions, even if no files changed */
+	force?: boolean;
+
 	/**
-	 * The region to deploy the function to. If not provided it will be the
-	 * region set in project.json. If that is not provided it will be
-	 * 'us-central1'
+	 * The package manager to use when running firebase-tools.
 	 *
-	 * @see https://firebase.google.com/docs/functions/locations
+	 * Set `global` to use the globally installed firebase-tools (`npm i -g
+	 * firebase-tools`).
+	 *
+	 * @default 'pnpm'
 	 */
-	region?: typeof SUPPORTED_REGIONS[number] | string;
+	packageManager: PackageManager;
+
 	/**
-	 * The runtime options for the function with `runWith`. If not provided
-	 * won't use `runWith`
+	 * Relative path to the directory where the functions will be deployed.
 	 *
-	 * @see https://firebase.google.com/docs/functions/manage-functions#set_runtime_options
+	 * @default 'src/controllers'
 	 */
-	runtimeOptions?: LimitedRuntimeOptions;
+	functionsDirectory?: string;
+
+	/**
+	 * Will run `tsc -noEmits` to validate the build.
+	 *
+	 * If this is not valid the all build will fail.
+	 *
+	 * @default true
+	 */
+	validate?: boolean;
+
+	/** Only deploy the given function names, separated by a comma */
+	only?: string;
 }
 
-export type HttpsDeployOptions<T extends string | number | symbol = string> =
-	BaseDeployFunctionOptions<Extract<T, string>>;
-
-export interface FirestoreDeployOptions extends BaseDeployFunctionOptions {
+export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
+	/** The firebase project id of the production flavor */
+	firebaseProjectProdId?: string;
+	/** The firebase project id of the development flavor */
+	firebaseProjectDevId?: string;
 	/**
-	 * The document path where the function will listen for changed in firestore
+	 * The output directory of the build
 	 *
-	 * If not provided, the document path is the path from the root of the
-	 * {@link DeployDirectory} to the file. Replacing all `/` and `-` with `_`.
-	 * And replacing all `[]` with `{}`
-	 *
-	 * example // database/users/[uid]/created.ts => 'users/{uid}'
-	 *
-	 * example // database/users/[uid]/notifications/[notificationId] =>
-	 * 'users/{uid}/notifications/{notificationId}'
+	 * @default `dist/<relative-path-to-project>`
 	 */
-	documentPath?: string;
-}
-
-export interface RealtimeDatabaseDeployOptions
-	extends BaseDeployFunctionOptions {
-	ref: string;
-}
-
-export interface TopicDeployOptions extends BaseDeployFunctionOptions {
+	outputDirectory?: string;
 	/**
-	 * Select Cloud Pub/Sub topic to listen to.
-	 *
-	 * @param topic Name of Pub/Sub topic, must belong to the same project as
-	 *   the function.
-	 * @see https://firebase.google.com/docs/functions/pubsub-events
+	 * If true, use the {@link firebaseProjectProdId} and look for the
+	 * {@link prodEnvFileName} file
 	 */
-	topic: string;
-}
-
-export interface ScheduleDeployOptions extends BaseDeployFunctionOptions {
+	prod?: boolean;
 	/**
-	 * When to execute the function. If the function is a scheduled function,
-	 * this property is required.
-	 *
-	 * @see https://firebase.google.com/docs/functions/schedule-functions
+	 * If true, use the {@link firebaseProjectDevId} and look for the
+	 * {@link devEnvFileName} file
 	 */
-	schedule: string;
-	/** The timezone to use when determining the function's execution time. */
-	timeZone?: string;
+	dev?: boolean;
+	/** Don't log anything */
+	silent?: boolean;
+	/** Get verbose logs */
+	verbose?: boolean;
+	/**
+	 * The amount of functions to deploy in parallel
+	 *
+	 * @default 10
+	 */
+	concurrency?: number;
+
+	/**
+	 * The file name ot the .env file to look for when deploying for flavor
+	 * `dev`
+	 *
+	 * @default '.env.dev'
+	 */
+	devEnvFileName?: string;
+
+	/**
+	 * The file name ot the .env file to look for when deploying for flavor
+	 * `production`
+	 *
+	 * @default '.env.prod'
+	 */
+	prodEnvFileName?: string;
+
+	/**
+	 * Stringify version of the environment. If this is set, the
+	 * {@link devEnvFileName} and {@link prodEnvFileName} will be ignored.
+	 *
+	 * This is useful when you want to deploy using CI/CD and don't want to
+	 * store the environment variables in a file.
+	 *
+	 * @default undefined
+	 */
+	envString?: string;
 }
 
-export type PubsubDeployOptions = TopicDeployOptions | ScheduleDeployOptions;
+export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
+	firebaseProjectId: string;
+	projectRoot: string;
+	workspaceRoot: string;
+	outputDirectory: string;
+	defaultRegion: string;
+	temporaryDirectory: string;
+	flavor: Flavor;
+	/** Stringified code of the environments */
+	environmentFileCode?: string;
+	alias?: EsbuildAlias;
 
-export type StorageDeployOptions = BaseDeployFunctionOptions;
+	/**
+	 * Relative path to the directory where the functions will be deployed from
+	 * the project root.
+	 */
+	functionsDirectory: string;
+}
 
-type DeployOptions = {
-	https: HttpsDeployOptions;
-	firestore: FirestoreDeployOptions;
-	pubsub: PubsubDeployOptions;
-	storage: StorageDeployOptions;
-	database: RealtimeDatabaseDeployOptions;
-};
-
-export type DeployOption<T extends RootFunctionBuilder = RootFunctionBuilder> =
-	DeployOptions[T];
-
-export interface DeployableFileLiteData<
-	T extends RootFunctionBuilder = RootFunctionBuilder,
+export interface BuildFunctionLiteData<
+	T extends FunctionBuilder = FunctionBuilder,
 > extends BaseDeployOptions {
 	/**
 	 * The type of the function.
 	 *
-	 * @see {@link FunctionType}
+	 * @see {@link DeployFunction}
 	 */
-	functionType: FunctionType;
+	deployFunction: DeployFunction;
+
 	rootFunctionBuilder: T;
 	/** The absolute path of the deploy file */
 	absolutePath: string;
@@ -139,21 +146,33 @@ export interface DeployableFileLiteData<
 	relativeDeployFilePath: string;
 }
 
-export interface DeployableFileData<
-	T extends RootFunctionBuilder = RootFunctionBuilder,
-> extends DeployableFileLiteData<T> {
-	/** If the type is `onCreate`, `onUpdate`, or `onDelete`, this is required */
-	path: T extends 'firestore' | 'database' ? string : undefined;
+export type BuildFunctionData<T extends FunctionBuilder = FunctionBuilder> =
+	BuildFunctionLiteData<T> &
+		FunctionOptions[T] & {
+			/**
+			 * If the type is `onCreate`, `onUpdate`, or `onDelete`, this is
+			 * required
+			 */
+			path: T extends 'firestore' | 'database' ? string : undefined;
 
-	/** The name of the function. */
-	functionName: string;
+			/** The name of the function. */
+			functionName: string;
 
-	outputRoot: string;
+			outputRoot: string;
 
-	/**
-	 * The options for deploying the function.
-	 *
-	 * @see {@link BaseDeployFunctionOptions}
-	 */
-	deployOptions?: DeployOption<T>;
-}
+			/**
+			 * The region to deploy the function to. If not provided it will be
+			 * the region set in project.json. If that is not provided it will
+			 * be 'us-central1'
+			 *
+			 * @see https://firebase.google.com/docs/functions/locations
+			 */
+			region: string;
+
+			startTime: number;
+		};
+
+export type DeployFunctionData<T extends FunctionBuilder = FunctionBuilder> =
+	BuildFunctionData<T> & {
+		checksum?: string;
+	};

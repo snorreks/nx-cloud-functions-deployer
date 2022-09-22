@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Change, EventContext } from 'firebase-functions';
-import type { RealtimeDatabaseDeployOptions } from '$types';
+import type { RefTriggerOptions } from '$types';
 import type { DataSnapshot } from 'firebase-functions/v1/database';
 
 /**
@@ -9,14 +9,14 @@ import type { DataSnapshot } from 'firebase-functions/v1/database';
  *
  * @param handler Event handler that runs every time new data is created in
  *   Firebase Realtime Database.
- * @returns A Cloud Function that you can export and deploy.
+ * @returns A Cloud DeployFunction that you can export and deploy.
  */
-export const onRealtimeDatabaseCreate = (
+export const onRefCreate = (
 	handler: (
 		snapshot: DataSnapshot,
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options: RealtimeDatabaseDeployOptions,
+	_options: RefTriggerOptions,
 ) => handler;
 
 /**
@@ -25,14 +25,14 @@ export const onRealtimeDatabaseCreate = (
  *
  * @param handler Event handler that runs every time data is deleted from
  *   Firebase Realtime Database.
- * @returns A Cloud Function that you can export and deploy.
+ * @returns A Cloud DeployFunction that you can export and deploy.
  */
-export const onRealtimeDatabaseDelete = (
+export const onRefDelete = (
 	handler: (
 		snapshot: DataSnapshot,
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options: RealtimeDatabaseDeployOptions,
+	_options: RefTriggerOptions,
 ) => handler;
 
 /**
@@ -41,14 +41,14 @@ export const onRealtimeDatabaseDelete = (
  *
  * @param handler Event handler which is run every time a Firebase Realtime
  *   Database write occurs.
- * @returns A Cloud Function which you can export and deploy.
+ * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onRealtimeDatabaseUpdate = (
+export const onRefUpdate = (
 	handler: (
 		change: Change<DataSnapshot>,
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options: RealtimeDatabaseDeployOptions,
+	_options: RefTriggerOptions,
 ) => handler;
 
 /**
@@ -57,12 +57,12 @@ export const onRealtimeDatabaseUpdate = (
  *
  * @param handler Event handler that runs every time a Firebase Realtime
  *   Database write occurs.
- * @returns A Cloud Function that you can export and deploy.
+ * @returns A Cloud DeployFunction that you can export and deploy.
  */
-export const onRealtimeDatabaseWrite = (
+export const onRefWrite = (
 	handler: (
 		change: Change<DataSnapshot>,
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options: RealtimeDatabaseDeployOptions,
+	_options: RefTriggerOptions,
 ) => handler;

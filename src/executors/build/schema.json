@@ -1,0 +1,25 @@
+{
+	"$schema": "http://json-schema.org/schema",
+	"type": "object",
+	"cli": "nx",
+	"description": "A simple build executor for esbuild a function",
+	"additionalProperties": false,
+	"properties": {
+		"input": {
+			"type": "string",
+			"description": "The input path",
+			"aliases": ["i"]
+		},
+		"output": {
+			"type": "string",
+			"description": "The output path",
+			"aliases": ["o"]
+		},
+		"external": {
+			"type": "array",
+			"description": "The external dependencies",
+			"aliases": ["e"]
+		}
+	},
+	"required": ["input", "output"]
+}

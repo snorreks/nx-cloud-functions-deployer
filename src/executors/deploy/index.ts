@@ -5,110 +5,23 @@ import type {
 	BaseDeployOptions,
 	Flavor,
 	DeployExecutorOptions,
-	DeployableFileData,
+	DeployFunctionData,
 } from '$types';
-import { createTemporaryIndexFunctionFile } from './utils/create-deploy-index';
 import { deployFunction } from './utils/deploy-function';
-import { buildCloudFunctionCode } from './utils/build-function';
+import { buildFunction } from './utils/build-function';
 import {
 	getDeployableFiles,
 	getEnvironmentFileCode,
 	getEsbuildAliasFromTsConfig,
+	validateProject,
 } from './utils/read-project';
-import {
-	createDeployFirebaseJson,
-	createDeployPackageJson,
-	createEnvironmentFile,
-} from './utils/create-deploy-metadata';
 import { logger, getLimiter } from '$utils';
-import { cacheChecksum, checkForChanges } from './utils/checksum';
+import { EventEmitter } from 'events';
 
-const setLogSeverity = (options: DeployExecutorOptions) => {
-	if (options.silent) {
-		logger.setLogSeverity('silent');
-		return;
-	}
-
-	if (options.verbose) {
-		logger.setLogSeverity('debug');
-		return;
-	}
-};
-
-/**
- * Build the function and deploy with firebase-tools
- *
- * @param deployableFileData The metadata of the function to deploy
- */
-const buildAndDeployFunction = async (
-	deployableFileData: DeployableFileData,
-): Promise<boolean> => {
-	const functionName = deployableFileData.functionName;
-	try {
-		// start timer
-		const startTime = Date.now();
-
-		await mkdir(deployableFileData.outputRoot, { recursive: true }); // Create the output directory if it doesn't exist
-
-		// We can do 3 things in parallel:
-		// - Build the function code:
-		// 		1. Create a temporary index.ts file
-		//		2. Build it with esbuild
-		// - Create the deploy package.json file
-		// - Create the deploy firebase.json file
-		await Promise.all([
-			(async () => {
-				const entryPointPath = await createTemporaryIndexFunctionFile(
-					deployableFileData,
-				);
-				await buildCloudFunctionCode(
-					deployableFileData,
-					entryPointPath,
-				);
-			})(),
-			createDeployPackageJson(deployableFileData),
-			createDeployFirebaseJson(deployableFileData),
-			createEnvironmentFile(deployableFileData),
-		]);
-		if (deployableFileData.dryRun) {
-			logger.spinnerLog(`Dry run: ${functionName} built`);
-			return true;
-		}
-
-		const [shouldDeploy, newChecksum] = await checkForChanges(
-			deployableFileData,
-		);
-
-		if (!shouldDeploy && !deployableFileData.force) {
-			logger.logFunctionSkipped(functionName);
-			return true;
-		}
-
-		await deployFunction(deployableFileData);
-
-		if (newChecksum) {
-			await cacheChecksum(deployableFileData, newChecksum);
-		}
-
-		logger.logFunctionDeployed(functionName, Date.now() - startTime);
-
-		return true;
-	} catch (error) {
-		const errorMessage = (error as { message?: string } | undefined)
-			?.message;
-
-		logger.logFunctionFailed(functionName, errorMessage);
-		logger.debug(error);
-
-		return false;
-	}
-};
-
-const getBaseDeployOptions = async (
+const getBaseOptions = async (
 	options: DeployExecutorOptions,
 	context: ExecutorContext,
 ): Promise<BaseDeployOptions> => {
-	const { region, dryRun, tsConfig, force } = options;
 	const { projectName, root: workspaceRoot, workspace } = context;
 
 	if (!projectName) {
@@ -137,7 +50,10 @@ const getBaseDeployOptions = async (
 	const temporaryDirectory = join(workspaceRoot, 'tmp', relativeProjectPath);
 
 	const getAlias = async () => {
-		let alias = await getEsbuildAliasFromTsConfig(projectRoot, tsConfig);
+		let alias = await getEsbuildAliasFromTsConfig(
+			projectRoot,
+			options.tsConfig,
+		);
 		if (!alias) {
 			alias = await getEsbuildAliasFromTsConfig(
 				workspaceRoot,
@@ -146,48 +62,52 @@ const getBaseDeployOptions = async (
 		}
 		return alias;
 	};
+	const packageManager = options.packageManager ?? 'pnpm';
 
 	const [environmentFileCode, alias] = await Promise.all([
 		getEnvironmentFileCode(options, projectRoot),
 		getAlias(),
 		mkdir(temporaryDirectory, { recursive: true }),
+		validateProject({
+			packageManager,
+			projectRoot,
+			tsConfig: options.tsConfig,
+		}),
 	]);
+
 	return {
+		...options,
+		environmentFileCode,
+		alias,
 		firebaseProjectId,
 		workspaceRoot,
 		projectRoot,
 		outputDirectory,
 		temporaryDirectory,
 		flavor,
-		dryRun,
-		force,
-		alias,
-		environmentFileCode,
 		functionsDirectory: options.functionsDirectory ?? 'src/controllers',
-		packageManager: options.packageManager ?? 'pnpm',
-		defaultRegion: region ?? 'us-central1',
+		packageManager,
+		defaultRegion: options.region ?? 'us-central1',
 	};
 };
 
 const executor: Executor<DeployExecutorOptions> = async (options, context) => {
-	setLogSeverity(options);
+	logger.setLogSeverity(options);
+	const { only } = options;
+	const baseOptions = await getBaseOptions(options, context);
 
-	const baseDeployOptions = await getBaseDeployOptions(options, context);
+	let buildableFiles = await getDeployableFiles(baseOptions);
 
-	let deployableFiles = await getDeployableFiles(baseDeployOptions);
+	if (only) {
+		const onlyFunctionNames = only?.split(',').map((name) => name.trim());
 
-	if (options.only) {
-		const onlyFunctionNames = options.only
-			?.split(',')
-			.map((name) => name.trim());
-
-		deployableFiles = deployableFiles.filter((deployableFile) =>
-			onlyFunctionNames.includes(deployableFile.functionName),
+		buildableFiles = buildableFiles.filter((deployableFunction) =>
+			onlyFunctionNames.includes(deployableFunction.functionName),
 		);
-		if (deployableFiles.length !== onlyFunctionNames.length) {
+		if (buildableFiles.length !== onlyFunctionNames.length) {
 			const missingFunctionNames = onlyFunctionNames.filter(
 				(name) =>
-					!deployableFiles.some((file) => file.functionName === name),
+					!buildableFiles.some((file) => file.functionName === name),
 			);
 			logger.warn(
 				`The following functions were not found: ${missingFunctionNames.join(
@@ -197,16 +117,29 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 		}
 	}
 
+	const deployableFunctions = (
+		await Promise.all(buildableFiles.map(buildFunction))
+	).filter(
+		(deployableFunction): deployableFunction is DeployFunctionData =>
+			!!deployableFunction,
+	);
+
+	const deployableFunctionsAmount = deployableFunctions.length;
+
 	logger.startSpinner(
-		deployableFiles.length,
-		baseDeployOptions.firebaseProjectId,
-		baseDeployOptions.dryRun,
+		deployableFunctionsAmount,
+		baseOptions.firebaseProjectId,
+		baseOptions.dryRun,
 	);
 
 	const limit = getLimiter(options.concurrency ?? 10);
+	if (deployableFunctionsAmount > 10) {
+		EventEmitter.defaultMaxListeners = deployableFunctionsAmount;
+	}
+
 	const responsesOk = await Promise.all(
-		deployableFiles.map((deployableFileData) =>
-			limit(() => buildAndDeployFunction(deployableFileData)),
+		deployableFunctions.map((deployableFunction) =>
+			limit(() => deployFunction(deployableFunction)),
 		),
 	);
 

@@ -2,23 +2,49 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type {
 	BaseDeployOptions,
-	DeployableFileData,
+	BuildFunctionData,
 	DeployExecutorOptions,
 	EsbuildAlias,
 } from '$types';
 import { validateDeployFiles } from './typescript-parser';
-import { logger, toRelativeDeployFilePath } from '$utils';
+import { execute, logger, toRelativeDeployFilePath } from '$utils';
 import { getDeployableFileData } from './read-source-file';
 import chalk from 'chalk';
 
+export const validateProject = async ({
+	packageManager,
+	projectRoot,
+	validate,
+	tsConfig,
+}: Pick<
+	BaseDeployOptions,
+	'packageManager' | 'projectRoot' | 'validate' | 'tsConfig'
+>) => {
+	if (!validate) {
+		return;
+	}
+	const options: string[] = ['tsc', '-noEmit'];
+
+	if (tsConfig) {
+		options.push('--project', tsConfig);
+	}
+	if (logger.verbose) {
+		options.push('--verbose');
+	}
+	await execute({
+		packageManager,
+		cwd: projectRoot,
+		options,
+	});
+};
+
 export const getDeployableFiles = async (
 	options: BaseDeployOptions,
-): Promise<DeployableFileData[]> => {
+): Promise<BuildFunctionData[]> => {
+	const { projectRoot, functionsDirectory, only } = options;
+
 	const functionPaths: string[] = [];
-	const functionsDirectoryPath = join(
-		options.projectRoot,
-		options.functionsDirectory,
-	);
+	const functionsDirectoryPath = join(projectRoot, functionsDirectory);
 
 	const functionDirectories = await readdir(functionsDirectoryPath, {
 		withFileTypes: true,
@@ -37,22 +63,23 @@ export const getDeployableFiles = async (
 	}
 
 	const deployableFunctions = validateDeployFiles(functionPaths, options);
-
-	for (const functionPath of functionPaths) {
-		if (
-			!deployableFunctions.some(
-				(deployableFunction) =>
-					deployableFunction.absolutePath === functionPath,
-			)
-		) {
-			logger.warn(
-				`${chalk.bold(
-					toRelativeDeployFilePath(
-						functionPath,
-						options.functionsDirectory,
-					),
-				)} is not a valid deployable function, skipping.`,
-			);
+	if (!only) {
+		for (const functionPath of functionPaths) {
+			if (
+				!deployableFunctions.some(
+					(deployableFunction) =>
+						deployableFunction.absolutePath === functionPath,
+				)
+			) {
+				logger.warn(
+					`${chalk.bold(
+						toRelativeDeployFilePath(
+							functionPath,
+							functionsDirectory,
+						),
+					)} is not a valid deployable function, skipping.`,
+				);
+			}
 		}
 	}
 

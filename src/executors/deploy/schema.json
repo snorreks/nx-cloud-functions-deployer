@@ -3,7 +3,6 @@
 	"type": "object",
 	"cli": "nx",
 	"description": "Executor to build and deploy cloud functions",
-	"additionalProperties": false,
 	"properties": {
 		"firebaseProjectProdId": {
 			"type": "string",
@@ -95,6 +94,12 @@
 			"enum": ["pnpm", "npm", "yarn", "global"],
 			"description": "The package manager to use for deploying with firebase-tools",
 			"aliases": ["pm"]
+		},
+		"validate": {
+			"type": "boolean",
+			"default": true,
+			"description": "Will run tsc -noEmits in project root to validate the build",
+			"aliases": ["valid"]
 		}
 	},
 	"required": ["firebaseProjectProdId", "firebaseProjectDevId"]

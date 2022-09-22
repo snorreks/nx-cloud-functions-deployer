@@ -19,7 +19,6 @@
 		"removeComments": true,
 		"resolveJsonModule": true,
 		"stripInternal": true,
-		"emitDeclarationOnly": true,
 		"importsNotUsedAsValues": "error",
 		"isolatedModules": true,
 		"rootDir": "src",

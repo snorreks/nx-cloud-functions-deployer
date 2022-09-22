@@ -48,15 +48,13 @@ export interface LoggerInterface {
 
 	readonly isDryRun?: boolean;
 
+	readonly verbose: boolean;
+
 	/**
 	 * Sets the current log severity. If the severity is not set, it will never
 	 * log anything.
-	 *
-	 * In production, the default severity is undefined.
-	 *
-	 * @param severity The severity to set.
 	 */
-	setLogSeverity(severity: LogSeverity): void;
+	setLogSeverity(options: { silent?: boolean; verbose?: boolean }): void;
 
 	startSpinner(
 		deployableFunctionsAmount: number,
@@ -135,6 +133,10 @@ export interface LoggerInterface {
 class LoggerService implements LoggerInterface {
 	currentLogSeverity: LogSeverity = 'info';
 
+	get verbose(): boolean {
+		return this.currentLogSeverity === 'debug';
+	}
+
 	isDryRun?: boolean;
 
 	private _spinner?: Spinner;
@@ -178,7 +180,7 @@ class LoggerService implements LoggerInterface {
 		});
 		this.spinnerLog(
 			chalk.red(
-				`Function: ${chalk.bold(functionName)} failed to deploy${
+				`DeployFunction: ${chalk.bold(functionName)} failed to deploy${
 					errorMessage ? `: ${errorMessage}` : ''
 				}`,
 			),
@@ -200,8 +202,16 @@ class LoggerService implements LoggerInterface {
 		);
 	}
 
-	setLogSeverity(severity: LogSeverity): void {
-		this.currentLogSeverity = severity;
+	setLogSeverity(options: { silent?: boolean; verbose?: boolean }): void {
+		if (options.silent) {
+			this.currentLogSeverity = 'silent';
+			return;
+		}
+
+		if (options.verbose) {
+			this.currentLogSeverity = 'debug';
+			return;
+		}
 	}
 
 	write(entry: LogEntry, ...data: unknown[]): void {

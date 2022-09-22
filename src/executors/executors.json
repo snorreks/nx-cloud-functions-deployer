@@ -5,6 +5,11 @@
 			"implementation": "./executors/deploy/index",
 			"schema": "./executors/deploy/schema.json",
 			"description": "Build and deploy Cloud Functions"
+		},
+		"build": {
+			"implementation": "./executors/build/index",
+			"schema": "./executors/build/schema.json",
+			"description": "Simple esbuild executer"
 		}
 	}
 }

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { EventContext } from 'firebase-functions';
-import type { ScheduleDeployOptions, TopicDeployOptions } from '$types';
+import type { ScheduleOptions, TopicOptions } from '$types';
 
 export const schedule = (
 	handler: (context: EventContext) => PromiseLike<unknown> | unknown,
-	_options: ScheduleDeployOptions,
+	_options: ScheduleOptions,
 ) => handler;
 
 /**
@@ -15,5 +15,5 @@ export const schedule = (
  */
 export const topic = (
 	handler: (context: EventContext) => PromiseLike<unknown> | unknown,
-	_options: TopicDeployOptions,
+	_options: TopicOptions,
 ) => handler;

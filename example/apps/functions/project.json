@@ -9,6 +9,13 @@
 				"firebaseProjectDevId": "localekey-dev",
 				"firebaseProjectProdId": "localekey-dev"
 			}
+		},
+		"build": {
+			"executor": "../dist:build",
+			"options": {
+				"input": "src/controllers/api/test_api.ts",
+				"output": "dist/controllers/api/test_api.ts"
+			}
 		}
 	}
 }

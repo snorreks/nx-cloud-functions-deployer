@@ -2,24 +2,26 @@ import { unlinkSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type {
-	DeployableFileData,
-	DeployOption,
-	FunctionType,
-	LimitedRuntimeOptions,
-	ScheduleDeployOptions,
-	TopicDeployOptions,
+	BaseFunctionOptions,
+	BuildFunctionData,
+	DeployFunction,
+	HttpsV1Options,
+	HttpsV2Options,
+	RuntimeOptions,
+	ScheduleOptions,
+	TopicOptions,
 } from '$types';
 import { logger } from '$utils';
 /** The name of the default exported function */
 const functionStart = 'functionStart';
 
 export const createTemporaryIndexFunctionFile = async (
-	deployableFileData: DeployableFileData,
+	buildFunctionData: BuildFunctionData,
 ): Promise<string> => {
-	const code = toDeployIndexCode(deployableFileData);
+	const code = toDeployIndexCode(buildFunctionData);
 	const temporaryFilePath = getTemporaryFilePath(
-		deployableFileData.temporaryDirectory,
-		deployableFileData.functionName,
+		buildFunctionData.temporaryDirectory,
+		buildFunctionData.functionName,
 	);
 
 	await createTemporaryFile(temporaryFilePath, code);
@@ -31,21 +33,49 @@ const getTemporaryFilePath = (
 	functionName: string,
 ) => join(temporaryDirectory, `${functionName}.ts`);
 
-const toDeployIndexCode = (deployableFileData: DeployableFileData) => {
-	const { functionName, absolutePath, deployOptions, defaultRegion } =
-		deployableFileData;
+const toDeployIndexCode = (buildFunctionData: BuildFunctionData) => {
+	if ((buildFunctionData as HttpsV2Options).v2) {
+		return toDeployV2IndexCode(
+			buildFunctionData as BuildFunctionData<'https'>,
+		);
+	} else {
+		return toDeployIndexV1Code(buildFunctionData);
+	}
+};
 
+const toDeployIndexV1Code = (buildFunctionData: BuildFunctionData) => {
+	const { functionName, absolutePath, region } = buildFunctionData;
 	const deployableFilePath = absolutePath;
-
-	const region = deployOptions?.region ?? defaultRegion;
-
 	const pathWithoutSuffix = deployableFilePath.replace('.ts', '');
 	const fileCode = `
 		import { region } from 'firebase-functions';
 		import ${functionStart} from '${pathWithoutSuffix}';
 		export const ${functionName} = region('${region}').${getRootFunctionCode(
-		deployableFileData,
-	)}.${toEndCode(deployableFileData)};
+		buildFunctionData,
+	)}.${toEndCode(buildFunctionData)}
+	`;
+
+	return fileCode;
+};
+
+const toDeployV2IndexCode = (buildFunctionData: BuildFunctionData<'https'>) => {
+	const { functionName, absolutePath, deployFunction } = buildFunctionData;
+
+	if (deployFunction !== 'onRequest' && deployFunction !== 'onCall') {
+		throw new Error(
+			`Invalid deploy function ${deployFunction} for https v2`,
+		);
+	}
+
+	const deployableFilePath = absolutePath;
+	const pathWithoutSuffix = deployableFilePath.replace('.ts', '');
+	const fileCode = `
+		import { ${deployFunction} } from 'firebase-functions/v2/https';
+		import ${functionStart} from '${pathWithoutSuffix}';
+		export const ${functionName} = ${deployFunction}(
+				(${getV2Options(buildFunctionData as HttpsV2Options)}),
+				${functionStart}
+			);
 	`;
 
 	return fileCode;
@@ -66,47 +96,78 @@ const createTemporaryFile = async (
 	await writeFile(filePath, code);
 };
 
-const getRootFunctionCode = ({
-	deployOptions,
-	rootFunctionBuilder,
-}: DeployableFileData): string => {
-	if (!deployOptions?.runtimeOptions) {
+const getV2Options = (options: HttpsV2Options): string => {
+	let v2Options = '{';
+
+	for (const [key, value] of Object.entries(options)) {
+		if (Array.isArray(value)) {
+			v2Options += `${key}: [${value
+				.map((v) => `${typeof v === 'string' ? `'${v}'` : v}`)
+				.join(',')}],`;
+			continue;
+		}
+
+		if (
+			typeof value !== 'string' &&
+			typeof value !== 'number' &&
+			typeof value !== 'boolean'
+		) {
+			continue;
+		}
+
+		v2Options += `${key}: ${
+			typeof value === 'string' ? `'${value}'` : value
+		},`;
+	}
+
+	v2Options += '}';
+	return v2Options;
+};
+
+const getRootFunctionCode = (buildFunctionData: BuildFunctionData): string => {
+	const { rootFunctionBuilder } = buildFunctionData;
+	const runtimeOptions = (buildFunctionData as HttpsV1Options).runtimeOptions;
+
+	if (!runtimeOptions) {
 		return rootFunctionBuilder;
 	}
 
-	const runWithCode = getRunWithCode(deployOptions.runtimeOptions);
+	const runWithCode = getRunWithCode(runtimeOptions);
 	return `${runWithCode}.${rootFunctionBuilder}`;
 };
 
-const getRunWithCode = (runtimeOptions: LimitedRuntimeOptions): string => {
-	const { minInstances, maxInstances, memory, timeoutSeconds } =
-		runtimeOptions;
+const getRunWithCode = (runtimeOptions: RuntimeOptions): string => {
 	let runWithCode = 'runWith({';
-	if (minInstances) {
-		runWithCode += `minInstances: ${minInstances},`;
-	}
-	if (maxInstances) {
-		runWithCode += `maxInstances: ${maxInstances},`;
-	}
-	if (memory) {
-		runWithCode += `memory: '${memory}',`;
-	}
-	if (timeoutSeconds) {
-		runWithCode += `timeoutSeconds: ${timeoutSeconds},`;
-	}
-	runWithCode += '})';
+	for (const [key, value] of Object.entries(runtimeOptions)) {
+		if (Array.isArray(value)) {
+			runWithCode += `${key}: [${value
+				.map((v) => `${typeof v === 'string' ? `'${v}'` : v}`)
+				.join(',')}],`;
+			continue;
+		}
 
+		if (
+			typeof value !== 'string' &&
+			typeof value !== 'number' &&
+			typeof value !== 'boolean'
+		) {
+			continue;
+		}
+
+		runWithCode += `${key}: ${
+			typeof value === 'string' ? `'${value}'` : value
+		},`;
+	}
+
+	runWithCode += '})';
 	return runWithCode;
 };
 
-const toEndCode = ({
-	deployOptions,
-	functionType,
-	path,
-}: DeployableFileData): string => {
-	const functionCode = toFunctionCodeType(functionType);
+const toEndCode = (deployFileData: BuildFunctionData): string => {
+	const { deployFunction, path } = deployFileData;
+	const functionCode = toFunctionCodeType(deployFunction);
 
-	switch (functionType) {
+	switch (deployFunction) {
 		case 'onCall':
 		case 'onRequest':
 			return `${functionCode}(${functionStart});`;
@@ -115,16 +176,16 @@ const toEndCode = ({
 		case 'onUpdate':
 		case 'onWrite':
 			return `document('${path}').${functionCode}(${functionStart});`;
-		case 'onRealtimeDatabaseCreate':
-		case 'onRealtimeDatabaseDelete':
-		case 'onRealtimeDatabaseUpdate':
-		case 'onRealtimeDatabaseWrite':
+		case 'onRefCreate':
+		case 'onRefDelete':
+		case 'onRefUpdate':
+		case 'onRefWrite':
 			return `ref('${path}').${functionCode}(${functionStart});`;
 
 		case 'topic':
-			return getTopicDeployCode(deployOptions);
+			return getTopicDeployCode(deployFileData);
 		case 'schedule':
-			return getScheduleDeployCode(deployOptions);
+			return getScheduleDeployCode(deployFileData);
 		case 'onObjectArchive':
 		case 'onObjectDelete':
 		case 'onObjectFinalize':
@@ -132,12 +193,12 @@ const toEndCode = ({
 			return `object().${functionCode}(${functionStart});`;
 
 		default:
-			throw new Error(`Unknown function type: ${functionType}`);
+			throw new Error(`Unknown function type: ${deployFunction}`);
 	}
 };
 
-const toFunctionCodeType = (functionType: FunctionType): string => {
-	switch (functionType) {
+const toFunctionCodeType = (deployFunction: DeployFunction): string => {
+	switch (deployFunction) {
 		case 'onCall':
 			return 'onCall';
 		case 'onRequest':
@@ -162,25 +223,25 @@ const toFunctionCodeType = (functionType: FunctionType): string => {
 			return 'onFinalize';
 		case 'onObjectMetadataUpdate':
 			return 'onMetadataUpdate';
-		case 'onRealtimeDatabaseCreate':
+		case 'onRefCreate':
 			return 'onCreate';
-		case 'onRealtimeDatabaseDelete':
+		case 'onRefDelete':
 			return 'onDelete';
-		case 'onRealtimeDatabaseUpdate':
+		case 'onRefUpdate':
 			return 'onUpdate';
-		case 'onRealtimeDatabaseWrite':
+		case 'onRefWrite':
 			return 'onWrite';
 		default:
-			throw new Error(`Unknown function type: ${functionType}`);
+			throw new Error(`Unknown function type: ${deployFunction}`);
 	}
 };
 
-const getScheduleDeployCode = (deployOptions?: DeployOption): string => {
+const getScheduleDeployCode = (deployOptions?: BaseFunctionOptions): string => {
 	if (!deployOptions) {
 		throw new Error('Pubsub deploy options are required');
 	}
 
-	const { timeZone, schedule } = deployOptions as ScheduleDeployOptions;
+	const { timeZone, schedule } = deployOptions as ScheduleOptions;
 	let pubsubCode = `schedule('${schedule}').`;
 
 	if (timeZone) {
@@ -192,12 +253,12 @@ const getScheduleDeployCode = (deployOptions?: DeployOption): string => {
 	return pubsubCode;
 };
 
-const getTopicDeployCode = (deployOptions?: DeployOption): string => {
+const getTopicDeployCode = (deployOptions?: BaseFunctionOptions): string => {
 	if (!deployOptions) {
 		throw new Error('Pubsub deploy options are required');
 	}
 
-	const { topic } = deployOptions as TopicDeployOptions;
+	const { topic } = deployOptions as TopicOptions;
 	let pubsubCode = `topic('${topic}').`;
 
 	pubsubCode += `onRun(${functionStart})`;

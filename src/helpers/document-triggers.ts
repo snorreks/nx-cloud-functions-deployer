@@ -1,12 +1,48 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { QueryDocumentSnapshot } from '@google-cloud/firestore';
 import type { Change, EventContext } from 'firebase-functions';
-import type { CoreData, FirestoreDeployOptions } from '$types';
+import type { CoreData, DocumentTriggerOptions } from '$types';
+
+/** Respond only to document creations. */
+export const onDocumentCreate = <T>(
+	handler: (
+		snapshot: QueryDocumentSnapshot<T>,
+		context: EventContext,
+	) => PromiseLike<unknown> | unknown,
+	_options?: DocumentTriggerOptions,
+) => handler;
+
+/** Respond only to document deletions. */
+export const onDocumentDelete = <T>(
+	handler: (
+		snapshot: QueryDocumentSnapshot<T>,
+		context: EventContext,
+	) => PromiseLike<unknown> | unknown,
+	_options?: DocumentTriggerOptions,
+) => handler;
+
+/** Respond only to document updates. */
+export const onDocumentUpdate = <T>(
+	handler: (
+		change: Change<T>,
+		context: EventContext,
+	) => PromiseLike<unknown> | unknown,
+	_options?: DocumentTriggerOptions,
+) => handler;
+
+/** Respond to all document writes (creates, updates, or deletes). */
+export const onDocumentWrite = <T>(
+	handler: (
+		change: Change<T>,
+		context: EventContext,
+	) => PromiseLike<unknown> | unknown,
+	_options?: DocumentTriggerOptions,
+) => handler;
 
 /** Respond only to document creations. */
 export const onCreate = <T extends CoreData>(
 	handler: (data: T, context: EventContext) => PromiseLike<unknown> | unknown,
-	_options?: FirestoreDeployOptions,
+	_options?: DocumentTriggerOptions,
 ): ((
 	snapshot: QueryDocumentSnapshot<Omit<T, 'id'>>,
 	context: EventContext,
@@ -22,7 +58,7 @@ export const onCreate = <T extends CoreData>(
 /** Respond only to document deletions. */
 export const onDelete = <T extends CoreData>(
 	handler: (data: T, context: EventContext) => PromiseLike<unknown> | unknown,
-	_options?: FirestoreDeployOptions,
+	_options?: DocumentTriggerOptions,
 ): ((
 	snapshot: QueryDocumentSnapshot<Omit<T, 'id'>>,
 	context: EventContext,
@@ -41,7 +77,7 @@ export const onUpdate = <T extends CoreData>(
 		change: { beforeData: T; afterData: T },
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options?: FirestoreDeployOptions,
+	_options?: DocumentTriggerOptions,
 ): ((
 	change: Change<QueryDocumentSnapshot<Omit<T, 'id'>>>,
 	context: EventContext,
@@ -66,7 +102,7 @@ export const onWrite = <T extends CoreData>(
 		change: { beforeData?: T; afterData?: T },
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options?: FirestoreDeployOptions,
+	_options?: DocumentTriggerOptions,
 ): ((
 	change: Change<QueryDocumentSnapshot<Omit<T, 'id'>>>,
 	context: EventContext,

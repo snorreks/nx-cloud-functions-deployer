@@ -1,12 +1,12 @@
 import { writeFile } from 'node:fs/promises';
+import { copy } from 'fs-extra';
 import { join } from 'node:path';
-import type { DeployableFileData } from '$types';
+import type { BuildFunctionData } from '$types';
+import execa from 'execa';
 
 export const createDeployFirebaseJson = async ({
 	outputRoot,
-}: {
-	outputRoot: string;
-}) => {
+}: BuildFunctionData) => {
 	const firebaseJson = {
 		functions: {
 			source: '.',
@@ -20,11 +20,11 @@ export const createDeployFirebaseJson = async ({
 
 export const createDeployPackageJson = async ({
 	outputRoot,
-}: {
-	outputRoot: string;
-}) => {
+	external,
+}: BuildFunctionData) => {
 	// const packageJsonPath = join(workspaceRoot, projectRoot, 'package.json');
 	// const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+
 	const newPackageJson = {
 		type: 'module',
 		main: 'src/index.js',
@@ -37,14 +37,32 @@ export const createDeployPackageJson = async ({
 		join(outputRoot, 'package.json'),
 		JSON.stringify(newPackageJson, undefined, 2),
 	);
+
+	if (external && external.length > 0) {
+		await execa('npm', ['i', ...external], {
+			cwd: outputRoot,
+		});
+	}
 };
 
 export const createEnvironmentFile = async ({
 	environmentFileCode,
 	outputRoot,
-}: DeployableFileData): Promise<void> => {
+}: BuildFunctionData): Promise<void> => {
 	if (!environmentFileCode) {
 		return;
 	}
 	await writeFile(join(outputRoot, '.env'), environmentFileCode);
+};
+
+export const copyAssets = async ({ outputRoot, assets }: BuildFunctionData) => {
+	if (!assets || !assets.length) {
+		return;
+	}
+
+	await Promise.all(
+		assets.map((asset) => {
+			copy(asset, join(outputRoot, 'src', asset));
+		}),
+	);
 };

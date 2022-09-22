@@ -1,3 +1,16 @@
+export type CallableFunctions = {
+	[key: string]: [unknown, unknown];
+};
+
+export type RequestFunctions = {
+	[key: string]: [
+		{
+			[key: string]: string;
+		},
+		unknown,
+	];
+};
+
 import type { Timestamp as BackendTimestamp } from '@google-cloud/firestore';
 import type { Timestamp as FrontendTimestamp } from 'firebase/firestore';
 

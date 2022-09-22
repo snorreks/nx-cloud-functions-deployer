@@ -1,25 +1,35 @@
 import type {
-	DeployableFileData,
-	DeployOption,
-	LimitedRuntimeOptions,
-	BaseDeployFunctionOptions,
-	FirestoreDeployOptions,
-	DeployableFileLiteData,
-	ScheduleDeployOptions,
-	TopicDeployOptions,
-	FunctionType,
-	RealtimeDatabaseDeployOptions,
+	BuildFunctionData,
+	BaseFunctionOptions,
+	DocumentTriggerOptions,
+	BuildFunctionLiteData,
+	ScheduleOptions,
+	TopicOptions,
+	DeployFunction,
+	RefTriggerOptions,
+	HttpsOptions,
+	HttpsV2Options,
+	RuntimeOptions,
 } from '$types';
-import { logger } from '$utils';
+import {
+	isDocumentTriggerFunction,
+	isHttpsFunction,
+	isObjectTriggerFunction,
+	isRefTriggerFunction,
+	logger,
+	removeUnderScore,
+	toSnakeCase,
+} from '$utils';
 import chalk from 'chalk';
 import { readFile } from 'fs/promises';
 import { join } from 'node:path';
 
 export const getDeployableFileData = async (
-	deployableFileLiteData: DeployableFileLiteData,
-): Promise<DeployableFileData> => {
+	deployableFileLiteData: BuildFunctionLiteData,
+): Promise<BuildFunctionData> => {
 	const {
-		functionType,
+		deployFunction,
+		defaultRegion,
 		absolutePath,
 		rootFunctionBuilder,
 		relativeDeployFilePath,
@@ -27,46 +37,51 @@ export const getDeployableFileData = async (
 	} = deployableFileLiteData;
 
 	const code = await readFile(absolutePath, 'utf8');
-	const deployOptions = validateDeployOptions(
-		functionType,
-		getDeployOptionsFromCode(code),
+	const deployOptions = validateOptions(
+		deployFunction,
+		getOptionsFromCode(code),
 	);
 	const functionName =
 		deployOptions?.functionName ??
-		getFunctionNameFromPath(relativeDeployFilePath);
+		getFunctionNameFromPath(
+			relativeDeployFilePath,
+			(deployOptions as HttpsOptions)?.v2,
+		);
 
-	const deployableFileData: DeployableFileData = {
+	const buildFunctionData: BuildFunctionData = {
 		...deployableFileLiteData,
+		...deployOptions,
 		rootFunctionBuilder,
-		deployOptions,
+		region: deployOptions?.region ?? defaultRegion,
 		outputRoot: join(outputDirectory, functionName),
 		functionName,
+		startTime: Date.now(),
 		path: undefined,
 	};
 
 	if (
-		rootFunctionBuilder === 'database' ||
-		rootFunctionBuilder === 'firestore'
+		isRefTriggerFunction(buildFunctionData.deployFunction) ||
+		isDocumentTriggerFunction(buildFunctionData.deployFunction)
 	) {
-		deployableFileData.path =
-			(deployOptions as FirestoreDeployOptions)?.documentPath ??
-			(deployOptions as RealtimeDatabaseDeployOptions)?.ref;
-		if (!deployableFileData.path) {
+		buildFunctionData.path =
+			(deployOptions as DocumentTriggerOptions)?.documentPath ??
+			(deployOptions as RefTriggerOptions)?.ref;
+		if (!buildFunctionData.path) {
 			const defaultPath = getDefaultPath(relativeDeployFilePath);
 			logger.debug(
 				`No path found for ${functionName}, using default path ${defaultPath}`,
 			);
-			deployableFileData.path = defaultPath;
+			buildFunctionData.path = defaultPath;
 		}
 	}
 
 	logger.spinnerLog(
 		` --- ${logger.isDryRun ? 'Building' : 'Deploying'}: ${chalk.bold(
-			deployableFileData.functionName,
+			buildFunctionData.functionName,
 		)}\n${relativeDeployFilePath}`,
 	);
 
-	return deployableFileData;
+	return buildFunctionData;
 };
 
 /**
@@ -75,7 +90,7 @@ export const getDeployableFileData = async (
  * NB: This requires the deploy file to have the export default function at the
  * end of the file.
  */
-const getDeployOptionsFromCode = (
+const getOptionsFromCode = (
 	code: string,
 ): Record<string, unknown> | undefined => {
 	try {
@@ -96,15 +111,15 @@ const getDeployOptionsFromCode = (
 		strBetweenBracket = strBetweenBracket.replace(objKeysRegex, '$1"$2":'); // replace all object names with double quoted
 		return JSON.parse(strBetweenBracket);
 	} catch (error) {
-		logger.error('getDeployOptionsFromCode', error);
+		logger.error('getOptionsFromCode', error);
 		return;
 	}
 };
 
-const validateDeployOptions = (
-	functionType: FunctionType,
+const validateOptions = (
+	deployFunction: DeployFunction,
 	object?: Record<string, unknown>,
-): DeployOption | undefined => {
+): BaseFunctionOptions | HttpsOptions | undefined => {
 	if (!object) {
 		return;
 	}
@@ -116,31 +131,29 @@ const validateDeployOptions = (
 		throw new Error('Invalid function name');
 	}
 
-	const baseOptions: BaseDeployFunctionOptions = {
+	const baseOptions: BaseFunctionOptions = {
 		functionName: getValueFromObject(object, 'functionName'),
 		region: getValueFromObject(object, 'region'),
-		runtimeOptions: getRunTimeDeployOptions(object),
+		external: getValueFromObject(object, 'external'),
+		assets: getValueFromObject(object, 'assets'),
+		runtimeOptions: getRunTimeOptions(object),
 	};
 
-	switch (functionType) {
-		case 'onCreate':
-		case 'onUpdate':
-		case 'onDelete':
-		case 'onWrite':
-			return getFirestoreOptions(baseOptions, object);
-		case 'onRealtimeDatabaseCreate':
-		case 'onRealtimeDatabaseUpdate':
-		case 'onRealtimeDatabaseDelete':
-		case 'onRealtimeDatabaseWrite':
-			return getRealtimeDatabaseOptions(baseOptions, object);
-
-		case 'schedule':
-			return getScheduleDeployOptions(baseOptions, object);
-		case 'topic':
-			return getTopicDeployOptions(baseOptions, object);
-
-		default:
+	switch (true) {
+		case isDocumentTriggerFunction(deployFunction):
+			return getDocumentTriggerOptions(baseOptions, object);
+		case isHttpsFunction(deployFunction):
+			return getHttpsOptions(baseOptions, object);
+		case isObjectTriggerFunction(deployFunction):
 			return baseOptions;
+		case isRefTriggerFunction(deployFunction):
+			return getRefTriggerOptions(baseOptions, object);
+		case deployFunction === 'schedule':
+			return getScheduleOptions(baseOptions, object);
+		case deployFunction === 'topic':
+			return getTopicOptions(baseOptions, object);
+		default:
+			throw new Error(`Invalid deploy function: ${deployFunction}`);
 	}
 };
 
@@ -156,22 +169,45 @@ const getValueFromObject = <Value>(
 	return value as Value;
 };
 
-const getFirestoreOptions = (
-	baseDeployOptions: BaseDeployFunctionOptions,
+const getDocumentTriggerOptions = (
+	baseOptions: BaseFunctionOptions,
 	object: Record<string, unknown>,
-): FirestoreDeployOptions => {
-	const firestoreDeployOptions: FirestoreDeployOptions = {
-		...baseDeployOptions,
+): DocumentTriggerOptions => {
+	const documentOptions: DocumentTriggerOptions = {
+		...baseOptions,
+		v2: false,
 		documentPath: getValueFromObject<string>(object, 'documentPath'),
 	};
 
-	return firestoreDeployOptions;
+	return documentOptions;
 };
 
-const getRealtimeDatabaseOptions = (
-	baseDeployOptions: BaseDeployFunctionOptions,
+const getHttpsOptions = (
+	baseOptions: BaseFunctionOptions,
 	object: Record<string, unknown>,
-): RealtimeDatabaseDeployOptions => {
+): HttpsOptions => {
+	const v2 = getValueFromObject<boolean>(object, 'v2');
+
+	if (!v2) {
+		return {
+			...baseOptions,
+			v2: false,
+		};
+	}
+
+	const httpsOptions: HttpsV2Options = {
+		...object,
+		...baseOptions,
+		region: getValueFromObject(object, 'region') ?? 'europe-west1',
+		v2: true,
+	};
+	return httpsOptions;
+};
+
+const getRefTriggerOptions = (
+	baseOptions: BaseFunctionOptions,
+	object: Record<string, unknown>,
+): RefTriggerOptions => {
 	const ref = getValueFromObject<string>(object, 'ref');
 	if (!ref) {
 		throw new Error(
@@ -179,70 +215,59 @@ const getRealtimeDatabaseOptions = (
 		);
 	}
 
-	const firestoreDeployOptions: RealtimeDatabaseDeployOptions = {
-		...baseDeployOptions,
+	const refOptions: RefTriggerOptions = {
+		...baseOptions,
+		v2: false,
 		ref,
 	};
 
-	return firestoreDeployOptions;
+	return refOptions;
 };
 
-const getScheduleDeployOptions = (
-	baseDeployOptions: BaseDeployFunctionOptions,
+const getScheduleOptions = (
+	baseOptions: BaseFunctionOptions,
 	object: Record<string, unknown>,
-): ScheduleDeployOptions => {
+): ScheduleOptions => {
 	const schedule = getValueFromObject<string>(object, 'schedule');
 	if (!schedule) {
 		throw new Error('Schedule option is required for schedule functions');
 	}
 
-	const firestoreDeployOptions: ScheduleDeployOptions = {
-		...baseDeployOptions,
+	const scheduleOptions: ScheduleOptions = {
+		...baseOptions,
+		v2: false,
 		schedule,
 		timeZone: getValueFromObject<string>(object, 'timeZone'),
 	};
 
-	return firestoreDeployOptions;
+	return scheduleOptions;
 };
 
-const getTopicDeployOptions = (
-	baseDeployOptions: BaseDeployFunctionOptions,
+const getTopicOptions = (
+	baseOptions: BaseFunctionOptions,
 	object: Record<string, unknown>,
-): TopicDeployOptions => {
+): TopicOptions => {
 	const topic = getValueFromObject<string>(object, 'topic');
 	if (!topic) {
 		throw new Error('Topic option is required for topic functions');
 	}
 
-	const firestoreDeployOptions: TopicDeployOptions = {
-		...baseDeployOptions,
+	const topicOptions: TopicOptions = {
+		...baseOptions,
+		v2: false,
 		topic,
 	};
 
-	return firestoreDeployOptions;
+	return topicOptions;
 };
 
-const getRunTimeDeployOptions = (
+const getRunTimeOptions = (
 	object: Record<string, unknown>,
-): LimitedRuntimeOptions | undefined => {
+): RuntimeOptions | undefined => {
 	if (!('runtimeOptions' in object)) {
 		return;
 	}
-	const runtimeOptionsObject = object.runtimeOptions as Record<
-		string,
-		unknown
-	>;
-	const runtimeOptions: LimitedRuntimeOptions = {
-		minInstances: getValueFromObject(runtimeOptionsObject, 'minInstances'),
-		maxInstances: getValueFromObject(runtimeOptionsObject, 'maxInstances'),
-		memory: getValueFromObject(runtimeOptionsObject, 'memory'),
-		timeoutSeconds: getValueFromObject(
-			runtimeOptionsObject,
-			'timeoutSeconds',
-		),
-	};
-
-	return runtimeOptions;
+	return object.runtimeOptions as RuntimeOptions;
 };
 
 const getStringBetweenLastBracket = (code: string) => {
@@ -292,7 +317,10 @@ const getDefaultPath = (relativeDeployFilePath: string): string => {
 	return paths.join('/').replaceAll('[', '{').replaceAll(']', '}');
 };
 
-const getFunctionNameFromPath = (relativeDeployFilePath: string) => {
+const getFunctionNameFromPath = (
+	relativeDeployFilePath: string,
+	v2?: boolean,
+) => {
 	const paths = relativeDeployFilePath.split('/');
 	paths.shift(); // remove the first element, which is the directory type
 	for (const path of paths) {
@@ -302,6 +330,9 @@ const getFunctionNameFromPath = (relativeDeployFilePath: string) => {
 		}
 	}
 
-	const functionName = paths.join('_').replace(/\.ts$/, '');
-	return functionName.replaceAll('-', '_');
+	const functionName = toSnakeCase(paths.join('_').replace(/\.ts$/, ''));
+	if (v2) {
+		return removeUnderScore(functionName);
+	}
+	return functionName;
 };

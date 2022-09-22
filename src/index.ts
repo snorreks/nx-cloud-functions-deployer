@@ -1,5 +1,5 @@
-export * from './helpers/database';
-export * from './helpers/firestore';
+export * from './helpers/ref-triggers';
+export * from './helpers/document-triggers';
 export * from './helpers/https';
 export * from './helpers/pubsub';
 export * from './helpers/storage';

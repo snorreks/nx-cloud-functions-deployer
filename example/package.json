@@ -7,17 +7,18 @@
 		"preinstall": "npx only-allow pnpm"
 	},
 	"devDependencies": {
-		"@nrwl/devkit": "^14.7.5",
-		"@nrwl/eslint-plugin-nx": "^14.7.5",
+		"@nrwl/devkit": "14.6.0",
+		"@nrwl/eslint-plugin-nx": "14.6.0",
+		"@nrwl/workspace": "14.6.0",
 		"@types/node": "^18.7.18",
-		"@typescript-eslint/eslint-plugin": "^5.37.0",
-		"@typescript-eslint/parser": "^5.37.0",
+		"@typescript-eslint/eslint-plugin": "^5.38.0",
+		"@typescript-eslint/parser": "^5.38.0",
 		"dotenv": "^16.0.2",
 		"eslint": "^8.23.1",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-prettier": "^4.2.1",
 		"firebase-tools": "^11.9.0",
-		"nx": "^14.7.5",
+		"nx": "14.6.0",
 		"nx-cloud-functions-deployer": "file:..\\dist",
 		"prettier": "^2.7.1",
 		"prettier-plugin-jsdoc": "^0.4.2",
@@ -28,6 +29,6 @@
 		"axios": "^0.27.2",
 		"firebase": "^9.10.0",
 		"firebase-admin": "^11.0.1",
-		"firebase-functions": "^3.23.0"
+		"firebase-functions": "^3.24.0"
 	}
 }

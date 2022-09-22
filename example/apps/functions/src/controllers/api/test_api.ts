@@ -13,9 +13,9 @@ export default onRequest<RequestFunctions, 'test_api'>(
 		});
 	},
 	{
-		runtimeOptions: {
-			timeoutSeconds: 60,
-			memory: '2GB',
-		},
+		timeoutSeconds: 60,
+		v2: true,
+		region: 'europe-west1',
+		invoker: 'public',
 	},
 );

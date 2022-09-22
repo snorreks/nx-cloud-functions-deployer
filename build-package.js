@@ -43,13 +43,16 @@ const copyPackageJson = async () => {
 const copyFilesToDistributionFolder = async () => {
 	try {
 		await Promise.all([
-			copy('./executors.json', 'dist/executors.json'),
+			copy('./src/executors/executors.json', 'dist/executors.json'),
 			copy('./README.md', 'dist/README.md'),
 			copy(
 				'src/executors/deploy/schema.json',
 				'dist/executors/deploy/schema.json',
 			),
-
+			copy(
+				'src/executors/build/schema.json',
+				'dist/executors/build/schema.json',
+			),
 			copyPackageJson(),
 		]);
 	} catch (error) {
@@ -79,6 +82,7 @@ const compileTypescriptFiles = async () => {
 		};
 
 		await Promise.all([
+			execa('pnpm', ['tsc', '-noEmit']),
 			(async () => {
 				await execa('pnpm', [
 					'tsc',
@@ -98,6 +102,12 @@ const compileTypescriptFiles = async () => {
 				...baseBuildOptions,
 				entryPoints: ['./src/executors/deploy/index.ts'],
 				outfile: 'dist/executors/deploy/index.js',
+				external: ['esbuild', 'esbuild-plugin-alias'],
+			}),
+			build({
+				...baseBuildOptions,
+				entryPoints: ['./src/executors/build/index.ts'],
+				outfile: 'dist/executors/build/index.js',
 				external: ['esbuild', 'esbuild-plugin-alias'],
 			}),
 		]);

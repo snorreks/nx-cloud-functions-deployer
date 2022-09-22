@@ -6,5 +6,12 @@
 	"eslint.validate": ["typescript"],
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"files.maxMemoryForLargeFilesMB": 6144,
-	"cSpell.words": ["Esbuild", "execa", "firestore", "metafile", "outfile"]
+	"cSpell.words": [
+		"buildable",
+		"Esbuild",
+		"execa",
+		"firestore",
+		"metafile",
+		"outfile"
+	]
 }

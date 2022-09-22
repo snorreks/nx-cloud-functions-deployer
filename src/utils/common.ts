@@ -26,3 +26,25 @@ export const toDisplayDuration = (time: number): string => {
 		}`;
 	}
 };
+
+// Convert all text -, _, and . space and pascalCase to snake_case
+export const toSnakeCase = (str: string): string => {
+	return str
+		.replace(/-/g, '_')
+		.replace(/\./g, '_')
+		.replace(/\s+/g, '_')
+		.replace(/([a-z])([A-Z])/g, '$1_$2')
+		.toLowerCase();
+};
+
+export const toCamelCase = (str: string): string => {
+	return str.length === 1
+		? str.toLowerCase()
+		: str
+				.replace(/^([A-Z])/, (m) => m[0].toLowerCase())
+				.replace(/[_-]([a-z0-9])/g, (m) => m[1].toUpperCase());
+};
+
+export const removeUnderScore = (str: string): string => {
+	return str.replace(/_/g, '');
+};

@@ -1,4 +1,4 @@
-import type { DeployableFileData } from '$types';
+import type { BuildFunctionData, DeployFunctionData } from '$types';
 import { logger } from '$utils';
 import chalk from 'chalk';
 import { createHash } from 'crypto';
@@ -18,14 +18,15 @@ const encoding = 'hex';
 export const checkForChanges = async ({
 	outputRoot,
 	functionName,
-}: DeployableFileData): Promise<[boolean, string] | [boolean]> => {
+	environmentFileCode,
+}: BuildFunctionData): Promise<[boolean, string] | [boolean]> => {
 	try {
 		const newCode = await readFile(
 			join(outputRoot, 'src/index.js'),
 			'utf8',
 		);
 		const cachedChecksum = await getCachedChecksum(outputRoot);
-		const newChecksum = generateChecksum(newCode);
+		const newChecksum = generateChecksum(newCode + environmentFileCode);
 		if (cachedChecksum && cachedChecksum === newChecksum) {
 			return [false];
 		}
@@ -55,12 +56,16 @@ const getCachedChecksum = async (
 	}
 };
 
-export const cacheChecksum = async (
-	{ outputRoot }: DeployableFileData,
-	newChecksum: string,
-): Promise<void> => {
+export const cacheChecksum = async ({
+	outputRoot,
+	checksum,
+}: DeployFunctionData): Promise<void> => {
 	try {
-		await writeFile(join(outputRoot, checksumFileName), newChecksum);
+		if (!checksum) {
+			return;
+		}
+
+		await writeFile(join(outputRoot, checksumFileName), checksum);
 	} catch (error) {
 		logger.debug(error);
 	}

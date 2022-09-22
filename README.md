@@ -39,6 +39,7 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 -   No longer export all functions in a index.ts file, but deploy each function individually for smaller bundles
 -   Configurable deploy options
 -   Deploy with Node 16 and esm
+-   Cloud functions v2 support
 
 ## <a name='Install'></a>Install
 
@@ -64,22 +65,28 @@ pnpm i -D firebase-tools
 
 You need to import the helper functions from `nx-cloud-functions-deployer`. This will allow you to configure your functions and make the functions stronger typed. The helper functions are:
 
--   `onCall` for `https.onCall` functions
--   `onRequest` for `https.onRequest` functions
--   `onWrite` for `firestore.document.onWrite` functions
--   `onCreate` for `firestore.document.onCreate` functions
--   `onUpdate` for `firestore.document.onUpdate` functions
--   `onDelete` for `firestore.document.onDelete` functions
--   `onRealtimeDatabaseWrite` for `database.ref.onWrite` functions
--   `onRealtimeDatabaseCreate` for `database.ref.onCreate` functions
--   `onRealtimeDatabaseUpdate` for `database.ref.onUpdate` functions
--   `onRealtimeDatabaseDelete` for `database.ref.onDelete` functions
--   `onObjectArchive` for `storage.object.onArchive` functions
--   `onObjectDelete` for `storage.object.onDelete` functions
--   `onObjectFinalize` for `storage.object.onFinalize` functions
--   `onObjectMetadataUpdate` for `storage.object.onMetadataUpdate` functions
--   `schedule` for `pubsub.schedule` functions
--   `topic` for `pubsub.topic` functions
+| Name                     | `firebase-functions` equivalent   | Description                |
+| ------------------------ | --------------------------------- | -------------------------- |
+| `onCall`                 | `https.onCall`                    |
+| `onRequest`              | `https.onRequest`                 |
+| `onWrite`                | `firestore.document.onWrite`      | See FirestoreExample       |
+| `onCreate`               | `firestore.document.onCreate`     | See FirestoreExample       |
+| `onUpdate`               | `firestore.document.onUpdate`     | See FirestoreExample       |
+| `onDelete`               | `firestore.document.onDelete`     | See FirestoreExample       |
+| `onDocumentWrite`        | `firestore.document.onWrite`      | Does not wrap the change   |
+| `onDocumentCreate`       | `firestore.document.onCreate`     | Does not wrap the snapshot |
+| `onDocumentUpdate`       | `firestore.document.onUpdate`     | Does not wrap the change   |
+| `onDocumentDelete`       | `firestore.document.onDelete`     | Does not wrap the snapshot |
+| `onRefWrite`             | `database.ref.onWrite`            |
+| `onRefCreate`            | `database.ref.onCreate`           |
+| `onRefUpdate`            | `database.ref.onUpdate`           |
+| `onRefDelete`            | `database.ref.onDelete`           |
+| `onObjectArchive`        | `storage.object.onArchive`        |
+| `onObjectDelete`         | `storage.object.onDelete`         |
+| `onObjectFinalize`       | `storage.object.onFinalize`       |
+| `onObjectMetadataUpdate` | `storage.object.onMetadataUpdate` |
+| `schedule`               | `pubsub.schedule`                 |
+| `topic`                  | `pubsub.topic`                    |
 
 #### <a name='ScheduleExample'></a>Schedule Example
 
@@ -100,7 +107,7 @@ export default schedule(
 
 #### <a name='FirestoreExample'></a>Firestore Example
 
-When you use the firestore helper functions. The data will automatically convert the snapshot to
+When you use the `onWrite`, `onCreate`, `onUpdate` or `onDelete` helper functions for firestore. The data will automatically convert the snapshot to
 
 ```typescript
 {
@@ -108,8 +115,6 @@ When you use the firestore helper functions. The data will automatically convert
 	id: documentSnapshot.id,
 }
 ```
-
-The helper functions are: `onCreate`, `onUpdate`, `onDelete` or `onWrite`.
 
 ```typescript
 // shared lib
@@ -173,6 +178,30 @@ export default onCall(
 		},
 	},
 );
+```
+
+#### <a name='HttpsExample'></a>Cloud functions v2 Example
+
+To enable cloud functions v2 you can use the `v2` to true in `onCall` and `onRequest` options.
+
+NB: the default function name can not be snake_case anymore, it will have no under score in it.
+
+See https://firebase.google.com/docs/functions/beta#other_limitations
+
+```typescript
+// api/my-function-name.ts
+import { onCall } from 'nx-cloud-functions-deployer';
+import type { MyFunctions } from '@my-project/shared';
+
+export default onCall<MyFunctions, 'my_function_name'>(
+	(data, context) => {
+		console.log(data); // { message: string }
+		return { response: true };
+	},
+	{
+		v2: true,
+	},
+); // the function name will be => myfunctionname
 ```
 
 ### <a name='FolderStructure'></a>Folder Structure
@@ -299,7 +328,7 @@ export default onCreate<UserData>(
 | `dryRun`                | If true, then it will only build the function and not deploy them.                                                                                                   | `false`                           | `d`, `dry`       |
 | `functionsDirectory`    | Relative path from the project root to the functions directory.                                                                                                      | `src/controllers`                 | `inputDirectory` |
 
-#### <a name='Deployexamples'></a>Deploy examples
+#### <a name='Deploy examples'></a>Deploy examples
 
 ```bash
 pnpm nx deploy functions --prod

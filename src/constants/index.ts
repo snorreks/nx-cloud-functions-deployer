@@ -1,35 +1,4 @@
-export const firestoreFunctionTypes = [
-	'onCreate',
-	'onUpdate',
-	'onDelete',
-	'onWrite',
-] as const;
-
-export const realtimeDatabaseFunctionTypes = [
-	'onRealtimeDatabaseCreate',
-	'onRealtimeDatabaseDelete',
-	'onRealtimeDatabaseUpdate',
-	'onRealtimeDatabaseWrite',
-] as const;
-
-export const storageFunctionTypes = [
-	'onObjectArchive',
-	'onObjectDelete',
-	'onObjectFinalize',
-	'onObjectMetadataUpdate',
-] as const;
-
-export const pubsubFunctionTypes = ['schedule', 'topic'] as const;
-
-export const httpsFunctionTypes = ['onCall', 'onRequest'] as const;
-
-export const functionTypes = [
-	...realtimeDatabaseFunctionTypes,
-	...firestoreFunctionTypes,
-	...storageFunctionTypes,
-	...pubsubFunctionTypes,
-	...httpsFunctionTypes,
-] as const;
+export * from './function-types';
 
 export const functionBuilders = [
 	'https',
