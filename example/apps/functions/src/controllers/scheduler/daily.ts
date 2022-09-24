@@ -6,5 +6,11 @@ export default schedule(
 	},
 	{
 		schedule: 'every day 00:00',
+		v2: false,
+
+		runtimeOptions: {
+			timeoutSeconds: 60,
+			memory: '128MB',
+		},
 	},
 );

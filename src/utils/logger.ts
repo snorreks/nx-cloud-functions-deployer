@@ -64,8 +64,6 @@ export interface LoggerInterface {
 
 	logFunctionDeployed(functionName: string, time: number): void;
 
-	logFunctionSkipped(functionName: string): void;
-
 	logFunctionFailed(functionName: string, errorMessage?: string): void;
 
 	/**
@@ -140,9 +138,6 @@ class LoggerService implements LoggerInterface {
 	get hasFailedFunctions(): boolean {
 		return this._failedDeployedFunctionAmount > 0;
 	}
-	private readonly _skippedDeployFunctions: {
-		functionName: string;
-	}[] = [];
 
 	private readonly _successfullyDeployedFunctions: {
 		functionName: string;
@@ -152,15 +147,6 @@ class LoggerService implements LoggerInterface {
 		functionName: string;
 		errorMessage?: string;
 	}[] = [];
-
-	logFunctionSkipped(functionName: string): void {
-		this._skippedDeployFunctions.push({ functionName });
-		this.spinnerLog(
-			chalk.green(
-				`No changes detected for ${chalk.bold(functionName)}, skipping`,
-			),
-		);
-	}
 
 	logFunctionDeployed(functionName: string, time: number): void {
 		this._successfullyDeployedFunctions.push({
@@ -194,14 +180,10 @@ class LoggerService implements LoggerInterface {
 	private get _failedDeployedFunctionAmount(): number {
 		return this._failedDeployedFunctions.length;
 	}
-	private get _skippedDeployFunctionsAmount(): number {
-		return this._skippedDeployFunctions.length;
-	}
 
 	get remainingFunctionsAmount(): number {
 		return (
 			this._deployableFunctionsAmount -
-			this._skippedDeployFunctionsAmount -
 			this._successfullyDeployedFunctionAmount -
 			this._failedDeployedFunctionAmount
 		);

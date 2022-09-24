@@ -85,7 +85,12 @@ const getBaseOptions = async (
 	]);
 
 	return {
-		...options,
+		dryRun: options.dryRun,
+		force: options.force,
+		only: options.only,
+		tsConfig: options.tsConfig,
+		region: options.region,
+		validate: options.validate,
 		environmentFileCode,
 		alias,
 		firebaseProjectId,

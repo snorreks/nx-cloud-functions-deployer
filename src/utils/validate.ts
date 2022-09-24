@@ -59,7 +59,7 @@ export const isDeployDirectory = (
 	deployDirectories.includes(deployFunction as DeployDirectory);
 
 export const isV2Function = (
-	deployFunction: BaseFunctionOptions,
+	deployFunction: Omit<BaseFunctionOptions, 'region'>,
 ): deployFunction is HttpsV2Options => !!(deployFunction as HttpsV2Options).v2;
 
 export const isV1unction = (

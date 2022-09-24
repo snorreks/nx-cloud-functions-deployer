@@ -35,6 +35,13 @@ export const checkForChanges = async (
 		);
 
 		if (cachedChecksum && cachedChecksum === newChecksum) {
+			logger.info(
+				chalk.green(
+					`${chalk.bold(
+						deployFunction.functionName,
+					)} has not changed, skipping deployment`,
+				),
+			);
 			return undefined;
 		}
 

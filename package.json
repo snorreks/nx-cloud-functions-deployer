@@ -1,7 +1,8 @@
 {
 	"name": "nx-cloud-functions-deployer",
 	"type": "module",
-	"version": "0.6.1",
+	"version": "0.6.2",
+	"description": "Nx plugin to deploy cloud functions",
 	"license": "MIT",
 	"main": "index.js",
 	"types": "index.d.ts",

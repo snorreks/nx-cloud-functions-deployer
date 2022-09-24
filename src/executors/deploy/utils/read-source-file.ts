@@ -52,7 +52,7 @@ export const getDeployableFileData = async (
 		...deployableFileLiteData,
 		...deployOptions,
 		rootFunctionBuilder,
-		region: deployOptions?.region ?? defaultRegion,
+		region: (deployOptions?.region as string | undefined) ?? defaultRegion,
 		outputRoot: join(outputDirectory, functionName),
 		functionName,
 		startTime: Date.now(),

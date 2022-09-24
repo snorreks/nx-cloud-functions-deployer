@@ -247,7 +247,10 @@ const toOptionsCode = (options: { [key: string]: unknown }): string => {
 const removeAllOtherOptions = (
 	buildFunctionData: BuildFunctionData | HttpsV2Options,
 ): Partial<BuildFunctionData> => {
-	const options: Partial<BuildFunctionData> = { ...buildFunctionData };
+	const options: Partial<BuildFunctionData> & { v2?: boolean } = {
+		...buildFunctionData,
+		region: buildFunctionData.region as string,
+	};
 
 	const keysToDelete: (keyof BuildFunctionData)[] = [
 		'absolutePath',
@@ -279,6 +282,8 @@ const removeAllOtherOptions = (
 		'validate',
 		'workspaceRoot',
 	];
+
+	delete options.v2;
 
 	for (const key of keysToDelete) {
 		delete options[key];

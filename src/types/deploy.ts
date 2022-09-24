@@ -177,7 +177,7 @@ export type BuildFunctionData<T extends FunctionBuilder = FunctionBuilder> =
 			 *
 			 * @see https://firebase.google.com/docs/functions/locations
 			 */
-			region: string;
+			region: string | string[];
 
 			startTime: number;
 
