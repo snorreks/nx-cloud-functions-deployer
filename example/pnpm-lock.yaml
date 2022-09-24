@@ -43,7 +43,7 @@ devDependencies:
   eslint-plugin-prettier: 4.2.1_cfn5x6ujhhgzv3423d6k7r2zzm
   firebase-tools: 11.10.0
   nx: 14.7.13
-  nx-cloud-functions-deployer: file:../dist_y7gm4zvzsphcby4tvk32iummhu
+  nx-cloud-functions-deployer: file:../dist_skpyvxvmrc3ci6lvgbv4sszujy
   prettier: 2.7.1
   prettier-plugin-jsdoc: 0.4.2_prettier@2.7.1
   tslib: 2.4.0
@@ -1227,7 +1227,7 @@ packages:
     resolution: {integrity: sha512-/l/VWsdt/aBXgjshLWOFyFt3IVdYypu5y2Wn2rOO1un6nkqIn8SLXzgIMYXFyYsRWDyF5EthmKJMIdJvk08grg==}
     engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
     dependencies:
-      '@sinclair/typebox': 0.24.42
+      '@sinclair/typebox': 0.24.43
     dev: true
 
   /@jest/source-map/28.1.2:
@@ -1608,8 +1608,8 @@ packages:
   /@protobufjs/utf8/1.1.0:
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
 
-  /@sinclair/typebox/0.24.42:
-    resolution: {integrity: sha512-d+2AtrHGyWek2u2ITF0lHRIv6Tt7X0dEHW+0rP+5aDCEjC3fiN2RBjrLD0yU0at52BcZbRGxLbAtXiR0hFCjYw==}
+  /@sinclair/typebox/0.24.43:
+    resolution: {integrity: sha512-1orQTvtazZmsPeBroJjysvsOQCYV2yjWlebkSY38pl5vr2tdLjEJ+LoxITlGNZaH2RE19WlAwQMkH/7C14wLfw==}
     dev: true
 
   /@sindresorhus/is/0.14.0:
@@ -2496,7 +2496,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001410
+      caniuse-lite: 1.0.30001411
       electron-to-chromium: 1.4.261
       node-releases: 2.0.6
       update-browserslist-db: 1.0.9_browserslist@4.21.4
@@ -2610,8 +2610,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /caniuse-lite/1.0.30001410:
-    resolution: {integrity: sha512-QoblBnuE+rG0lc3Ur9ltP5q47lbguipa/ncNMyyGuqPk44FxbScWAeEO+k5fSQ8WekdAK4mWqNs1rADDAiN5xQ==}
+  /caniuse-lite/1.0.30001411:
+    resolution: {integrity: sha512-HPnJKESKuhKpHvMY1/ux7J3nG7xG8jRuL4lbyCjDRm0doTNV91tcRk60xrP7Ym9DtJH/yuqntDWBJCqpXB4b7g==}
     dev: true
 
   /cardinal/2.1.1:
@@ -8643,7 +8643,7 @@ packages:
       readable-stream: 3.6.0
     dev: true
 
-  file:../dist_y7gm4zvzsphcby4tvk32iummhu:
+  file:../dist_skpyvxvmrc3ci6lvgbv4sszujy:
     resolution: {directory: ../dist, type: directory}
     id: file:../dist
     name: nx-cloud-functions-deployer
@@ -8651,7 +8651,9 @@ packages:
     peerDependencies:
       '@nrwl/devkit': '>14.5.0'
       firebase-tools: '>11.8.0'
+      tsx: '>3.9.0'
     dependencies:
       '@nrwl/devkit': 14.7.13_3rrar5b2nhuu5t554gmdjq5zou
       firebase-tools: 11.10.0
+      tsx: 3.9.0
     dev: true
