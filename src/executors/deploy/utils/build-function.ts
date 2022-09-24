@@ -1,7 +1,6 @@
 import { join } from 'node:path';
 import { executeEsbuild, logger } from '$utils';
 import type { BuildFunctionData, DeployFunctionData } from '$types';
-import { checkForChanges } from './checksum';
 import {
 	createDeployFirebaseJson,
 	createDeployPackageJson,
@@ -59,19 +58,7 @@ export const buildFunction = async (
 			return undefined;
 		}
 
-		const [shouldDeploy, newChecksum] = await checkForChanges(
-			buildFunctionData,
-		);
-
-		if (!shouldDeploy && !buildFunctionData.force) {
-			logger.logFunctionSkipped(functionName);
-			return undefined;
-		}
-
-		return {
-			...buildFunctionData,
-			checksum: newChecksum,
-		};
+		return buildFunctionData;
 	} catch (error) {
 		const errorMessage = (error as { message?: string } | undefined)
 			?.message;

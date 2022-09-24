@@ -1,6 +1,5 @@
 import type { BuildFunctionData, DeployFunctionData } from '$types';
 import { execute, logger } from '$utils';
-import { cacheChecksum } from './checksum';
 
 /**
  * Deploy the function deploy with firebase-tools
@@ -9,18 +8,17 @@ import { cacheChecksum } from './checksum';
  */
 export const deployFunction = async (
 	deployFunctionData: DeployFunctionData,
-): Promise<boolean> => {
+): Promise<DeployFunctionData | undefined> => {
 	const functionName = deployFunctionData.functionName;
 	try {
 		await executeFirebaseDeploy(deployFunctionData);
-		await cacheChecksum(deployFunctionData);
 
 		logger.logFunctionDeployed(
 			functionName,
 			Date.now() - deployFunctionData.startTime,
 		);
 
-		return true;
+		return deployFunctionData;
 	} catch (error) {
 		const errorMessage = (error as { message?: string } | undefined)
 			?.message;
@@ -28,7 +26,7 @@ export const deployFunction = async (
 		logger.logFunctionFailed(functionName, errorMessage);
 		logger.debug(error);
 
-		return false;
+		return;
 	}
 };
 

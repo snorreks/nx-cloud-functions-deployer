@@ -75,10 +75,10 @@ export const getDeployableFileData = async (
 		}
 	}
 
-	logger.spinnerLog(
-		` --- ${logger.isDryRun ? 'Building' : 'Deploying'}: ${chalk.bold(
+	logger.info(
+		`Found function ${chalk.bold(
 			buildFunctionData.functionName,
-		)}\n${relativeDeployFilePath}`,
+		)} in ${chalk.bold(buildFunctionData.relativeDeployFilePath)}`,
 	);
 
 	return buildFunctionData;

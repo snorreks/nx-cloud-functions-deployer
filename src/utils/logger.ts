@@ -46,9 +46,9 @@ export interface LoggerInterface {
 	/** The current log severity */
 	readonly currentLogSeverity: LogSeverity;
 
-	readonly isDryRun?: boolean;
-
 	readonly verbose: boolean;
+
+	readonly hasFailedFunctions: boolean;
 
 	/**
 	 * Sets the current log severity. If the severity is not set, it will never
@@ -56,11 +56,7 @@ export interface LoggerInterface {
 	 */
 	setLogSeverity(options: { silent?: boolean; verbose?: boolean }): void;
 
-	startSpinner(
-		deployableFunctionsAmount: number,
-		projectId: string,
-		isDryRun?: boolean,
-	): void;
+	startSpinner(deployableFunctionsAmount: number, projectId: string): void;
 
 	endSpinner(): void;
 
@@ -137,11 +133,16 @@ class LoggerService implements LoggerInterface {
 		return this.currentLogSeverity === 'debug';
 	}
 
-	isDryRun?: boolean;
-
 	private _spinner?: Spinner;
 	private _projectId?: string;
 	private _deployableFunctionsAmount = 0;
+
+	get hasFailedFunctions(): boolean {
+		return this._failedDeployedFunctionAmount > 0;
+	}
+	private readonly _skippedDeployFunctions: {
+		functionName: string;
+	}[] = [];
 
 	private readonly _successfullyDeployedFunctions: {
 		functionName: string;
@@ -153,7 +154,7 @@ class LoggerService implements LoggerInterface {
 	}[] = [];
 
 	logFunctionSkipped(functionName: string): void {
-		this._deployableFunctionsAmount--;
+		this._skippedDeployFunctions.push({ functionName });
 		this.spinnerLog(
 			chalk.green(
 				`No changes detected for ${chalk.bold(functionName)}, skipping`,
@@ -193,10 +194,14 @@ class LoggerService implements LoggerInterface {
 	private get _failedDeployedFunctionAmount(): number {
 		return this._failedDeployedFunctions.length;
 	}
+	private get _skippedDeployFunctionsAmount(): number {
+		return this._skippedDeployFunctions.length;
+	}
 
 	get remainingFunctionsAmount(): number {
 		return (
 			this._deployableFunctionsAmount -
+			this._skippedDeployFunctionsAmount -
 			this._successfullyDeployedFunctionAmount -
 			this._failedDeployedFunctionAmount
 		);
@@ -243,18 +248,13 @@ class LoggerService implements LoggerInterface {
 	}
 
 	get spinnerDefaultText(): string {
-		return `${this.isDryRun ? 'Building' : 'Deploying'} for ${
-			this._projectId
-		}: ${chalk.bold(this.remainingFunctionsAmount)} functions left`;
+		return `Deploying to ${chalk.bold(this._projectId)} ${
+			this.remainingFunctionsAmount
+		}/${this._deployableFunctionsAmount} functions`;
 	}
 
-	startSpinner(
-		deployableFunctionsAmount: number,
-		projectId: string,
-		isDryRun?: boolean,
-	): void {
+	startSpinner(deployableFunctionsAmount: number, projectId: string): void {
 		this._deployableFunctionsAmount = deployableFunctionsAmount;
-		this.isDryRun = isDryRun;
 		this._projectId = projectId;
 		this._spinner = createSpinner(this.spinnerDefaultText).start();
 	}
@@ -265,11 +265,7 @@ class LoggerService implements LoggerInterface {
 			!this._failedDeployedFunctionAmount
 		) {
 			this.spinnerSuccess(
-				chalk.green(
-					this.isDryRun
-						? 'Dry run successful'
-						: 'No changes detected, skipping deploy',
-				),
+				chalk.green('No changes detected, skipping deploy'),
 			);
 			return;
 		}
@@ -277,10 +273,8 @@ class LoggerService implements LoggerInterface {
 		if (this._successfullyDeployedFunctionAmount) {
 			this.spinnerSuccess(
 				chalk.green(
-					`Successfully ${
-						this.isDryRun ? 'build' : 'deployed'
-					} ${chalk.bold(
-						this._deployableFunctionsAmount,
+					`Successfully deployed ${chalk.bold(
+						this._successfullyDeployedFunctionAmount,
 					)} functions to ${this._projectId}:`,
 				),
 			);
@@ -296,9 +290,7 @@ class LoggerService implements LoggerInterface {
 		if (this._failedDeployedFunctionAmount) {
 			this.spinnerError(
 				chalk.red(
-					`Failed to ${
-						this.isDryRun ? 'build' : 'deploy'
-					} ${chalk.bold(
+					`Failed to deploy ${chalk.bold(
 						this._failedDeployedFunctionAmount,
 					)} functions to ${this._projectId}:`,
 				),

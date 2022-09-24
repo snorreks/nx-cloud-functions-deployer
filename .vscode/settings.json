@@ -8,10 +8,14 @@
 	"files.maxMemoryForLargeFilesMB": 6144,
 	"cSpell.words": [
 		"buildable",
+		"devkit",
 		"Esbuild",
 		"execa",
 		"firestore",
+		"JSONBIN",
 		"metafile",
-		"outfile"
+		"nrwl",
+		"outfile",
+		"preinstall"
 	]
 }

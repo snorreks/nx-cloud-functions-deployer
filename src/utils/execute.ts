@@ -24,3 +24,15 @@ export const execute = async ({
 		});
 	}
 };
+
+export const executeTypescriptFile = async ({
+	typescriptFilePath,
+	cwd,
+}: {
+	typescriptFilePath: string;
+	cwd: string;
+}) => {
+	await execa('node', ['--loader', 'tsx', typescriptFilePath], {
+		cwd,
+	});
+};

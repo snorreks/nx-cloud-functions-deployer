@@ -1,4 +1,3 @@
-import { unlinkSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type {
@@ -11,7 +10,6 @@ import type {
 	ScheduleOptions,
 	TopicOptions,
 } from '$types';
-import { logger } from '$utils';
 /** The name of the default exported function */
 const functionStart = 'functionStart';
 
@@ -24,7 +22,8 @@ export const createTemporaryIndexFunctionFile = async (
 		buildFunctionData.functionName,
 	);
 
-	await createTemporaryFile(temporaryFilePath, code);
+	await writeFile(temporaryFilePath, code);
+
 	return temporaryFilePath;
 };
 
@@ -81,47 +80,12 @@ const toDeployV2IndexCode = (buildFunctionData: BuildFunctionData<'https'>) => {
 	return fileCode;
 };
 
-const createTemporaryFile = async (
-	filePath: string,
-	code: string,
-): Promise<void> => {
-	process.on('exit', () => {
-		try {
-			unlinkSync(filePath);
-		} catch (error) {
-			logger.warn(error);
-		}
-	});
-
-	await writeFile(filePath, code);
-};
-
 const getV2Options = (options: HttpsV2Options): string => {
-	let v2Options = '{';
+	const optionsCode = toOptionsCode(
+		removeAllOtherOptions(options) as { [key: string]: unknown },
+	);
 
-	for (const [key, value] of Object.entries(options)) {
-		if (Array.isArray(value)) {
-			v2Options += `${key}: [${value
-				.map((v) => `${typeof v === 'string' ? `'${v}'` : v}`)
-				.join(',')}],`;
-			continue;
-		}
-
-		if (
-			typeof value !== 'string' &&
-			typeof value !== 'number' &&
-			typeof value !== 'boolean'
-		) {
-			continue;
-		}
-
-		v2Options += `${key}: ${
-			typeof value === 'string' ? `'${value}'` : value
-		},`;
-	}
-
-	v2Options += '}';
-	return v2Options;
+	return optionsCode;
 };
 
 const getRootFunctionCode = (buildFunctionData: BuildFunctionData): string => {
@@ -137,30 +101,11 @@ const getRootFunctionCode = (buildFunctionData: BuildFunctionData): string => {
 };
 
 const getRunWithCode = (runtimeOptions: RuntimeOptions): string => {
-	let runWithCode = 'runWith({';
-	for (const [key, value] of Object.entries(runtimeOptions)) {
-		if (Array.isArray(value)) {
-			runWithCode += `${key}: [${value
-				.map((v) => `${typeof v === 'string' ? `'${v}'` : v}`)
-				.join(',')}],`;
-			continue;
-		}
+	const optionsCode = toOptionsCode(
+		runtimeOptions as { [key: string]: unknown },
+	);
 
-		if (
-			typeof value !== 'string' &&
-			typeof value !== 'number' &&
-			typeof value !== 'boolean'
-		) {
-			continue;
-		}
-
-		runWithCode += `${key}: ${
-			typeof value === 'string' ? `'${value}'` : value
-		},`;
-	}
-
-	runWithCode += '})';
-	return runWithCode;
+	return `runWith(${optionsCode})`;
 };
 
 const toEndCode = (deployFileData: BuildFunctionData): string => {
@@ -264,4 +209,80 @@ const getTopicDeployCode = (deployOptions?: BaseFunctionOptions): string => {
 	pubsubCode += `onRun(${functionStart})`;
 
 	return pubsubCode;
+};
+
+const toOptionsCode = (options: { [key: string]: unknown }): string => {
+	let optionsCode = '{';
+	for (const [key, value] of Object.entries(options)) {
+		if (Array.isArray(value)) {
+			optionsCode += `'${key}': [${value
+				.map((v) => `${typeof v === 'string' ? `'${v}'` : v}`)
+				.join(',')}],`;
+			continue;
+		}
+
+		if (typeof value === 'object') {
+			optionsCode += `'${key}': ${toOptionsCode(
+				value as { [key: string]: unknown },
+			)},`;
+			continue;
+		}
+
+		if (
+			typeof value !== 'string' &&
+			typeof value !== 'number' &&
+			typeof value !== 'boolean'
+		) {
+			continue;
+		}
+
+		optionsCode += `'${key}': ${
+			typeof value === 'string' ? `'${value}'` : value
+		},`;
+	}
+	optionsCode += '}';
+	return optionsCode;
+};
+
+const removeAllOtherOptions = (
+	buildFunctionData: BuildFunctionData | HttpsV2Options,
+): Partial<BuildFunctionData> => {
+	const options: Partial<BuildFunctionData> = { ...buildFunctionData };
+
+	const keysToDelete: (keyof BuildFunctionData)[] = [
+		'absolutePath',
+		'alias',
+		'assets',
+		'checksum',
+		'cloudCacheFileName',
+		'defaultRegion',
+		'deployFunction',
+		'dryRun',
+		'environmentFileCode',
+		'external',
+		'firebaseProjectId',
+		'flavor',
+		'force',
+		'functionName',
+		'functionsDirectory',
+		'only',
+		'outputDirectory',
+		'outputRoot',
+		'packageManager',
+		'path',
+		'projectRoot',
+		'relativeDeployFilePath',
+		'rootFunctionBuilder',
+		'startTime',
+		'temporaryDirectory',
+		'tsConfig',
+		'validate',
+		'workspaceRoot',
+	];
+
+	for (const key of keysToDelete) {
+		delete options[key];
+	}
+
+	return options;
 };

@@ -1,5 +1,9 @@
 import type { Executor, ExecutorContext } from '@nrwl/devkit';
-import { mkdir } from 'node:fs/promises';
+import {
+	mkdir,
+	rm,
+	// rm,
+} from 'node:fs/promises';
 import { join } from 'node:path';
 import type {
 	BaseDeployOptions,
@@ -10,13 +14,18 @@ import type {
 import { deployFunction } from './utils/deploy-function';
 import { buildFunction } from './utils/build-function';
 import {
-	getDeployableFiles,
+	getBuildableFiles,
 	getEnvironmentFileCode,
 	getEsbuildAliasFromTsConfig,
 	validateProject,
 } from './utils/read-project';
 import { logger, getLimiter } from '$utils';
 import { EventEmitter } from 'events';
+import {
+	getOnlineChecksum,
+	updateOnlineChecksum,
+} from './utils/online-checksum';
+import { cacheChecksumLocal, checkForChanges } from './utils/checksum';
 
 const getBaseOptions = async (
 	options: DeployExecutorOptions,
@@ -87,6 +96,7 @@ const getBaseOptions = async (
 		flavor,
 		functionsDirectory: options.functionsDirectory ?? 'src/controllers',
 		packageManager,
+		cloudCacheFileName: options.cloudCacheFileName ?? 'cloud-cache.ts',
 		defaultRegion: options.region ?? 'us-central1',
 	};
 };
@@ -96,7 +106,7 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 	const { only } = options;
 	const baseOptions = await getBaseOptions(options, context);
 
-	let buildableFiles = await getDeployableFiles(baseOptions);
+	let buildableFiles = await getBuildableFiles(baseOptions);
 
 	if (only) {
 		const onlyFunctionNames = only?.split(',').map((name) => name.trim());
@@ -117,36 +127,76 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 		}
 	}
 
-	const deployableFunctions = (
+	const onlineChecksum = await getOnlineChecksum(baseOptions);
+
+	if (onlineChecksum) {
+		for (const [functionName, checksum] of Object.entries(onlineChecksum)) {
+			const deployableFunction = buildableFiles.find(
+				(file) => file.functionName === functionName,
+			);
+			if (deployableFunction) {
+				deployableFunction.checksum = checksum;
+			}
+		}
+	} else {
+		logger.info('No online checksum found');
+	}
+
+	const isDeployableFunction = (
+		deployableFunction?: DeployFunctionData,
+	): deployableFunction is DeployFunctionData => !!deployableFunction;
+
+	let deployableFunctions = (
 		await Promise.all(buildableFiles.map(buildFunction))
-	).filter(
-		(deployableFunction): deployableFunction is DeployFunctionData =>
-			!!deployableFunction,
-	);
+	).filter(isDeployableFunction);
+
+	deployableFunctions = (
+		await Promise.all(buildableFiles.map(checkForChanges))
+	).filter(isDeployableFunction);
 
 	const deployableFunctionsAmount = deployableFunctions.length;
 
 	logger.startSpinner(
 		deployableFunctionsAmount,
 		baseOptions.firebaseProjectId,
-		baseOptions.dryRun,
 	);
 
-	const limit = getLimiter(options.concurrency ?? 10);
+	const limit = getLimiter<DeployFunctionData | undefined>(
+		options.concurrency ?? 10,
+	);
 	if (deployableFunctionsAmount > 10) {
 		EventEmitter.defaultMaxListeners = deployableFunctionsAmount;
 	}
 
-	const responsesOk = await Promise.all(
-		deployableFunctions.map((deployableFunction) =>
-			limit(() => deployFunction(deployableFunction)),
-		),
-	);
+	const deployedFiles = (
+		await Promise.all(
+			deployableFunctions.map((deployableFunction) =>
+				limit(() => deployFunction(deployableFunction)),
+			),
+		)
+	)
+		.filter(isDeployableFunction)
+		.filter((deployableFunction) => !!deployableFunction.checksum);
+
+	if (onlineChecksum) {
+		await updateOnlineChecksum(deployedFiles);
+	} else {
+		await Promise.all(deployableFunctions.map(cacheChecksumLocal));
+	}
+
+	if (!options.debug) {
+		try {
+			await rm(baseOptions.temporaryDirectory, { recursive: true });
+		} catch (error) {
+			logger.warn('Could not delete temporary directory');
+			logger.debug(error);
+		}
+	}
 
 	logger.endSpinner();
 
 	return {
-		success: responsesOk.every((responseOk) => responseOk) ? true : false,
+		success: !logger.hasFailedFunctions,
 	};
 };
 

@@ -68,12 +68,12 @@ class Queue<ValueType extends () => unknown = () => unknown>
  * @param concurrency The maximum amount of concurrent executions.
  * @returns A function that accepts a function to limit.
  */
-export const getLimiter = <
-	Params extends unknown[],
-	T extends (...params: Params) => unknown,
->(
+export const getLimiter = <ReturnType>(
 	concurrency: number,
-): ((fn: T, ...args: Params) => Promise<unknown>) => {
+): ((
+	fn: (...params: unknown[]) => Promise<ReturnType>,
+	...args: unknown[]
+) => Promise<ReturnType>) => {
 	const queue = new Queue();
 	let activeCount = 0;
 
@@ -89,9 +89,9 @@ export const getLimiter = <
 	};
 
 	const run = async (
-		fn: T,
-		resolve: (value: unknown) => void,
-		args: Params,
+		fn: (...params: unknown[]) => Promise<ReturnType>,
+		resolve: (value: Promise<ReturnType>) => void,
+		args: unknown[],
 	) => {
 		activeCount++;
 		const result = (async () => fn(...args))();
@@ -108,9 +108,9 @@ export const getLimiter = <
 	};
 
 	const enqueue = (
-		fn: T,
-		resolve: (value: unknown) => void,
-		args: Params,
+		fn: (...params: unknown[]) => Promise<ReturnType>,
+		resolve: (value: Promise<ReturnType>) => void,
+		args: unknown[],
 	) => {
 		queue.enqueue(run.bind(undefined, fn, resolve, args));
 
@@ -130,8 +130,11 @@ export const getLimiter = <
 		})();
 	};
 
-	const generator = (fn: T, ...args: Params) =>
-		new Promise((resolve) => {
+	const generator = (
+		fn: (...params: unknown[]) => Promise<ReturnType>,
+		...args: unknown[]
+	): Promise<ReturnType> =>
+		new Promise<ReturnType>((resolve) => {
 			enqueue(fn, resolve, args);
 		});
 

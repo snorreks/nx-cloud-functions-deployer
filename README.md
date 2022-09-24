@@ -5,32 +5,26 @@
 
 This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud Functions for Firebase](https://firebase.google.com/products/functions?gclsrc=ds&gclsrc=ds&gclid=CNmq16LU-_kCFa5IwgodA9cF8A).
 
-<!-- vscode-markdown-toc -->
+- [Features](#features)
+- [Install](#install)
+- [Description](#description)
+- [Prerequisites](#prerequisites)
+- [Helper Functions](#helper-functions)
+	- [Schedule Example](#schedule-example)
+	- [Firestore Example](#firestore-example)
+	- [Https Example](#https-example)
+	- [Runtime Options](#runtime-options)
+	- [Cloud functions v2 Example](#cloud-functions-v2-example)
+- [Folder Structure](#folder-structure)
+	- [Database/Firestore Structure](#databasefirestore-structure)
+	- [Custom Structure](#custom-structure)
+- [Usage](#usage)
+	- [Add the plugin to your project.json](#add-the-plugin-to-your-projectjson)
+	- [Options](#options)
+		- [Deploy examples](#deploy-examples)
+- [Cloud cache](#cloud-cache)
 
--   [Features<!-- omit in toc -->](#Features--omitintoc--)
--   [Install](#Install)
--   [Description](#Description)
-    -   [Prerequisites](#Prerequisites)
-    -   [Helper Functions](#HelperFunctions)
-        -   [Schedule Example](#ScheduleExample)
-        -   [Firestore Example](#FirestoreExample)
-        -   [Https Example](#HttpsExample)
-        -   [Runtime Options](#RuntimeOptions)
-    -   [Folder Structure](#FolderStructure)
-        -   [Database/Firestore Structure](#DatabaseFirestoreStructure)
-        -   [Custom Structure](#CustomStructure)
--   [Usage](#Usage)
-    -   [Add the plugin to your project.json](#Addtheplugintoyourproject.json)
-    -   [Options](#Options)
-        -   [Deploy examples](#Deployexamples)
-
-<!-- vscode-markdown-toc-config
-	numbering=false
-	autoSave=true
-	/vscode-markdown-toc-config -->
-<!-- /vscode-markdown-toc -->
-
-## Features<!-- omit in toc -->
+## Features
 
 -   Alias support (both for internal in the project and shared libs)
 -   Support for multiple [environments](https://firebase.google.com/docs/functions/config-env)
@@ -41,19 +35,19 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 -   Deploy with Node 16 and esm
 -   Cloud functions v2 support
 
-## <a name='Install'></a>Install
+## Install
 
 ```bash
 pnpm i -D nx-cloud-functions-deployer
 ```
 
-## <a name='Description'></a>Description
+## Description
 
 This plugin adds a `deploy` executor that will build and deploy your cloud functions.
 
 It uses esbuild to bundle your functions and then uses the [firebase-tools](https://www.npmjs.com/package/firebase-tools) to deploy them.
 
-### <a name='Prerequisites'></a>Prerequisites
+## Prerequisites
 
 -   You will need to have the [firebase-tools](https://www.npmjs.com/package/firebase-tools) installed. Either globally or locally in your project. If you install it globally you have to set `packageManager` option to `global`.
 
@@ -61,7 +55,13 @@ It uses esbuild to bundle your functions and then uses the [firebase-tools](http
 pnpm i -D firebase-tools
 ```
 
-### <a name='HelperFunctions'></a>Helper Functions
+If you want to use cloud cache you will also need [tsx](https://www.npmjs.com/package/tsx) installed.
+
+```bash
+pnpm i -D tsx
+```
+
+## Helper Functions
 
 You need to import the helper functions from `nx-cloud-functions-deployer`. This will allow you to configure your functions and make the functions stronger typed. The helper functions are:
 
@@ -88,7 +88,7 @@ You need to import the helper functions from `nx-cloud-functions-deployer`. This
 | `schedule`               | `pubsub.schedule`                 |
 | `topic`                  | `pubsub.topic`                    |
 
-#### <a name='ScheduleExample'></a>Schedule Example
+### Schedule Example
 
 For schedule functions options.schedule is required.
 
@@ -105,7 +105,7 @@ export default schedule(
 );
 ```
 
-#### <a name='FirestoreExample'></a>Firestore Example
+### Firestore Example
 
 When you use the `onWrite`, `onCreate`, `onUpdate` or `onDelete` helper functions for firestore. The data will automatically convert the snapshot to
 
@@ -132,7 +132,7 @@ export default onCreate<UserData>((user) => {
 });
 ```
 
-#### <a name='HttpsExample'></a>Https Example
+### Https Example
 
 onCall and onRequest can give even better typing with frontend. By importing a interface from a shared file.
 
@@ -160,7 +160,7 @@ export default onCall<MyFunctions, 'my_function_name'>((data, context) => {
 });
 ```
 
-#### <a name='RuntimeOptions'></a>Runtime Options
+### Runtime Options
 
 To configure runtime options you can use the `runtimeOptions` option.
 
@@ -180,7 +180,7 @@ export default onCall(
 );
 ```
 
-#### <a name='HttpsExample'></a>Cloud functions v2 Example
+### Cloud functions v2 Example
 
 To enable cloud functions v2 you can use the `v2` to true in `onCall` and `onRequest` options.
 
@@ -204,7 +204,7 @@ export default onCall<MyFunctions, 'my_function_name'>(
 ); // the function name will be => myfunctionname
 ```
 
-### <a name='FolderStructure'></a>Folder Structure
+## Folder Structure
 
 See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/functions/src/controllers) for a better understanding of the folder structure.
 
@@ -239,7 +239,7 @@ The folders in controllers will different deployment types:
 
 The default function names will be the path from the `api/callable/database/scheduler` folder to the file. For example, the function `controllers/api/stripe/webhook_endpoint.ts` will be deployed as `stripe_webhook_endpoint`.
 
-#### <a name='DatabaseFirestoreStructure'></a>Database/Firestore Structure
+### Database/Firestore Structure
 
 The database/firestore structure is a little different. It is recommend the folder structure to match to structure in the database/firestore. For example, if you have a firestore structure like this:
 
@@ -266,7 +266,7 @@ Then you would have the following folder structure:
 
 The default function name for database/firestore functions will omit [id]. Example: `controllers/database/users/[id]/created.ts` will be deployed as `users_created`.
 
-#### <a name='CustomStructure'></a>Custom Structure
+### Custom Structure
 
 To customize the folder structure, change the `functionsDirectory` in options.
 If you change the structure you have to specify the `documentPath` for firestore functions and `ref` for database functions.
@@ -289,9 +289,9 @@ export default onCreate<UserData>(
 );
 ```
 
-## <a name='Usage'></a>Usage
+## Usage
 
-### <a name='Addtheplugintoyourproject.json'></a>Add the plugin to your project.json
+### Add the plugin to your project.json
 
 ```json
 ...
@@ -305,7 +305,7 @@ export default onCreate<UserData>(
 		},
 ```
 
-### <a name='Options'></a>Options
+### Options
 
 | Option                  | Description                                                                                                                                                          | Default                           | Alias            |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------- |
@@ -328,7 +328,7 @@ export default onCreate<UserData>(
 | `dryRun`                | If true, then it will only build the function and not deploy them.                                                                                                   | `false`                           | `d`, `dry`       |
 | `functionsDirectory`    | Relative path from the project root to the functions directory.                                                                                                      | `src/controllers`                 | `inputDirectory` |
 
-#### <a name='Deploy examples'></a>Deploy examples
+#### Deploy examples
 
 ```bash
 pnpm nx deploy functions --prod
@@ -341,3 +341,25 @@ pnpm nx deploy functions --dev
 ```bash
 pnpm nx deploy functions --dev --only my_function,my_other_function --f
 ```
+
+## Cloud cache
+
+It is also possible to cache the changes for the deployed functions. To do this create a file in the project directory called `cloud-cache.ts`.
+The file needs to export two function `fetch` and `update` which will be called by the plugin.
+
+```typescript
+import type {
+	CloudCacheFetch,
+	CloudCacheUpdate,
+} from 'nx-cloud-functions-deployer';
+
+export const fetch: CloudCacheFetch = async () => {
+	// fetch the cache from the cloud
+};
+
+export const update: CloudCacheUpdate = async (newCloudCache) => {
+	// update the cache in the cloud
+};
+```
+
+See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/cloud-cache.ts) for how to setup cloud cache with [jsonbin](https://jsonbin.io/)

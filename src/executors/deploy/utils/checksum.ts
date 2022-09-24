@@ -1,5 +1,5 @@
-import type { BuildFunctionData, DeployFunctionData } from '$types';
-import { logger } from '$utils';
+import type { DeployFunctionData } from '$types';
+import { logger, trimEnvironmentCode } from '$utils';
 import chalk from 'chalk';
 import { createHash } from 'crypto';
 import { readFile, writeFile } from 'node:fs/promises';
@@ -12,32 +12,42 @@ const encoding = 'hex';
 /**
  * Check for changes in the code of the function
  *
- * @param outputRoot The output root directory of the function
- * @returns if the first element is true, then the function should be deployed
+ * @returns the deploy function data if the code has changed or it failed to get
+ *   the cached checksum
  */
-export const checkForChanges = async ({
-	outputRoot,
-	functionName,
-	environmentFileCode,
-}: BuildFunctionData): Promise<[boolean, string] | [boolean]> => {
+export const checkForChanges = async (
+	deployFunction: DeployFunctionData,
+): Promise<DeployFunctionData | undefined> => {
 	try {
+		const { environmentFileCode, outputRoot } = deployFunction;
+
 		const newCode = await readFile(
 			join(outputRoot, 'src/index.js'),
 			'utf8',
 		);
-		const cachedChecksum = await getCachedChecksum(outputRoot);
-		const newChecksum = generateChecksum(newCode + environmentFileCode);
+		const cachedChecksum =
+			deployFunction.checksum ?? (await getCachedChecksum(outputRoot));
+		const newChecksum = generateChecksum(
+			newCode +
+				(environmentFileCode
+					? trimEnvironmentCode(environmentFileCode)
+					: ''),
+		);
+
 		if (cachedChecksum && cachedChecksum === newChecksum) {
-			return [false];
+			return undefined;
 		}
 
-		return [true, newChecksum];
+		deployFunction.checksum = newChecksum;
+		return deployFunction;
 	} catch (error) {
 		logger.warn(
-			chalk.yellow(`Error checking for changes for ${functionName}.`),
+			chalk.yellow(
+				`Error checking for local changes with ${deployFunction.functionName}.`,
+			),
 		);
 		logger.debug(error);
-		return [true];
+		return deployFunction;
 	}
 };
 
@@ -56,7 +66,7 @@ const getCachedChecksum = async (
 	}
 };
 
-export const cacheChecksum = async ({
+export const cacheChecksumLocal = async ({
 	outputRoot,
 	checksum,
 }: DeployFunctionData): Promise<void> => {

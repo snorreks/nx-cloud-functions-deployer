@@ -48,6 +48,14 @@ interface SharedDeployExecutorBaseOptions {
 
 	/** Only deploy the given function names, separated by a comma */
 	only?: string;
+
+	/**
+	 * The name of the file in the root project that will be used to fetch and
+	 * update the cloud cache.
+	 *
+	 * @default 'cloud-cache.ts'
+	 */
+	cloudCacheFileName: string;
 }
 
 export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
@@ -108,6 +116,8 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	 * @default undefined
 	 */
 	envString?: string;
+
+	debug?: boolean;
 }
 
 export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
@@ -170,9 +180,9 @@ export type BuildFunctionData<T extends FunctionBuilder = FunctionBuilder> =
 			region: string;
 
 			startTime: number;
+
+			checksum?: string;
 		};
 
 export type DeployFunctionData<T extends FunctionBuilder = FunctionBuilder> =
-	BuildFunctionData<T> & {
-		checksum?: string;
-	};
+	BuildFunctionData<T>;

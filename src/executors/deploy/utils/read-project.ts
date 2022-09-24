@@ -38,7 +38,7 @@ export const validateProject = async ({
 	});
 };
 
-export const getDeployableFiles = async (
+export const getBuildableFiles = async (
 	options: BaseDeployOptions,
 ): Promise<BuildFunctionData[]> => {
 	const { projectRoot, functionsDirectory, only } = options;
