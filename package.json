@@ -1,7 +1,7 @@
 {
 	"name": "nx-cloud-functions-deployer",
 	"type": "module",
-	"version": "0.6.2",
+	"version": "0.7.0",
 	"description": "Nx plugin to deploy cloud functions",
 	"license": "MIT",
 	"main": "index.js",
@@ -20,7 +20,9 @@
 		"monorepo",
 		"typescript",
 		"esm",
-		"node"
+		"node",
+		"scripts",
+		"cache"
 	],
 	"scripts": {
 		"build": "tsx ./build-package.ts",
