@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 import alias from 'esbuild-plugin-alias';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
-import execa from 'execa';
+import nvexeca from 'nvexeca';
 import { replaceTscAliasPaths } from 'tsc-alias';
 import { BuildOptions } from 'esbuild';
 import { join } from 'node:path';
@@ -27,8 +27,9 @@ const copyPackageJson = async () => {
 		const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
 		const newPackageJson = {
 			...packageJson,
+			// should we not show the dependencies in the package.json?
 			// dependencies: {},
-			devDependencies: {},
+			// devDependencies: {},
 			scripts: {},
 			type: 'commonjs',
 		};
@@ -99,9 +100,9 @@ const compileTypescriptFiles = async () => {
 		};
 
 		await Promise.all([
-			execa('pnpm', ['tsc', '-noEmit']),
+			nvexeca('16', 'pnpm', ['tsc', '-noEmit']),
 			(async () => {
-				await execa('pnpm', [
+				await nvexeca('16', 'pnpm', [
 					'tsc',
 					'--project',
 					'./tsconfig.types.json',

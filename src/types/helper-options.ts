@@ -14,6 +14,11 @@ export interface BaseFunctionOptions<T extends string = string> {
 	 */
 	functionName?: T;
 
+	/**
+	 * Some packages needs to be installed as external dependencies.
+	 *
+	 * @example external: ['sharp'] // will npm i sharp in dist
+	 */
 	external?: string[];
 
 	/**
@@ -34,7 +39,9 @@ export interface BaseFunctionOptions<T extends string = string> {
 
 	/**
 	 * The runtime options for the function with `runWith`. If not provided
-	 * won't use `runWith`
+	 * won't use `runWith`.
+	 *
+	 * Only available for v1 functions.
 	 *
 	 * @see https://firebase.google.com/docs/functions/manage-functions#set_runtime_options
 	 */
@@ -43,6 +50,8 @@ export interface BaseFunctionOptions<T extends string = string> {
 
 export interface HttpsV1Options<T extends string | number | symbol = string>
 	extends BaseFunctionOptions<Extract<T, string>> {
+	/** Will deploy the function as a v1 function. */
+
 	v2?: false;
 }
 
@@ -52,6 +61,11 @@ export interface HttpsV2Options<T extends string | number | symbol = string>
 			'region' | 'runtimeOptions'
 		>,
 		FirebaseHttpsV2Options {
+	/**
+	 * Will deploy the function as a v2 function.
+	 *
+	 * NB: The function name of v2 functions cannot contain a underscore (`_`).
+	 */
 	v2: true;
 }
 

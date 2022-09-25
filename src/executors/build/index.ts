@@ -1,9 +1,8 @@
 import type { Executor } from '@nrwl/devkit';
 import type { BuildExecutorOptions } from '$types';
-import { executeEsbuild } from '$utils';
+import { executeEsbuild, runCommand } from '$utils';
 import { join } from 'path';
 import { writeFile } from 'fs/promises';
-import execa from 'execa';
 import { getEsbuildAliasFromTsConfig } from '../deploy/utils/read-project';
 
 const executor: Executor<BuildExecutorOptions> = async (options, context) => {
@@ -54,7 +53,9 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	const external = options?.external;
 
 	if (external && external.length > 0) {
-		await execa('npm', ['i', ...external], {
+		await runCommand({
+			command: 'npm',
+			commandArguments: ['install', ...external],
 			cwd: outputRoot,
 		});
 	}

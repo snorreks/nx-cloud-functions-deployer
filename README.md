@@ -58,7 +58,7 @@ It uses esbuild to bundle your functions and then uses the [firebase-tools](http
 pnpm i -D firebase-tools
 ```
 
-If you want to use cloud cache you will also need [tsx](https://www.npmjs.com/package/tsx) installed.
+If you want to use [Cloud cache](#cloud-cache) or run [scripts](#script) you will also need [tsx](https://www.npmjs.com/package/tsx) installed.
 
 ```bash
 pnpm i -D tsx

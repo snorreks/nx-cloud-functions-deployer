@@ -103,7 +103,7 @@ export const nodeRunFile = async ({
  * @param env the environments ot pass to the command
  * @returns the result of the command
  */
-const runCommand = ({
+export const runCommand = ({
 	command,
 	commandArguments = [],
 	cwd,

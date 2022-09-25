@@ -2,8 +2,7 @@ import { writeFile } from 'node:fs/promises';
 import { copy } from 'fs-extra';
 import { join } from 'node:path';
 import type { BuildFunctionData } from '$types';
-import execa from 'execa';
-
+import { runCommand } from '$utils/execute';
 export const createDeployFirebaseJson = async ({
 	outputRoot,
 }: BuildFunctionData) => {
@@ -39,7 +38,9 @@ export const createDeployPackageJson = async ({
 	);
 
 	if (external && external.length > 0) {
-		await execa('npm', ['i', ...external], {
+		await runCommand({
+			command: 'npm',
+			commandArguments: ['install', ...external],
 			cwd: outputRoot,
 		});
 	}
