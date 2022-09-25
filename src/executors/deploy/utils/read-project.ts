@@ -3,7 +3,6 @@ import { join, resolve } from 'node:path';
 import type {
 	BaseDeployOptions,
 	BuildFunctionData,
-	DeployExecutorOptions,
 	EsbuildAlias,
 } from '$types';
 import { validateDeployFiles } from './typescript-parser';
@@ -15,26 +14,26 @@ export const validateProject = async ({
 	packageManager,
 	projectRoot,
 	validate,
-	tsConfig,
+	tsconfig,
 }: Pick<
 	BaseDeployOptions,
-	'packageManager' | 'projectRoot' | 'validate' | 'tsConfig'
+	'packageManager' | 'projectRoot' | 'validate' | 'tsconfig'
 >) => {
 	if (!validate) {
 		return;
 	}
-	const options: string[] = ['tsc', '-noEmit'];
+	const commandArguments: string[] = ['tsc', '-noEmit'];
 
-	if (tsConfig) {
-		options.push('--project', tsConfig);
+	if (tsconfig) {
+		commandArguments.push('--project', tsconfig);
 	}
 	if (logger.verbose) {
-		options.push('--verbose');
+		commandArguments.push('--verbose');
 	}
 	await execute({
 		packageManager,
 		cwd: projectRoot,
-		options,
+		commandArguments,
 	});
 };
 
@@ -172,33 +171,6 @@ export const getEsbuildAliasFromTsConfig = async (
 		return alias;
 	} catch (error) {
 		logger.error('getEsbuildAliasFromTsConfig', error);
-		return;
-	}
-};
-
-export const getEnvironmentFileCode = async (
-	options: DeployExecutorOptions,
-	projectRoot: string,
-): Promise<string | undefined> => {
-	const { prod, envString } = options;
-	const prodEnvFileName = options.prodEnvFileName || '.env.prod';
-	const devEnvFileName = options.devEnvFileName || '.env.dev';
-	const envFileName = prod ? prodEnvFileName : devEnvFileName;
-	try {
-		if (envString) {
-			return envString;
-		}
-
-		const environmentFileCode = await readFile(
-			join(projectRoot, envFileName),
-			'utf8',
-		);
-		return environmentFileCode;
-	} catch (error) {
-		logger.warn(
-			`Could not find environment file "${envFileName}", Environment variables will not be available in the deployed functions.`,
-		);
-		logger.debug(error);
 		return;
 	}
 };

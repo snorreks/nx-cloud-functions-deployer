@@ -1,5 +1,5 @@
 import type { DeployFunctionData } from '$types';
-import { logger, trimEnvironmentCode } from '$utils';
+import { logger } from '$utils';
 import chalk from 'chalk';
 import { createHash } from 'crypto';
 import { readFile, writeFile } from 'node:fs/promises';
@@ -27,12 +27,7 @@ export const checkForChanges = async (
 		);
 		const cachedChecksum =
 			deployFunction.checksum ?? (await getCachedChecksum(outputRoot));
-		const newChecksum = generateChecksum(
-			newCode +
-				(environmentFileCode
-					? trimEnvironmentCode(environmentFileCode)
-					: ''),
-		);
+		const newChecksum = generateChecksum(newCode + environmentFileCode);
 
 		if (cachedChecksum && cachedChecksum === newChecksum) {
 			logger.info(

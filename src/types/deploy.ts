@@ -1,7 +1,7 @@
+import type { Flavor } from './common';
 import type { DeployFunction, FunctionBuilder } from './function-types';
 import type { FunctionOptions } from './helper-options';
 
-export type Flavor = 'dev' | 'prod';
 export type EsbuildAlias = { [key: string]: string };
 
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'global';
@@ -12,7 +12,7 @@ interface SharedDeployExecutorBaseOptions {
 	 *
 	 * @default 'tsconfig.json'
 	 */
-	tsConfig?: string;
+	tsconfig?: string;
 	/** The default region is us-central1 */
 	region?: string;
 	/** Only build the function, don't deploy it */
@@ -53,7 +53,7 @@ interface SharedDeployExecutorBaseOptions {
 	 * The name of the file in the root project that will be used to fetch and
 	 * update the cloud cache.
 	 *
-	 * @default 'cloud-cache.ts'
+	 * @default 'functions-cache.{flavor}.ts'
 	 */
 	cloudCacheFileName: string;
 }

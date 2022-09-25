@@ -1,8 +1,11 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { BaseDeployOptions, CloudCache, DeployFunctionData } from '$types';
-import { executeTypescriptFile, logger } from '$utils';
-import { platform } from 'node:os';
+import type {
+	BaseDeployOptions,
+	FunctionsCache,
+	DeployFunctionData,
+} from '$types';
+import { runFile, logger, toImportPath } from '$utils';
 
 const readFileName = 'read.ts';
 const updateFileName = 'update.ts';
@@ -12,7 +15,8 @@ export const getOnlineChecksum = async ({
 	projectRoot,
 	temporaryDirectory,
 	cloudCacheFileName,
-}: BaseDeployOptions): Promise<CloudCache | undefined> => {
+	packageManager,
+}: BaseDeployOptions): Promise<FunctionsCache | undefined> => {
 	try {
 		const fetchFilePath = join(projectRoot, cloudCacheFileName);
 		const fetchExecuteFilePath = join(temporaryDirectory, readFileName);
@@ -26,14 +30,15 @@ export const getOnlineChecksum = async ({
 
 		await writeFile(fetchExecuteFilePath, executeFetchFileCode);
 
-		await executeTypescriptFile({
+		await runFile({
+			packageManager,
 			cwd: temporaryDirectory,
-			typescriptFilePath: fetchExecuteFilePath,
+			runScriptFilePath: fetchExecuteFilePath,
 		});
 
 		const onlineChecksumJson = await readFile(jsonFilePath, 'utf-8');
 
-		const onlineChecksum = JSON.parse(onlineChecksumJson) as CloudCache;
+		const onlineChecksum = JSON.parse(onlineChecksumJson) as FunctionsCache;
 
 		return onlineChecksum;
 	} catch (error) {
@@ -50,15 +55,19 @@ export const updateOnlineChecksum = async (
 		if (!firstDeployedFile) {
 			return;
 		}
-		const { projectRoot, temporaryDirectory, cloudCacheFileName } =
-			firstDeployedFile;
+		const {
+			projectRoot,
+			temporaryDirectory,
+			cloudCacheFileName,
+			packageManager,
+		} = firstDeployedFile;
 
 		const updateFilePath = join(projectRoot, cloudCacheFileName);
 		const executeUpdateFilePath = join(temporaryDirectory, updateFileName);
 
 		const onlineChecksum = deployedFiles
 			.filter(({ checksum }) => !!checksum)
-			.reduce<CloudCache>(
+			.reduce<FunctionsCache>(
 				(acc, { functionName, checksum }) => ({
 					...acc,
 					[functionName]: checksum as string,
@@ -75,9 +84,10 @@ export const updateOnlineChecksum = async (
 
 		await writeFile(executeUpdateFilePath, executeUpdateFileCode);
 
-		await executeTypescriptFile({
+		await runFile({
+			packageManager,
 			cwd: temporaryDirectory,
-			typescriptFilePath: executeUpdateFilePath,
+			runScriptFilePath: executeUpdateFilePath,
 		});
 	} catch (error) {
 		logger.warn('Failed to update online checksum');
@@ -113,7 +123,7 @@ const toExecuteUpdateCode = ({
 	newOnlineChecksum,
 }: {
 	updateFilePath: string;
-	newOnlineChecksum: CloudCache;
+	newOnlineChecksum: FunctionsCache;
 }): string => {
 	let executeUpdateCode = `
         import { update } from '${toImportPath(updateFilePath)}'
@@ -129,16 +139,4 @@ const toExecuteUpdateCode = ({
     `;
 
 	return executeUpdateCode;
-};
-
-const toImportPath = (typescriptFilePath: string): string => {
-	const importPath = typescriptFilePath
-		.replace('.ts', '')
-		.replaceAll('\\', '/');
-
-	if (platform() === 'win32') {
-		return `file://${importPath}`;
-	}
-
-	return importPath;
 };

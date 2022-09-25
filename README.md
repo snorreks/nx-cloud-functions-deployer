@@ -18,15 +18,18 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 - [Folder Structure](#folder-structure)
 	- [Database/Firestore Structure](#databasefirestore-structure)
 	- [Custom Structure](#custom-structure)
-- [Usage](#usage)
-	- [Add the plugin to your project.json](#add-the-plugin-to-your-projectjson)
-	- [Options](#options)
-		- [Deploy examples](#deploy-examples)
 - [Cloud cache](#cloud-cache)
+- [Executors](#executors)
+	- [Deploy](#deploy)
+		- [Options](#options)
+		- [Examples](#examples)
+	- [Script](#script)
+		- [Options](#options-1)
+		- [Examples](#examples-1)
 
 ## Features
 
--   Alias support (both for internal in the project and shared libs)
+-   Auto alias support
 -   Support for multiple [environments](https://firebase.google.com/docs/functions/config-env)
 -   Esbuild for faster builds
 -   Detect changes and only deploy changed functions
@@ -289,9 +292,32 @@ export default onCreate<UserData>(
 );
 ```
 
-## Usage
+## Cloud cache
 
-### Add the plugin to your project.json
+The plugin will detect changes on the deployed functions locally. But it is also possible to cache the changes for the deployed functions on your own server. To do this create a file in the project directory called `functions-cache.dev.ts`
+and `functions-cache.prod.ts`.
+The file needs to export two function `fetch` and `update` which will be called by the plugin.
+
+```typescript
+import type {
+	FunctionsCacheFetch,
+	FunctionsCacheUpdate,
+} from 'nx-cloud-functions-deployer';
+
+export const fetch: FunctionsCacheFetch = async () => {
+	// fetch the cache from the cloud
+};
+
+export const update: FunctionsCacheUpdate = async (newFunctionsCache) => {
+	// update the cache in the cloud
+};
+```
+
+See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/cloud-cache.ts) for how to setup cloud cache with [jsonbin](https://jsonbin.io/)
+
+## Executors
+
+### Deploy
 
 ```json
 ...
@@ -305,7 +331,7 @@ export default onCreate<UserData>(
 		},
 ```
 
-### Options
+#### Options
 
 | Option                  | Description                                                                                                                                                          | Default                           | Alias            |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------- |
@@ -314,7 +340,7 @@ export default onCreate<UserData>(
 | `prod`                  | If true, use the `firebaseProjectProdId` and look for `prodEnvFileName`.                                                                                             | `false`                           | `production`     |
 | `dev`                   | If true, use the `firebaseProjectDevId` and look for `devEnvFileName`.                                                                                               | `false`                           | `development`    |
 | `outputDirectory`       | The output directory.                                                                                                                                                | `dist/<relative-path-to-project>` | `outDir`         |
-| `tsConfig`              | The tsconfig file to use for the build in the project directory.                                                                                                     | `tsconfig.json`                   | `tsConfig`       |
+| `tsconfig`              | The tsconfig file to use for the build in the project directory.                                                                                                     | `tsconfig.json`                   | `tsconfig`       |
 | `region`                | The default region to deploy the functions, if it is not set in the deploy file. See [Cloud Functions Locations](https://cloud.google.com/functions/docs/locations). | `us-central1`                     | `location`       |
 | `silent`                | Whether to suppress all logs.                                                                                                                                        | `false`                           | `s`              |
 | `verbose`               | Whether to run the command with verbose logging.                                                                                                                     | `false`                           | `v`              |
@@ -328,7 +354,7 @@ export default onCreate<UserData>(
 | `dryRun`                | If true, then it will only build the function and not deploy them.                                                                                                   | `false`                           | `d`, `dry`       |
 | `functionsDirectory`    | Relative path from the project root to the functions directory.                                                                                                      | `src/controllers`                 | `inputDirectory` |
 
-#### Deploy examples
+#### Examples
 
 ```bash
 pnpm nx deploy functions --prod
@@ -340,26 +366,54 @@ pnpm nx deploy functions --dev
 
 ```bash
 pnpm nx deploy functions --dev --only my_function,my_other_function --f
+# will deploy only the functions my_function and my_other_function
+# and deploy them even if no files have changed
 ```
 
-## Cloud cache
+### Script
 
-It is also possible to cache the changes for the deployed functions. To do this create a file in the project directory called `cloud-cache.ts`.
-The file needs to export two function `fetch` and `update` which will be called by the plugin.
+The plugin also provide support to run scripts locally. The plugin will run any files in the `scripts` directory. The files needs to export default a function.
 
-```typescript
-import type {
-	CloudCacheFetch,
-	CloudCacheUpdate,
-} from 'nx-cloud-functions-deployer';
+Create a `functions-config.dev.ts` and `functions-config.prod.ts` file in the project root. In these files you set the environment and run any functions before executing a script.
 
-export const fetch: CloudCacheFetch = async () => {
-	// fetch the cache from the cloud
-};
-
-export const update: CloudCacheUpdate = async (newCloudCache) => {
-	// update the cache in the cloud
-};
+```json
+...
+	"targets": {
+		"script": {
+			"executor": "nx-cloud-functions-deployer:script",
+			"options": {
+				"firebaseProjectProdId": "my-firebase-production-project-id",
+				"firebaseProjectDevId": "my-firebase-development-project-id", // just use the same as prod if you don't have a dev project
+			}
+		},
 ```
 
-See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/cloud-cache.ts) for how to setup cloud cache with [jsonbin](https://jsonbin.io/)
+#### Options
+
+| Option                  | Description                                                                          | Default         | Alias         |
+| ----------------------- | ------------------------------------------------------------------------------------ | --------------- | ------------- |
+| `firebaseProjectProdId` | The firebase project id of the production flavor                                     | required        | `prodId`      |
+| `firebaseProjectDevId`  | The firebase project id of the development flavor                                    | required        | `devId`       |
+| `prod`                  | If true, use the `firebaseProjectProdId` and look for `prodEnvFileName`.             | `false`         | `production`  |
+| `dev`                   | If true, use the `firebaseProjectDevId` and look for `devEnvFileName`.               | `false`         | `development` |
+| `tsconfig`              | The tsconfig file to use for the script in the project directory.                    | `tsconfig.json` | `tsconfig`    |
+| `silent`                | Whether to suppress all logs.                                                        | `false`         | `s`           |
+| `verbose`               | Whether to run the command with verbose logging.                                     | `false`         | `v`           |
+| `scriptsRoot`           | Relative path from the project root to the scripts directory.                        | `scripts`       |               |
+| `runPrevious`           | Rerun the last executed script.                                                      | `false`         | `p`           |
+| `script`                | The name of the script to run. If not set, it will prompt you to select from a list. | undefined       | `file`        |
+
+#### Examples
+
+```bash
+pnpm nx script functions --prod
+```
+
+```bash
+pnpm nx script functions --dev
+```
+
+```bash
+pnpm nx script functions --dev -p
+# will run the last executed script in development
+```

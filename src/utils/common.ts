@@ -1,3 +1,5 @@
+import { platform } from 'node:os';
+
 /**
  * @example toDisplayDuration(85600) // '1:25' toDisplayDuration(85600, true) //
  * '1:25.6'
@@ -49,9 +51,43 @@ export const removeUnderScore = (str: string): string => {
 	return str.replace(/_/g, '');
 };
 
-export const trimEnvironmentCode = (input: string): string => {
-	return input
-		.split(/\r?\n/) // Split input text into an array of lines
-		.filter((line) => line.trim() !== '') // Filter out lines that are empty or contain only whitespace
-		.join('\n'); // Join line array into a string
+export const toDotEnvironmentCode = <
+	T extends { [key: string]: string | undefined },
+>(
+	environment: T,
+): string => {
+	let environmentCode = '';
+
+	for (const [key, value] of Object.entries(
+		sortEnvironmentKeys(environment),
+	)) {
+		environmentCode += `${key}=${value}\n`;
+	}
+
+	return environmentCode.trim();
+};
+
+const sortEnvironmentKeys = <T extends { [key: string]: string | undefined }>(
+	environment: T,
+): T => {
+	const sortedKeys = Object.keys(environment).sort();
+	const sortedEnvironment: { [key: string]: string | undefined } = {};
+
+	for (const key of sortedKeys) {
+		sortedEnvironment[key] = environment[key];
+	}
+
+	return sortedEnvironment as T;
+};
+
+export const toImportPath = (typescriptFilePath: string): string => {
+	const importPath = typescriptFilePath
+		.replace('.ts', '')
+		.replaceAll('\\', '/');
+
+	if (platform() === 'win32') {
+		return `file://${importPath}`;
+	}
+
+	return importPath;
 };

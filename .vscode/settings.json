@@ -14,8 +14,10 @@
 		"firestore",
 		"JSONBIN",
 		"metafile",
+		"nanospinner",
 		"nrwl",
 		"outfile",
-		"preinstall"
+		"preinstall",
+		"rawlist"
 	]
 }

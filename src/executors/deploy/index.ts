@@ -15,11 +15,10 @@ import { deployFunction } from './utils/deploy-function';
 import { buildFunction } from './utils/build-function';
 import {
 	getBuildableFiles,
-	getEnvironmentFileCode,
 	getEsbuildAliasFromTsConfig,
 	validateProject,
 } from './utils/read-project';
-import { logger, getLimiter } from '$utils';
+import { logger, getLimiter, getEnvironmentFileCode } from '$utils';
 import { EventEmitter } from 'events';
 import {
 	getOnlineChecksum,
@@ -61,7 +60,7 @@ const getBaseOptions = async (
 	const getAlias = async () => {
 		let alias = await getEsbuildAliasFromTsConfig(
 			projectRoot,
-			options.tsConfig,
+			options.tsconfig,
 		);
 		if (!alias) {
 			alias = await getEsbuildAliasFromTsConfig(
@@ -74,13 +73,13 @@ const getBaseOptions = async (
 	const packageManager = options.packageManager ?? 'pnpm';
 
 	const [environmentFileCode, alias] = await Promise.all([
-		getEnvironmentFileCode(options, projectRoot),
+		getEnvironmentFileCode({ ...options, projectRoot }),
 		getAlias(),
 		mkdir(temporaryDirectory, { recursive: true }),
 		validateProject({
 			packageManager,
 			projectRoot,
-			tsConfig: options.tsConfig,
+			tsconfig: options.tsconfig,
 		}),
 	]);
 
@@ -88,7 +87,7 @@ const getBaseOptions = async (
 		dryRun: options.dryRun,
 		force: options.force,
 		only: options.only,
-		tsConfig: options.tsConfig,
+		tsconfig: options.tsconfig,
 		region: options.region,
 		validate: options.validate,
 		environmentFileCode,
@@ -101,7 +100,8 @@ const getBaseOptions = async (
 		flavor,
 		functionsDirectory: options.functionsDirectory ?? 'src/controllers',
 		packageManager,
-		cloudCacheFileName: options.cloudCacheFileName ?? 'cloud-cache.ts',
+		cloudCacheFileName:
+			options.cloudCacheFileName ?? `functions-cache.${flavor}.ts`,
 		defaultRegion: options.region ?? 'us-central1',
 	};
 };

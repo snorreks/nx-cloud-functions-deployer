@@ -10,6 +10,11 @@
 			"implementation": "./executors/build/index",
 			"schema": "./executors/build/schema.json",
 			"description": "Simple esbuild executer"
+		},
+		"script": {
+			"implementation": "./executors/script/index",
+			"schema": "./executors/script/schema.json",
+			"description": "Run a script"
 		}
 	}
 }

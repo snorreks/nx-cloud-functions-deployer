@@ -23,7 +23,7 @@
 		"isolatedModules": true,
 		"rootDir": "src",
 		"lib": ["es2021"],
-		"module": "CommonJS",
+		"module": "ESNext",
 		"target": "es2021",
 		"esModuleInterop": true,
 		"moduleResolution": "node",
@@ -37,7 +37,9 @@
 		"paths": {
 			"$types": ["src/types"],
 			"$constants": ["src/constants"],
-			"$utils": ["src/utils"]
+			"$constants/*": ["src/constants/*"],
+			"$utils": ["src/utils"],
+			"$utils/*": ["src/utils/*"]
 		}
 	},
 	"include": ["src"]

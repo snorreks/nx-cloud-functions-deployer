@@ -278,7 +278,7 @@ const removeAllOtherOptions = (
 		'rootFunctionBuilder',
 		'startTime',
 		'temporaryDirectory',
-		'tsConfig',
+		'tsconfig',
 		'validate',
 		'workspaceRoot',
 	];

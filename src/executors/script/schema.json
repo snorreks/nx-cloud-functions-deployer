@@ -1,0 +1,65 @@
+{
+	"$schema": "http://json-schema.org/schema",
+	"type": "object",
+	"cli": "nx",
+	"description": "Run a script",
+	"additionalProperties": false,
+	"properties": {
+		"firebaseProjectProdId": {
+			"type": "string",
+			"description": "The firebase project id of the production flavor",
+			"aliases": ["prodId"]
+		},
+		"firebaseProjectDevId": {
+			"type": "string",
+			"description": "The firebase project id of the development flavor",
+			"aliases": ["devId"]
+		},
+		"silent": {
+			"type": "boolean",
+			"description": "Whether to suppress all logs",
+			"aliases": ["s"]
+		},
+		"verbose": {
+			"type": "boolean",
+			"description": "Whether to run the command with verbose logging",
+			"aliases": ["v"]
+		},
+		"prod": {
+			"type": "boolean",
+			"description": "Whether to deploy the production flavor",
+			"aliases": ["production"]
+		},
+		"dev": {
+			"type": "boolean",
+			"description": "Whether to deploy the development flavor",
+			"aliases": ["development"]
+		},
+		"scriptsRoot": {
+			"type": "string",
+			"description": "The scripts root"
+		},
+		"packageManager": {
+			"type": "string",
+			"enum": ["pnpm", "npm", "yarn", "global"],
+			"description": "The package manager to use for deploying with firebase-tools",
+			"aliases": ["pm"]
+		},
+		"tsconfig": {
+			"type": "string",
+			"description": "The tsconfig file to use for the build",
+			"aliases": ["tsconfig"]
+		},
+		"runPrevious": {
+			"type": "boolean",
+			"description": "Rerun the last executed script",
+			"aliases": ["p"]
+		},
+		"script": {
+			"type": "string",
+			"description": "The script to run",
+			"aliases": ["file"]
+		}
+	},
+	"required": ["firebaseProjectProdId", "firebaseProjectDevId"]
+}

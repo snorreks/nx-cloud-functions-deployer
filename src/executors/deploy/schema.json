@@ -19,10 +19,10 @@
 			"description": "The output directory of the build",
 			"aliases": ["outDir"]
 		},
-		"tsConfig": {
+		"tsconfig": {
 			"type": "string",
 			"description": "The tsconfig file to use for the build",
-			"aliases": ["tsConfig"]
+			"aliases": ["tsconfig"]
 		},
 		"region": {
 			"type": "string",

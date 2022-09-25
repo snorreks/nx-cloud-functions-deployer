@@ -39,7 +39,7 @@ export const executeFirebaseDeploy = async ({
 	await execute({
 		packageManager,
 		cwd: outputRoot,
-		options: [
+		commandArguments: [
 			'firebase',
 			'deploy',
 			'--only',

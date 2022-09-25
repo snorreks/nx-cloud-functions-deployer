@@ -16,6 +16,13 @@
 				"input": "src/controllers/api/test_api.ts",
 				"output": "dist/controllers/api/test_api.ts"
 			}
+		},
+		"script": {
+			"executor": "../dist:script",
+			"options": {
+				"firebaseProjectDevId": "localekey-dev",
+				"firebaseProjectProdId": "localekey-dev"
+			}
 		}
 	}
 }
