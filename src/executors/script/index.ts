@@ -8,7 +8,7 @@ import type {
 import { join } from 'node:path';
 import { logger } from '$utils/logger';
 
-import { nodeRunFile } from '$utils/execute';
+import { runFile } from '$utils/execute';
 
 const getRunScriptOptions = (
 	options: ScriptExecutorOptions,
@@ -89,7 +89,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			CFD_SCRIPT_FILE_NAME: script,
 			CFD_RUN_PREVIOUS: runPrevious ? '1' : '0',
 		};
-		await nodeRunFile({
+		await runFile({
 			cwd: projectRoot,
 			tsconfigPath,
 			runScriptFilePath: runScriptFilePath,

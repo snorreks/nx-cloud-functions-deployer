@@ -27,9 +27,10 @@ export const validateProject = async ({
 	if (tsconfig) {
 		commandArguments.push('--project', tsconfig);
 	}
-	if (logger.verbose) {
-		commandArguments.push('--verbose');
-	}
+	// if (logger.verbose) {
+	// 	commandArguments.push('--verbose');
+	// }
+	logger.info('Validating project...');
 	await execute({
 		packageManager,
 		cwd: projectRoot,

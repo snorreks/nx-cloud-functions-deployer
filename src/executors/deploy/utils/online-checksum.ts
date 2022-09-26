@@ -5,7 +5,7 @@ import type {
 	FunctionsCache,
 	DeployFunctionData,
 } from '$types';
-import { runFile, logger, toImportPath } from '$utils';
+import { logger, toImportPath, runFile } from '$utils';
 
 const readFileName = 'read.ts';
 const updateFileName = 'update.ts';
@@ -15,7 +15,6 @@ export const getOnlineChecksum = async ({
 	projectRoot,
 	temporaryDirectory,
 	cloudCacheFileName,
-	packageManager,
 }: BaseDeployOptions): Promise<FunctionsCache | undefined> => {
 	try {
 		const fetchFilePath = join(projectRoot, cloudCacheFileName);
@@ -31,7 +30,6 @@ export const getOnlineChecksum = async ({
 		await writeFile(fetchExecuteFilePath, executeFetchFileCode);
 
 		await runFile({
-			packageManager,
 			cwd: temporaryDirectory,
 			runScriptFilePath: fetchExecuteFilePath,
 		});
@@ -55,12 +53,8 @@ export const updateOnlineChecksum = async (
 		if (!firstDeployedFile) {
 			return;
 		}
-		const {
-			projectRoot,
-			temporaryDirectory,
-			cloudCacheFileName,
-			packageManager,
-		} = firstDeployedFile;
+		const { projectRoot, temporaryDirectory, cloudCacheFileName } =
+			firstDeployedFile;
 
 		const updateFilePath = join(projectRoot, cloudCacheFileName);
 		const executeUpdateFilePath = join(temporaryDirectory, updateFileName);
@@ -85,7 +79,6 @@ export const updateOnlineChecksum = async (
 		await writeFile(executeUpdateFilePath, executeUpdateFileCode);
 
 		await runFile({
-			packageManager,
 			cwd: temporaryDirectory,
 			runScriptFilePath: executeUpdateFilePath,
 		});

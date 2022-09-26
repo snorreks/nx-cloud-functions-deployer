@@ -59,19 +59,18 @@ const toDeployIndexV1Code = (buildFunctionData: BuildFunctionData) => {
 
 const toDeployV2IndexCode = (buildFunctionData: BuildFunctionData<'https'>) => {
 	const { functionName, absolutePath, deployFunction } = buildFunctionData;
+	const functionCode = toFunctionCodeType(deployFunction);
 
-	if (deployFunction !== 'onRequest' && deployFunction !== 'onCall') {
-		throw new Error(
-			`Invalid deploy function ${deployFunction} for https v2`,
-		);
+	if (functionCode !== 'onRequest' && functionCode !== 'onCall') {
+		throw new Error(`Invalid deploy function ${functionCode} for https v2`);
 	}
 
 	const deployableFilePath = absolutePath;
 	const pathWithoutSuffix = deployableFilePath.replace('.ts', '');
 	const fileCode = `
-		import { ${deployFunction} } from 'firebase-functions/v2/https';
+		import { ${functionCode} } from 'firebase-functions/v2/https';
 		import ${functionStart} from '${pathWithoutSuffix}';
-		export const ${functionName} = ${deployFunction}(
+		export const ${functionName} = ${functionCode}(
 				(${getV2Options(buildFunctionData as HttpsV2Options)}),
 				${functionStart}
 			);
@@ -145,8 +144,10 @@ const toEndCode = (deployFileData: BuildFunctionData): string => {
 const toFunctionCodeType = (deployFunction: DeployFunction): string => {
 	switch (deployFunction) {
 		case 'onCall':
+		case 'onCallV2':
 			return 'onCall';
 		case 'onRequest':
+		case 'onRequestV2':
 			return 'onRequest';
 		case 'onCreate':
 			return 'onCreate';

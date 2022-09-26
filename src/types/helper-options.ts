@@ -66,7 +66,7 @@ export interface HttpsV2Options<T extends string | number | symbol = string>
 	 *
 	 * NB: The function name of v2 functions cannot contain a underscore (`_`).
 	 */
-	v2: true;
+	v2?: true;
 }
 
 export type HttpsOptions<T extends string | number | symbol = string> =

@@ -1,7 +1,6 @@
 import { spawn } from 'cross-spawn';
 import type { PackageManager } from '$types';
 import { logger } from './logger';
-
 type Environment = Record<string, string | undefined>;
 
 export const execute = async ({
@@ -39,35 +38,35 @@ export const execute = async ({
 	}
 };
 
+// export const runFile = async ({
+// 	packageManager,
+// 	runScriptFilePath,
+// 	cwd,
+// 	tsconfigPath,
+// 	environment,
+// }: {
+// 	packageManager: PackageManager;
+// 	runScriptFilePath: string;
+// 	cwd: string;
+// 	tsconfigPath?: string;
+// 	environment?: Environment;
+// }) => {
+// 	const commandArguments: string[] = ['tsx'];
+
+// 	if (tsconfigPath) {
+// 		commandArguments.push('--tsconfig', tsconfigPath);
+// 	}
+// 	commandArguments.push(runScriptFilePath);
+
+// 	await execute({
+// 		packageManager,
+// 		commandArguments,
+// 		cwd,
+// 		environment,
+// 	});
+// };
+
 export const runFile = async ({
-	packageManager,
-	runScriptFilePath,
-	cwd,
-	tsconfigPath,
-	environment,
-}: {
-	packageManager: PackageManager;
-	runScriptFilePath: string;
-	cwd: string;
-	tsconfigPath?: string;
-	environment?: Environment;
-}) => {
-	const commandArguments: string[] = ['tsx'];
-
-	if (tsconfigPath) {
-		commandArguments.push('--tsconfig', tsconfigPath);
-	}
-	commandArguments.push(runScriptFilePath);
-
-	await execute({
-		packageManager,
-		commandArguments,
-		cwd,
-		environment,
-	});
-};
-
-export const nodeRunFile = async ({
 	runScriptFilePath,
 	cwd,
 	tsconfigPath,
@@ -135,6 +134,32 @@ export const runCommand = ({
 					),
 				);
 			}
+		});
+		child.on('error', (error) => {
+			logger.error(error);
+			reject(error);
+		});
+		child.on('exit', (code) => {
+			if (code === 0) {
+				resolve();
+			} else {
+				reject(
+					new Error(
+						`Command "${command} ${commandArguments.join(
+							' ',
+						)}" failed with exit code ${code}`,
+					),
+				);
+			}
+		});
+		child.on('disconnect', () => {
+			reject(
+				new Error(
+					`Command "${command} ${commandArguments.join(
+						' ',
+					)}" disconnected`,
+				),
+			);
 		});
 	});
 };

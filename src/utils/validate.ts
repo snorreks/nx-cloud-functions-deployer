@@ -10,6 +10,7 @@ import type {
 	BaseFunctionOptions,
 	HttpsV2Options,
 	HttpsV1Options,
+	HttpsV2Function,
 } from '$types';
 import {
 	documentTriggerFunctions,
@@ -19,6 +20,7 @@ import {
 	pubsubFunctions,
 	functionBuilders,
 	deployDirectories,
+	httpsV2Functions,
 } from '$constants';
 
 export const isDocumentTriggerFunction = (
@@ -42,6 +44,11 @@ export const isHttpsFunction = (
 	deployFunction: DeployFunction,
 ): deployFunction is HttpsFunction =>
 	httpsFunctions.includes(deployFunction as HttpsFunction);
+
+export const isHttpsV2Function = (
+	deployFunction: DeployFunction,
+): deployFunction is HttpsV2Function =>
+	httpsV2Functions.includes(deployFunction as HttpsV2Function);
 
 export const isPubsubFunction = (
 	deployFunction: DeployFunction,

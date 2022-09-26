@@ -71,7 +71,7 @@ const getBaseOptions = async (
 		return alias;
 	};
 	const packageManager = options.packageManager ?? 'pnpm';
-
+	const validate = options.validate ?? true;
 	const [environmentFileCode, alias] = await Promise.all([
 		getEnvironmentFileCode({ ...options, projectRoot }),
 		getAlias(),
@@ -79,6 +79,7 @@ const getBaseOptions = async (
 		validateProject({
 			packageManager,
 			projectRoot,
+			validate,
 			tsconfig: options.tsconfig,
 		}),
 	]);

@@ -14,6 +14,7 @@ import type {
 import {
 	isDocumentTriggerFunction,
 	isHttpsFunction,
+	isHttpsV2Function,
 	isObjectTriggerFunction,
 	isRefTriggerFunction,
 	logger,
@@ -142,8 +143,10 @@ const validateOptions = (
 	switch (true) {
 		case isDocumentTriggerFunction(deployFunction):
 			return getDocumentTriggerOptions(baseOptions, object);
+		case isHttpsV2Function(deployFunction):
+			return getHttpsV2Options(baseOptions, object);
 		case isHttpsFunction(deployFunction):
-			return getHttpsOptions(baseOptions, object);
+			return getHttpsV1Options(baseOptions);
 		case isObjectTriggerFunction(deployFunction):
 			return baseOptions;
 		case isRefTriggerFunction(deployFunction):
@@ -182,19 +185,10 @@ const getDocumentTriggerOptions = (
 	return documentOptions;
 };
 
-const getHttpsOptions = (
+const getHttpsV2Options = (
 	baseOptions: BaseFunctionOptions,
 	object: Record<string, unknown>,
 ): HttpsOptions => {
-	const v2 = getValueFromObject<boolean>(object, 'v2');
-
-	if (!v2) {
-		return {
-			...baseOptions,
-			v2: false,
-		};
-	}
-
 	const httpsOptions: HttpsV2Options = {
 		...object,
 		...baseOptions,
@@ -202,6 +196,13 @@ const getHttpsOptions = (
 		v2: true,
 	};
 	return httpsOptions;
+};
+
+const getHttpsV1Options = (baseOptions: BaseFunctionOptions): HttpsOptions => {
+	return {
+		...baseOptions,
+		v2: false,
+	};
 };
 
 const getRefTriggerOptions = (

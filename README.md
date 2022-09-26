@@ -72,6 +72,8 @@ You need to import the helper functions from `nx-cloud-functions-deployer`. This
 | ------------------------ | --------------------------------- | -------------------------- |
 | `onCall`                 | `https.onCall`                    |
 | `onRequest`              | `https.onRequest`                 |
+| `onCallV2`               | `https.onCall`                    | Cloud functions v2         |
+| `onRequestV2`            | `https.onRequest`                 | Cloud functions v2         |
 | `onWrite`                | `firestore.document.onWrite`      | See FirestoreExample       |
 | `onCreate`               | `firestore.document.onCreate`     | See FirestoreExample       |
 | `onUpdate`               | `firestore.document.onUpdate`     | See FirestoreExample       |
@@ -193,10 +195,10 @@ See https://firebase.google.com/docs/functions/beta#other_limitations
 
 ```typescript
 // api/my-function-name.ts
-import { onCall } from 'nx-cloud-functions-deployer';
+import { onCallV2 } from 'nx-cloud-functions-deployer';
 import type { MyFunctions } from '@my-project/shared';
 
-export default onCall<MyFunctions, 'my_function_name'>(
+export default onCallV2<MyFunctions, 'my_function_name'>(
 	(data, context) => {
 		console.log(data); // { message: string }
 		return { response: true };
