@@ -136,6 +136,7 @@ const validateOptions = (
 		functionName: getValueFromObject(object, 'functionName'),
 		region: getValueFromObject(object, 'region'),
 		external: getValueFromObject(object, 'external'),
+		keepNames: getValueFromObject(object, 'keepNames'),
 		assets: getValueFromObject(object, 'assets'),
 		runtimeOptions: getRunTimeOptions(object),
 	};

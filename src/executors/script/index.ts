@@ -42,9 +42,7 @@ const getRunScriptOptions = (
 			`functions-config.${flavor}.ts`,
 		);
 
-		const tsconfigPath = options.tsconfig
-			? join(projectRoot, options.tsconfig)
-			: undefined;
+		const tsconfigPath = options.tsconfig;
 		const dirname = __dirname;
 
 		const envConfigPath = join(dirname, '.env');
@@ -82,16 +80,18 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			script,
 		} = options;
 
-		const runScriptEnvironment: RunScriptEnvironment = {
+		const runScriptEnvironment: RunScriptEnvironment & {
+			TS_NODE_PROJECT?: string;
+		} = {
 			CFD_FIREBASE_PROJECT_ID: firebaseProjectId,
 			CFD_FUNCTIONS_CONFIG_PATH: functionsConfigPath,
 			CFD_SCRIPTS_ROOT: scriptsRoot,
 			CFD_SCRIPT_FILE_NAME: script,
 			CFD_RUN_PREVIOUS: runPrevious ? '1' : '0',
+			TS_NODE_PROJECT: tsconfigPath,
 		};
 		await runFile({
 			cwd: projectRoot,
-			tsconfigPath,
 			runScriptFilePath: runScriptFilePath,
 			environment: runScriptEnvironment,
 		});

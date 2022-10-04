@@ -21,6 +21,9 @@ export interface BaseFunctionOptions<T extends string = string> {
 	 */
 	external?: string[];
 
+	/** Documentation: https://esbuild.github.io/api/#keep-names */
+	keepNames?: boolean;
+
 	/**
 	 * The region to deploy the function to. If not provided it will be the
 	 * region set in project.json. If that is not provided it will be

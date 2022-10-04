@@ -36,8 +36,9 @@ export const executeEsbuild = async (options: {
 	external?: string[];
 	alias?: EsbuildAlias;
 	sourceRoot: string;
+	keepNames?: boolean;
 }): Promise<boolean> => {
-	const { inputPath, outputPath, external, sourceRoot } = options;
+	const { inputPath, outputPath, external, sourceRoot, keepNames } = options;
 	const plugins = [dirnamePlugin];
 	if (options.alias) {
 		plugins.push(alias(options.alias));
@@ -61,6 +62,7 @@ export const executeEsbuild = async (options: {
 		plugins,
 		// sourcemap: true,
 		target: 'node16',
+		keepNames,
 		sourceRoot,
 	});
 

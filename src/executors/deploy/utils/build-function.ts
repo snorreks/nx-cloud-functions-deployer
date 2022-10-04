@@ -40,6 +40,7 @@ export const buildFunction = async (
 				await executeEsbuild({
 					inputPath,
 					outputPath,
+					keepNames: buildFunctionData.keepNames,
 					alias: buildFunctionData.alias,
 					external: buildFunctionData.external,
 					sourceRoot: buildFunctionData.workspaceRoot,
