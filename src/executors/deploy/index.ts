@@ -63,10 +63,18 @@ const getBaseOptions = async (
 			options.tsconfig,
 		);
 		if (!alias) {
-			alias = await getEsbuildAliasFromTsConfig(
-				workspaceRoot,
-				'tsconfig.base.json',
-			);
+			if (options.tsconfig && options.tsconfig !== 'tsconfig.json') {
+				alias = await getEsbuildAliasFromTsConfig(
+					projectRoot,
+					'tsconfig.json',
+				);
+			}
+			if (!alias) {
+				alias = await getEsbuildAliasFromTsConfig(
+					workspaceRoot,
+					'tsconfig.base.json',
+				);
+			}
 		}
 		return alias;
 	};

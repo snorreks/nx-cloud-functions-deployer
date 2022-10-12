@@ -78,6 +78,8 @@ const toRootFunction = (deployFunction: DeployFunction): FunctionBuilder => {
 			return 'database';
 		case 'onCall':
 		case 'onRequest':
+		case 'onCallV2':
+		case 'onRequestV2':
 			return 'https';
 		case 'schedule':
 		case 'topic':

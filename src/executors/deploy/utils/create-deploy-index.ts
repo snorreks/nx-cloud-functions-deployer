@@ -51,7 +51,7 @@ const toDeployIndexV1Code = (buildFunctionData: BuildFunctionData) => {
 		import ${functionStart} from '${pathWithoutSuffix}';
 		export const ${functionName} = region('${region}').${getRootFunctionCode(
 		buildFunctionData,
-	)}.${toEndCode(buildFunctionData)}
+	)}.${toEndCodeV1(buildFunctionData)}
 	`;
 
 	return fileCode;
@@ -107,7 +107,7 @@ const getRunWithCode = (runtimeOptions: RuntimeOptions): string => {
 	return `runWith(${optionsCode})`;
 };
 
-const toEndCode = (deployFileData: BuildFunctionData): string => {
+const toEndCodeV1 = (deployFileData: BuildFunctionData): string => {
 	const { deployFunction, path } = deployFileData;
 	const functionCode = toFunctionCodeType(deployFunction);
 
@@ -264,6 +264,7 @@ const removeAllOtherOptions = (
 		'dryRun',
 		'environmentFileCode',
 		'external',
+		'keepNames',
 		'firebaseProjectId',
 		'flavor',
 		'force',
