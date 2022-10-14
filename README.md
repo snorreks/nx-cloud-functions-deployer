@@ -1,7 +1,6 @@
 # nx-cloud-functions-deployer<!-- omit in toc -->
 
 ![npm (nx-cloud-functions-deployer)](https://img.shields.io/npm/v/nx-cloud-functions-deployer)
-![npm bundle size](https://img.shields.io/bundlephobia/min/nx-cloud-functions-deployer)
 
 This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud Functions for Firebase](https://firebase.google.com/products/functions?gclsrc=ds&gclsrc=ds&gclid=CNmq16LU-_kCFa5IwgodA9cF8A).
 
@@ -269,7 +268,7 @@ Then you would have the following folder structure:
 │  │  │  │  │  ├── created.ts # will be called every time a notification document is created.
 ```
 
-The default function name for database/firestore functions will omit [id]. Example: `controllers/database/users/[id]/created.ts` will be deployed as `users_created`.
+The default function name for database/firestore functions will omit `[id]`. Example: `controllers/database/users/[id]/created.ts` will be deployed as `users_created`.
 
 ### Custom Structure
 
