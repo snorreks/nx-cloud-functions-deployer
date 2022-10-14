@@ -79,7 +79,7 @@ const getBaseOptions = async (
 		return alias;
 	};
 	const packageManager = options.packageManager ?? 'pnpm';
-	const validate = options.validate ?? true;
+	const validate = options.validate ?? false;
 	const [environmentFileCode, alias] = await Promise.all([
 		getEnvironmentFileCode({ ...options, projectRoot }),
 		getAlias(),

@@ -97,7 +97,7 @@
 		},
 		"validate": {
 			"type": "boolean",
-			"default": true,
+			"default": false,
 			"description": "Will run tsc -noEmits in project root to validate the build",
 			"aliases": ["valid"]
 		}

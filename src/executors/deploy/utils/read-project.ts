@@ -155,7 +155,7 @@ export const getEsbuildAliasFromTsConfig = async (
 		const alias: EsbuildAlias = {};
 
 		const fixPath = (key: string, path: string) => {
-			if (key.endsWith('/*')) {
+			if (key.endsWith('/*') || path.endsWith('.ts')) {
 				return join(root, path);
 			}
 
