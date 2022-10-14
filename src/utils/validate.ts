@@ -7,9 +7,6 @@ import type {
 	PubsubFunction,
 	FunctionBuilder,
 	DeployDirectory,
-	BaseFunctionOptions,
-	HttpsV2Options,
-	HttpsV1Options,
 	HttpsV2Function,
 } from '$types';
 import {
@@ -21,7 +18,18 @@ import {
 	functionBuilders,
 	deployDirectories,
 	httpsV2Functions,
+	functions,
 } from '$constants';
+
+export const isV2Function = (deployFunction: DeployFunction): boolean => {
+	const v2Functions: DeployFunction[] = ['onRequestV2', 'onCallV2'];
+	return v2Functions.includes(deployFunction);
+};
+
+export const isDeployFunction = (
+	deployFunction: unknown,
+): deployFunction is DeployFunction =>
+	functions.includes(deployFunction as DeployFunction);
 
 export const isDocumentTriggerFunction = (
 	deployFunction: DeployFunction,
@@ -64,11 +72,3 @@ export const isDeployDirectory = (
 	deployFunction: string,
 ): deployFunction is DeployDirectory =>
 	deployDirectories.includes(deployFunction as DeployDirectory);
-
-export const isV2Function = (
-	deployFunction: Omit<BaseFunctionOptions, 'region'>,
-): deployFunction is HttpsV2Options => !!(deployFunction as HttpsV2Options).v2;
-
-export const isV1unction = (
-	deployFunction: BaseFunctionOptions,
-): deployFunction is HttpsV1Options => !(deployFunction as HttpsV1Options).v2;

@@ -10,12 +10,14 @@ import type {
 	ScheduleOptions,
 	TopicOptions,
 } from '$types';
+import { isV2Function, logger } from '$utils';
 /** The name of the default exported function */
 const functionStart = 'functionStart';
 
 export const createTemporaryIndexFunctionFile = async (
 	buildFunctionData: BuildFunctionData,
 ): Promise<string> => {
+	logger.debug('Creating temporary index file', buildFunctionData);
 	const code = toDeployIndexCode(buildFunctionData);
 	const temporaryFilePath = getTemporaryFilePath(
 		buildFunctionData.temporaryDirectory,
@@ -33,7 +35,7 @@ const getTemporaryFilePath = (
 ) => join(temporaryDirectory, `${functionName}.ts`);
 
 const toDeployIndexCode = (buildFunctionData: BuildFunctionData) => {
-	if ((buildFunctionData as HttpsV2Options).v2) {
+	if (isV2Function(buildFunctionData.deployFunction)) {
 		return toDeployV2IndexCode(
 			buildFunctionData as BuildFunctionData<'https'>,
 		);

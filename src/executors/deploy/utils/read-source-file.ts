@@ -17,6 +17,7 @@ import {
 	isHttpsV2Function,
 	isObjectTriggerFunction,
 	isRefTriggerFunction,
+	isV2Function,
 	logger,
 	removeUnderScore,
 	toSnakeCase,
@@ -27,7 +28,8 @@ import { join } from 'node:path';
 
 export const getDeployableFileData = async (
 	deployableFileLiteData: BuildFunctionLiteData,
-): Promise<BuildFunctionData> => {
+	only?: string[],
+): Promise<BuildFunctionData | undefined> => {
 	const {
 		deployFunction,
 		defaultRegion,
@@ -46,8 +48,12 @@ export const getDeployableFileData = async (
 		deployOptions?.functionName ??
 		getFunctionNameFromPath(
 			relativeDeployFilePath,
-			(deployOptions as HttpsOptions)?.v2,
+			isV2Function(deployFunction),
 		);
+
+	if (only && !only.includes(functionName)) {
+		return;
+	}
 
 	const buildFunctionData: BuildFunctionData = {
 		...deployableFileLiteData,
@@ -75,12 +81,13 @@ export const getDeployableFileData = async (
 			buildFunctionData.path = defaultPath;
 		}
 	}
-
-	logger.info(
-		`Found function ${chalk.bold(
-			buildFunctionData.functionName,
-		)} in ${chalk.bold(buildFunctionData.relativeDeployFilePath)}`,
-	);
+	if (!only) {
+		logger.info(
+			`Found function ${chalk.bold(
+				buildFunctionData.functionName,
+			)} in ${chalk.bold(buildFunctionData.relativeDeployFilePath)}`,
+		);
+	}
 
 	return buildFunctionData;
 };
@@ -179,7 +186,6 @@ const getDocumentTriggerOptions = (
 ): DocumentTriggerOptions => {
 	const documentOptions: DocumentTriggerOptions = {
 		...baseOptions,
-		v2: false,
 		documentPath: getValueFromObject<string>(object, 'documentPath'),
 	};
 
@@ -193,16 +199,15 @@ const getHttpsV2Options = (
 	const httpsOptions: HttpsV2Options = {
 		...object,
 		...baseOptions,
-		region: getValueFromObject(object, 'region') ?? 'europe-west1',
-		v2: true,
+		region: getValueFromObject(object, 'region'),
 	};
+	logger.log('getHttpsV2Options', httpsOptions);
 	return httpsOptions;
 };
 
 const getHttpsV1Options = (baseOptions: BaseFunctionOptions): HttpsOptions => {
 	return {
 		...baseOptions,
-		v2: false,
 	};
 };
 
@@ -219,7 +224,6 @@ const getRefTriggerOptions = (
 
 	const refOptions: RefTriggerOptions = {
 		...baseOptions,
-		v2: false,
 		ref,
 	};
 
@@ -237,7 +241,6 @@ const getScheduleOptions = (
 
 	const scheduleOptions: ScheduleOptions = {
 		...baseOptions,
-		v2: false,
 		schedule,
 		timeZone: getValueFromObject<string>(object, 'timeZone'),
 	};
@@ -256,7 +259,6 @@ const getTopicOptions = (
 
 	const topicOptions: TopicOptions = {
 		...baseOptions,
-		v2: false,
 		topic,
 	};
 
@@ -321,7 +323,7 @@ const getDefaultPath = (relativeDeployFilePath: string): string => {
 
 const getFunctionNameFromPath = (
 	relativeDeployFilePath: string,
-	v2?: boolean,
+	isV2Function?: boolean,
 ) => {
 	const paths = relativeDeployFilePath.split('/');
 	paths.shift(); // remove the first element, which is the directory type
@@ -333,7 +335,7 @@ const getFunctionNameFromPath = (
 	}
 
 	const functionName = toSnakeCase(paths.join('_').replace(/\.ts$/, ''));
-	if (v2) {
+	if (isV2Function) {
 		return removeUnderScore(functionName);
 	}
 	return functionName;

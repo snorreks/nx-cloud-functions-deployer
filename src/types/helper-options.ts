@@ -51,26 +51,15 @@ export interface BaseFunctionOptions<T extends string = string> {
 	runtimeOptions?: RuntimeOptions;
 }
 
-export interface HttpsV1Options<T extends string | number | symbol = string>
-	extends BaseFunctionOptions<Extract<T, string>> {
-	/** Will deploy the function as a v1 function. */
-
-	v2?: false;
-}
+export type HttpsV1Options<T extends string | number | symbol = string> =
+	BaseFunctionOptions<Extract<T, string>>;
 
 export interface HttpsV2Options<T extends string | number | symbol = string>
 	extends Omit<
 			BaseFunctionOptions<Extract<T, string>>,
 			'region' | 'runtimeOptions'
 		>,
-		FirebaseHttpsV2Options {
-	/**
-	 * Will deploy the function as a v2 function.
-	 *
-	 * NB: The function name of v2 functions cannot contain a underscore (`_`).
-	 */
-	v2?: true;
-}
+		FirebaseHttpsV2Options {}
 
 export type HttpsOptions<T extends string | number | symbol = string> =
 	| HttpsV1Options<T>
@@ -90,13 +79,10 @@ export interface DocumentTriggerOptions extends BaseFunctionOptions {
 	 * 'users/{uid}/notifications/{notificationId}'
 	 */
 	documentPath?: string;
-
-	v2?: false;
 }
 
 export interface RefTriggerOptions extends BaseFunctionOptions {
 	ref: string;
-	v2?: false;
 }
 
 export interface TopicOptions extends BaseFunctionOptions {
@@ -108,7 +94,6 @@ export interface TopicOptions extends BaseFunctionOptions {
 	 * @see https://firebase.google.com/docs/functions/pubsub-events
 	 */
 	topic: string;
-	v2?: false;
 }
 
 export interface ScheduleOptions extends BaseFunctionOptions {
@@ -121,7 +106,6 @@ export interface ScheduleOptions extends BaseFunctionOptions {
 	schedule: string;
 	/** The timezone to use when determining the function's execution time. */
 	timeZone?: string;
-	v2?: false;
 }
 
 export type PubsubOptions = TopicOptions | ScheduleOptions;

@@ -63,6 +63,7 @@ export const getBuildableFiles = async (
 	}
 
 	const deployableFunctions = validateDeployFiles(functionPaths, options);
+
 	if (!only) {
 		for (const functionPath of functionPaths) {
 			if (
@@ -83,7 +84,35 @@ export const getBuildableFiles = async (
 		}
 	}
 
-	return await Promise.all(deployableFunctions.map(getDeployableFileData));
+	const isBuildableFunction = (
+		buildFunction?: BuildFunctionData,
+	): buildFunction is BuildFunctionData => !!buildFunction;
+
+	const buildableFunctions = (
+		await Promise.all(
+			deployableFunctions.map((deployableFunction) =>
+				getDeployableFileData(deployableFunction, only),
+			),
+		)
+	).filter(isBuildableFunction);
+
+	if (only) {
+		if (only.length !== buildableFunctions.length) {
+			const missingFunctionNames = only.filter(
+				(name) =>
+					!buildableFunctions.some(
+						(file) => file.functionName === name,
+					),
+			);
+			logger.warn(
+				`The following functions were not found: ${missingFunctionNames.join(
+					', ',
+				)}`,
+			);
+		}
+	}
+
+	return buildableFunctions;
 };
 
 const recursiveGetFunctions = async (

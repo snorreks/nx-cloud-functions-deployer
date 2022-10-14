@@ -91,11 +91,12 @@ const getBaseOptions = async (
 			tsconfig: options.tsconfig,
 		}),
 	]);
+	const only = options.only?.split(',').map((name) => name.trim());
 
 	return {
 		dryRun: options.dryRun,
 		force: options.force,
-		only: options.only,
+		only,
 		tsconfig: options.tsconfig,
 		region: options.region,
 		validate: options.validate,
@@ -117,29 +118,9 @@ const getBaseOptions = async (
 
 const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 	logger.setLogSeverity(options);
-	const { only } = options;
 	const baseOptions = await getBaseOptions(options, context);
 
-	let buildableFiles = await getBuildableFiles(baseOptions);
-
-	if (only) {
-		const onlyFunctionNames = only?.split(',').map((name) => name.trim());
-
-		buildableFiles = buildableFiles.filter((deployableFunction) =>
-			onlyFunctionNames.includes(deployableFunction.functionName),
-		);
-		if (buildableFiles.length !== onlyFunctionNames.length) {
-			const missingFunctionNames = onlyFunctionNames.filter(
-				(name) =>
-					!buildableFiles.some((file) => file.functionName === name),
-			);
-			logger.warn(
-				`The following functions were not found: ${missingFunctionNames.join(
-					', ',
-				)}`,
-			);
-		}
-	}
+	const buildableFiles = await getBuildableFiles(baseOptions);
 
 	const onlineChecksum = await getOnlineChecksum(baseOptions);
 

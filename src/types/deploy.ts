@@ -46,9 +46,6 @@ interface SharedDeployExecutorBaseOptions {
 	 */
 	validate?: boolean;
 
-	/** Only deploy the given function names, separated by a comma */
-	only?: string;
-
 	/**
 	 * The name of the file in the root project that will be used to fetch and
 	 * update the cloud cache.
@@ -118,6 +115,9 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	envString?: string;
 
 	debug?: boolean;
+
+	/** Only deploy the given function names, separated by a comma */
+	only?: string;
 }
 
 export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
@@ -137,6 +137,8 @@ export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
 	 * the project root.
 	 */
 	functionsDirectory: string;
+
+	only?: string[];
 }
 
 export interface BuildFunctionLiteData<

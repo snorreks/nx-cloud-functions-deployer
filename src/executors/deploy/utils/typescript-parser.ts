@@ -4,7 +4,6 @@ import type {
 	FunctionBuilder,
 	BaseDeployOptions,
 } from '$types';
-import { functions } from '$constants';
 import {
 	createProgram,
 	forEachChild,
@@ -13,7 +12,7 @@ import {
 	isMemberName,
 	ScriptTarget,
 } from 'typescript';
-import { toRelativeDeployFilePath } from '$utils';
+import { isDeployFunction, toRelativeDeployFilePath } from '$utils';
 
 /** Validates all files and returns `BuildFunctionLiteData[]` */
 export const validateDeployFiles = (
@@ -39,8 +38,8 @@ export const validateDeployFiles = (
 				) {
 					const escapedText = node.expression.expression.escapedText;
 
-					if (functions.includes(escapedText as DeployFunction)) {
-						const deployFunction = escapedText as DeployFunction;
+					if (isDeployFunction(escapedText)) {
+						const deployFunction = escapedText;
 						const absolutePath = sourceFile.fileName;
 						// TODO get arguments from node.expression.arguments
 
