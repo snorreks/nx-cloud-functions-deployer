@@ -30,7 +30,7 @@ export const onRequest = <
 /**
  * Declares a callable method for clients to call using a Firebase SDK.
  *
- * @param handler - A function that takes a {@link https.CallableRequest}.
+ * @param handler - A function that takes a {@link CallableRequest}.
  * @param _options - Options to set on this function.
  * @returns A function that you can export and deploy.
  */

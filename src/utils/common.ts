@@ -1,3 +1,4 @@
+import type { Environment } from '$types';
 import { platform } from 'node:os';
 
 /**
@@ -51,9 +52,7 @@ export const removeUnderScore = (str: string): string => {
 	return str.replace(/_/g, '');
 };
 
-export const toDotEnvironmentCode = <
-	T extends { [key: string]: string | undefined },
->(
+export const toDotEnvironmentCode = <T extends Environment>(
 	environment: T,
 ): string => {
 	let environmentCode = '';
@@ -67,11 +66,9 @@ export const toDotEnvironmentCode = <
 	return environmentCode.trim();
 };
 
-const sortEnvironmentKeys = <T extends { [key: string]: string | undefined }>(
-	environment: T,
-): T => {
+const sortEnvironmentKeys = <T extends Environment>(environment: T): T => {
 	const sortedKeys = Object.keys(environment).sort();
-	const sortedEnvironment: { [key: string]: string | undefined } = {};
+	const sortedEnvironment: Environment = {};
 
 	for (const key of sortedKeys) {
 		sortedEnvironment[key] = environment[key];

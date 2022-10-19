@@ -3,6 +3,9 @@ import { copy } from 'fs-extra';
 import { join } from 'node:path';
 import type { BuildFunctionData } from '$types';
 import { runCommand } from '$utils/execute';
+import { toDotEnvironmentCode } from '$utils/common';
+import { getEnvironmentNeeded } from './read-compiled-file';
+
 export const createDeployFirebaseJson = async ({
 	outputRoot,
 }: BuildFunctionData) => {
@@ -46,24 +49,36 @@ export const createDeployPackageJson = async ({
 	}
 };
 
-export const createEnvironmentFile = async ({
-	environmentFileCode,
-	outputRoot,
-}: BuildFunctionData): Promise<void> => {
-	if (!environmentFileCode) {
+export const createEnvironmentFile = async (
+	buildFunctionData: BuildFunctionData,
+): Promise<void> => {
+	const { outputRoot } = buildFunctionData;
+
+	const environment = await getEnvironmentNeeded(buildFunctionData);
+	if (!environment) {
 		return;
 	}
+
+	const environmentFileCode = toDotEnvironmentCode(environment);
+
 	await writeFile(join(outputRoot, '.env'), environmentFileCode);
 };
 
-export const copyAssets = async ({ outputRoot, assets }: BuildFunctionData) => {
+export const copyAssets = async ({
+	outputRoot,
+	assets,
+	projectRoot,
+}: BuildFunctionData) => {
 	if (!assets || !assets.length) {
 		return;
 	}
 
 	await Promise.all(
 		assets.map((asset) => {
-			copy(asset, join(outputRoot, 'src', asset));
+			copy(
+				join(projectRoot, 'src/assets', asset),
+				join(outputRoot, 'src', asset),
+			);
 		}),
 	);
 };

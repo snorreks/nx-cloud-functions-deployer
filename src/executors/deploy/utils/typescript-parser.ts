@@ -45,6 +45,9 @@ export const validateDeployFiles = (
 
 						deployableFiles.push({
 							...baseOptions,
+							environment: {
+								...baseOptions.environment,
+							},
 							deployFunction,
 							absolutePath,
 							rootFunctionBuilder: toRootFunction(deployFunction),

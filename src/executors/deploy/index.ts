@@ -18,7 +18,7 @@ import {
 	getEsbuildAliasFromTsConfig,
 	validateProject,
 } from './utils/read-project';
-import { logger, getLimiter, getEnvironmentFileCode } from '$utils';
+import { logger, getLimiter, getEnvironment } from '$utils';
 import { EventEmitter } from 'events';
 import {
 	getOnlineChecksum,
@@ -80,8 +80,8 @@ const getBaseOptions = async (
 	};
 	const packageManager = options.packageManager ?? 'pnpm';
 	const validate = options.validate ?? false;
-	const [environmentFileCode, alias] = await Promise.all([
-		getEnvironmentFileCode({ ...options, projectRoot }),
+	const [environment, alias] = await Promise.all([
+		getEnvironment({ ...options, projectRoot }),
 		getAlias(),
 		mkdir(temporaryDirectory, { recursive: true }),
 		validateProject({
@@ -94,13 +94,15 @@ const getBaseOptions = async (
 	const only = options.only?.split(',').map((name) => name.trim());
 
 	return {
+		ignoreMissingEnvironmentKey:
+			options.ignoreMissingEnvironmentKey ?? true, // TODO: Change to false in v2
 		dryRun: options.dryRun,
 		force: options.force,
 		only,
 		tsconfig: options.tsconfig,
 		region: options.region,
 		validate: options.validate,
-		environmentFileCode,
+		environment,
 		alias,
 		firebaseProjectId,
 		workspaceRoot,

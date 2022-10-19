@@ -100,6 +100,12 @@
 			"default": false,
 			"description": "Will run tsc -noEmits in project root to validate the build",
 			"aliases": ["valid"]
+		},
+		"ignoreMissingEnvironmentKey": {
+			"type": "boolean",
+			"default": false,
+			"description": "Will ignore missing environment keys error",
+			"aliases": ["ignoreMissingEnv"]
 		}
 	},
 	"required": ["firebaseProjectProdId", "firebaseProjectDevId"]

@@ -53,6 +53,7 @@ export const executeEsbuild = async (options: {
 		format: 'esm',
 		external,
 		minify: true,
+		sourcemap: true,
 		treeShaking: true,
 		outExtension: {
 			'.js': '.cjs',

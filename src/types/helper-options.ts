@@ -21,7 +21,11 @@ export interface BaseFunctionOptions<T extends string = string> {
 	 */
 	external?: string[];
 
-	/** Documentation: https://esbuild.github.io/api/#keep-names */
+	/**
+	 * Documentation: https://esbuild.github.io/api/#keep-names
+	 *
+	 * @default true
+	 */
 	keepNames?: boolean;
 
 	/**
@@ -110,7 +114,17 @@ export interface ScheduleOptions extends BaseFunctionOptions {
 
 export type PubsubOptions = TopicOptions | ScheduleOptions;
 
-export type ObjectTriggerOptions = BaseFunctionOptions;
+import type { StorageOptions } from 'firebase-functions/v2/storage';
+
+export type ObjectTriggerV1Options = BaseFunctionOptions;
+
+export interface ObjectTriggerV2Options
+	extends Omit<BaseFunctionOptions, 'region' | 'runtimeOptions'>,
+		StorageOptions {}
+
+export type ObjectTriggerOptions =
+	| ObjectTriggerV1Options
+	| ObjectTriggerV2Options;
 
 export type FunctionOptions = {
 	https: HttpsOptions;

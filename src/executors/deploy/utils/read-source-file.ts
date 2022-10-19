@@ -14,7 +14,6 @@ import type {
 import {
 	isDocumentTriggerFunction,
 	isHttpsFunction,
-	isHttpsV2Function,
 	isObjectTriggerFunction,
 	isRefTriggerFunction,
 	isV2Function,
@@ -143,7 +142,7 @@ const validateOptions = (
 		functionName: getValueFromObject(object, 'functionName'),
 		region: getValueFromObject(object, 'region'),
 		external: getValueFromObject(object, 'external'),
-		keepNames: getValueFromObject(object, 'keepNames'),
+		keepNames: getValueFromObject(object, 'keepNames'), // todo add `?? true` when missing env check is implemented
 		assets: getValueFromObject(object, 'assets'),
 		runtimeOptions: getRunTimeOptions(object),
 	};
@@ -151,8 +150,8 @@ const validateOptions = (
 	switch (true) {
 		case isDocumentTriggerFunction(deployFunction):
 			return getDocumentTriggerOptions(baseOptions, object);
-		case isHttpsV2Function(deployFunction):
-			return getHttpsV2Options(baseOptions, object);
+		case isV2Function(deployFunction):
+			return getV2Options(baseOptions, object);
 		case isHttpsFunction(deployFunction):
 			return getHttpsV1Options(baseOptions);
 		case isObjectTriggerFunction(deployFunction):
@@ -192,7 +191,7 @@ const getDocumentTriggerOptions = (
 	return documentOptions;
 };
 
-const getHttpsV2Options = (
+const getV2Options = (
 	baseOptions: BaseFunctionOptions,
 	object: Record<string, unknown>,
 ): HttpsOptions => {
@@ -201,7 +200,7 @@ const getHttpsV2Options = (
 		...baseOptions,
 		region: getValueFromObject(object, 'region'),
 	};
-	logger.log('getHttpsV2Options', httpsOptions);
+	logger.debug('getV2Options', httpsOptions);
 	return httpsOptions;
 };
 

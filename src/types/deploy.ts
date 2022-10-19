@@ -53,6 +53,8 @@ interface SharedDeployExecutorBaseOptions {
 	 * @default 'functions-cache.{flavor}.ts'
 	 */
 	cloudCacheFileName: string;
+
+	ignoreMissingEnvironmentKey?: boolean;
 }
 
 export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
@@ -120,6 +122,8 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	only?: string;
 }
 
+export type Environment = { [key: string]: string | undefined };
+
 export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
 	firebaseProjectId: string;
 	projectRoot: string;
@@ -129,7 +133,7 @@ export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
 	temporaryDirectory: string;
 	flavor: Flavor;
 	/** Stringified code of the environments */
-	environmentFileCode?: string;
+	environment?: Environment;
 	alias?: EsbuildAlias;
 
 	/**

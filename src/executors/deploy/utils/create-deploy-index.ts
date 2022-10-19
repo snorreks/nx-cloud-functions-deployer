@@ -59,13 +59,13 @@ const toDeployIndexV1Code = (buildFunctionData: BuildFunctionData) => {
 	return fileCode;
 };
 
-const toDeployV2IndexCode = (buildFunctionData: BuildFunctionData<'https'>) => {
+const toDeployV2IndexCode = (
+	buildFunctionData:
+		| BuildFunctionData<'https'>
+		| BuildFunctionData<'storage'>,
+) => {
 	const { functionName, absolutePath, deployFunction } = buildFunctionData;
 	const functionCode = toFunctionCodeType(deployFunction);
-
-	if (functionCode !== 'onRequest' && functionCode !== 'onCall') {
-		throw new Error(`Invalid deploy function ${functionCode} for https v2`);
-	}
 
 	const deployableFilePath = absolutePath;
 	const pathWithoutSuffix = deployableFilePath.replace('.ts', '');
@@ -164,12 +164,16 @@ const toFunctionCodeType = (deployFunction: DeployFunction): string => {
 		case 'schedule':
 			return 'schedule';
 		case 'onObjectArchive':
+		case 'onObjectArchiveV2':
 			return 'onArchive';
 		case 'onObjectDelete':
+		case 'onObjectDeleteV2':
 			return 'onDelete';
 		case 'onObjectFinalize':
+		case 'onObjectFinalizeV2':
 			return 'onFinalize';
 		case 'onObjectMetadataUpdate':
+		case 'onObjectMetadataUpdateV2':
 			return 'onMetadataUpdate';
 		case 'onRefCreate':
 			return 'onCreate';
@@ -264,7 +268,7 @@ const removeAllOtherOptions = (
 		'defaultRegion',
 		'deployFunction',
 		'dryRun',
-		'environmentFileCode',
+		'environment',
 		'external',
 		'keepNames',
 		'firebaseProjectId',

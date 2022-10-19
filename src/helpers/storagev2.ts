@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { EventContext } from 'firebase-functions';
-import type { ObjectTriggerV1Options } from '$types';
+import type { ObjectTriggerV2Options } from '$types';
 import type { ObjectMetadata } from 'firebase-functions/v1/storage';
 
 /**
@@ -13,12 +13,12 @@ import type { ObjectMetadata } from 'firebase-functions/v1/storage';
  *   archival occurs.
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onObjectArchive = (
+export const onObjectArchiveV2 = (
 	handler: (
 		object: ObjectMetadata,
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options?: ObjectTriggerV1Options,
+	_options?: ObjectTriggerV2Options,
 ) => handler;
 /**
  * Event handler which fires every time a Google Cloud Storage deletion occurs.
@@ -33,12 +33,12 @@ export const onObjectArchive = (
  *   deletion occurs.
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onObjectDelete = (
+export const onObjectDeleteV2 = (
 	handler: (
 		object: ObjectMetadata,
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options?: ObjectTriggerV1Options,
+	_options?: ObjectTriggerV2Options,
 ) => handler;
 
 /**
@@ -53,12 +53,12 @@ export const onObjectDelete = (
  *   object creation occurs.
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onObjectFinalize = (
+export const onObjectFinalizeV2 = (
 	handler: (
 		object: ObjectMetadata,
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options?: ObjectTriggerV1Options,
+	_options?: ObjectTriggerV2Options,
 ) => handler;
 
 /**
@@ -69,10 +69,10 @@ export const onObjectFinalize = (
  *   metadata update occurs.
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onObjectMetadataUpdate = (
+export const onObjectMetadataUpdateV2 = (
 	handler: (
 		object: ObjectMetadata,
 		context: EventContext,
 	) => PromiseLike<unknown> | unknown,
-	_options?: ObjectTriggerV1Options,
+	_options?: ObjectTriggerV2Options,
 ) => handler;

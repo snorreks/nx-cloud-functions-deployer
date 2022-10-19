@@ -2,6 +2,7 @@ import { join } from 'node:path';
 import { executeEsbuild, logger } from '$utils';
 import type { BuildFunctionData, DeployFunctionData } from '$types';
 import {
+	copyAssets,
 	createDeployFirebaseJson,
 	createDeployPackageJson,
 	createEnvironmentFile,
@@ -45,10 +46,11 @@ export const buildFunction = async (
 					external: buildFunctionData.external,
 					sourceRoot: buildFunctionData.workspaceRoot,
 				});
+				await createEnvironmentFile(buildFunctionData);
 			})(),
+			copyAssets(buildFunctionData),
 			createDeployPackageJson(buildFunctionData),
 			createDeployFirebaseJson(buildFunctionData),
-			createEnvironmentFile(buildFunctionData),
 		]);
 		if (buildFunctionData.dryRun) {
 			logger.spinnerLog(`Dry run: ${functionName} built`);
