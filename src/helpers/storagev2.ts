@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { EventContext } from 'firebase-functions';
 import type { ObjectTriggerV2Options } from '$types';
-import type { ObjectMetadata } from 'firebase-functions/v1/storage';
+import type { StorageEvent } from 'firebase-functions/v2/storage';
 
 /**
  * Event handler sent only when a bucket has enabled object versioning. This
@@ -14,10 +13,7 @@ import type { ObjectMetadata } from 'firebase-functions/v1/storage';
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
 export const onObjectArchiveV2 = (
-	handler: (
-		object: ObjectMetadata,
-		context: EventContext,
-	) => PromiseLike<unknown> | unknown,
+	handler: (event: StorageEvent) => PromiseLike<unknown> | unknown,
 	_options?: ObjectTriggerV2Options,
 ) => handler;
 /**
@@ -34,10 +30,7 @@ export const onObjectArchiveV2 = (
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
 export const onObjectDeleteV2 = (
-	handler: (
-		object: ObjectMetadata,
-		context: EventContext,
-	) => PromiseLike<unknown> | unknown,
+	handler: (event: StorageEvent) => PromiseLike<unknown> | unknown,
 	_options?: ObjectTriggerV2Options,
 ) => handler;
 
@@ -54,10 +47,7 @@ export const onObjectDeleteV2 = (
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
 export const onObjectFinalizeV2 = (
-	handler: (
-		object: ObjectMetadata,
-		context: EventContext,
-	) => PromiseLike<unknown> | unknown,
+	handler: (event: StorageEvent) => PromiseLike<unknown> | unknown,
 	_options?: ObjectTriggerV2Options,
 ) => handler;
 
@@ -70,9 +60,6 @@ export const onObjectFinalizeV2 = (
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
 export const onObjectMetadataUpdateV2 = (
-	handler: (
-		object: ObjectMetadata,
-		context: EventContext,
-	) => PromiseLike<unknown> | unknown,
+	handler: (event: StorageEvent) => PromiseLike<unknown> | unknown,
 	_options?: ObjectTriggerV2Options,
 ) => handler;

@@ -64,16 +64,19 @@ const toDeployV2IndexCode = (
 		| BuildFunctionData<'https'>
 		| BuildFunctionData<'storage'>,
 ) => {
-	const { functionName, absolutePath, deployFunction } = buildFunctionData;
+	const { functionName, absolutePath, deployFunction, rootFunctionBuilder } =
+		buildFunctionData;
 	const functionCode = toFunctionCodeType(deployFunction);
 
 	const deployableFilePath = absolutePath;
 	const pathWithoutSuffix = deployableFilePath.replace('.ts', '');
+	const optionsCode = getV2Options(buildFunctionData as HttpsV2Options);
+
 	const fileCode = `
-		import { ${functionCode} } from 'firebase-functions/v2/https';
+		import { ${functionCode} } from 'firebase-functions/v2/${rootFunctionBuilder}';
 		import ${functionStart} from '${pathWithoutSuffix}';
 		export const ${functionName} = ${functionCode}(
-				(${getV2Options(buildFunctionData as HttpsV2Options)}),
+				(${optionsCode}),
 				${functionStart}
 			);
 	`;
