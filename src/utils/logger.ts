@@ -238,6 +238,9 @@ class LoggerService implements LoggerInterface {
 	startSpinner(deployableFunctionsAmount: number, projectId: string): void {
 		this._deployableFunctionsAmount = deployableFunctionsAmount;
 		this._projectId = projectId;
+		if (this.verbose) {
+			return;
+		}
 		this._spinner = createSpinner(this.spinnerDefaultText).start();
 	}
 
@@ -289,6 +292,11 @@ class LoggerService implements LoggerInterface {
 	}
 
 	spinnerLog(stopText: string): void {
+		if (!this._spinner) {
+			this.log(stopText);
+			return;
+		}
+
 		this._spinner?.stop({
 			text: stopText,
 		});
@@ -299,12 +307,22 @@ class LoggerService implements LoggerInterface {
 	}
 
 	private spinnerSuccess(text: string): void {
+		if (!this._spinner) {
+			this.log(text);
+			return;
+		}
+
 		this._spinner?.success({
 			text,
 		});
 	}
 
 	private spinnerError(text: string): void {
+		if (!this._spinner) {
+			this.log(text);
+			return;
+		}
+
 		this._spinner?.error({
 			text,
 		});

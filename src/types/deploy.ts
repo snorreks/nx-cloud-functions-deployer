@@ -7,6 +7,8 @@ export type EsbuildAlias = { [key: string]: string };
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'global';
 
 interface SharedDeployExecutorBaseOptions {
+	/** The project flavor */
+	flavor?: string;
 	/**
 	 * The name of the tsconfig file in the project root.
 	 *
@@ -53,6 +55,14 @@ interface SharedDeployExecutorBaseOptions {
 	 * @default 'functions-cache.{flavor}.ts'
 	 */
 	cloudCacheFileName: string;
+
+	/**
+	 * Will import the file in the deploy script from the project root
+	 * directory. Helpful for setting up opentelemetry.
+	 *
+	 * @default 'src/logger.ts'
+	 */
+	includeFilePath?: string;
 
 	ignoreMissingEnvironmentKey?: boolean;
 }
@@ -186,6 +196,8 @@ export type BuildFunctionData<T extends FunctionBuilder = FunctionBuilder> =
 			region: string | string[];
 
 			startTime: number;
+
+			hasLoggerFile?: boolean;
 
 			checksum?: string;
 		};

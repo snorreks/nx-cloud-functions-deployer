@@ -12,7 +12,16 @@ export const getEnvironmentNeeded = async (
 			return;
 		}
 		const outputPath = join(outputRoot, 'src/index.js');
-		const code = await readFile(outputPath, 'utf8');
+		let code = await readFile(outputPath, 'utf8');
+		if (deployableFileLiteData.hasLoggerFile) {
+			try {
+				const loggerFilePath = join(outputRoot, 'src/logger.js');
+				const loggerCode = await readFile(loggerFilePath, 'utf8');
+				code = code + loggerCode;
+			} catch (error) {
+				logger.error('getLoggerCode', error);
+			}
+		}
 
 		return Object.fromEntries(
 			Object.entries(environment).filter(([key]) => code.includes(key)),

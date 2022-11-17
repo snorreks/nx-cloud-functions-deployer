@@ -9,6 +9,15 @@ const algorithm = 'md5';
 const checksumFileName = `checksum.${algorithm}`;
 const encoding = 'hex';
 
+// function that makes a Record<string, string> into a string
+
+const recordToString = (record: Record<string, string | undefined>): string => {
+	return Object.entries(record)
+		.sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+		.map(([key, value]) => `${key}=${value}`)
+		.join(''); // sort the keys so that the order doesn't matter
+};
+
 /**
  * Check for changes in the code of the function
  *
@@ -19,15 +28,24 @@ export const checkForChanges = async (
 	deployFunction: DeployFunctionData,
 ): Promise<DeployFunctionData | undefined> => {
 	try {
-		const { environmentFileCode, outputRoot } = deployFunction;
+		const { environment, outputRoot } = deployFunction;
 
-		const newCode = await readFile(
-			join(outputRoot, 'src/index.js'),
-			'utf8',
-		);
+		let newCode = await readFile(join(outputRoot, 'src/index.js'), 'utf8');
+
+		if (deployFunction.hasLoggerFile) {
+			try {
+				const loggerFilePath = join(outputRoot, 'src/logger.js');
+				const loggerCode = await readFile(loggerFilePath, 'utf8');
+				newCode = newCode + loggerCode;
+			} catch (error) {
+				logger.error('getLoggerCode', error);
+			}
+		}
+
+		const environmentString = environment && recordToString(environment);
 		const cachedChecksum =
 			deployFunction.checksum ?? (await getCachedChecksum(outputRoot));
-		const newChecksum = generateChecksum(newCode + environmentFileCode);
+		const newChecksum = generateChecksum(newCode + environmentString);
 
 		if (cachedChecksum && cachedChecksum === newChecksum) {
 			logger.info(

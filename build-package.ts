@@ -59,6 +59,10 @@ const copyFiles = async () => {
 				'dist/executors/deploy/schema.json',
 			),
 			copy(
+				'src/executors/delete/schema.json',
+				'dist/executors/delete/schema.json',
+			),
+			copy(
 				'src/executors/build/schema.json',
 				'dist/executors/build/schema.json',
 			),
@@ -120,6 +124,12 @@ const compileTypescriptFiles = async () => {
 				...baseBuildOptions,
 				entryPoints: ['./src/executors/deploy/index.ts'],
 				outfile: 'dist/executors/deploy/index.js',
+				external: ['esbuild', 'esbuild-plugin-alias'],
+			}),
+			build({
+				...baseBuildOptions,
+				entryPoints: ['./src/executors/delete/index.ts'],
+				outfile: 'dist/executors/delete/index.js',
 				external: ['esbuild', 'esbuild-plugin-alias'],
 			}),
 			build({

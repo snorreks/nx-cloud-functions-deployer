@@ -38,10 +38,11 @@ export const validateProject = async ({
 	});
 };
 
-export const getBuildableFiles = async (
-	options: BaseDeployOptions,
-): Promise<BuildFunctionData[]> => {
-	const { projectRoot, functionsDirectory, only } = options;
+export const getDeployableFunctionPaths = async (options: {
+	projectRoot: string;
+	functionsDirectory: string;
+}): Promise<string[]> => {
+	const { projectRoot, functionsDirectory } = options;
 
 	const functionPaths: string[] = [];
 	const functionsDirectoryPath = join(projectRoot, functionsDirectory);
@@ -61,6 +62,16 @@ export const getBuildableFiles = async (
 			functionPaths,
 		);
 	}
+
+	return functionPaths;
+};
+
+export const getBuildableFiles = async (
+	options: BaseDeployOptions,
+): Promise<BuildFunctionData[]> => {
+	const { functionsDirectory, only } = options;
+
+	const functionPaths = await getDeployableFunctionPaths(options);
 
 	const deployableFunctions = validateDeployFiles(functionPaths, options);
 

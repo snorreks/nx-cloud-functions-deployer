@@ -90,6 +90,10 @@ const toRootFunction = (deployFunction: DeployFunction): FunctionBuilder => {
 		case 'onObjectDelete':
 		case 'onObjectFinalize':
 		case 'onObjectMetadataUpdate':
+		case 'onObjectArchiveV2':
+		case 'onObjectDeleteV2':
+		case 'onObjectFinalizeV2':
+		case 'onObjectMetadataUpdateV2':
 			return 'storage';
 		default:
 			throw new Error('Invalid function type');

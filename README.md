@@ -18,6 +18,7 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 	- [Database/Firestore Structure](#databasefirestore-structure)
 	- [Custom Structure](#custom-structure)
 - [Cloud cache](#cloud-cache)
+- [Logger](#logger)
 - [Executors](#executors)
 	- [Deploy](#deploy)
 		- [Options](#options)
@@ -25,6 +26,9 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 	- [Script](#script)
 		- [Options](#options-1)
 		- [Examples](#examples-1)
+	- [Delete](#delete)
+		- [Options](#options-2)
+		- [Examples](#examples-2)
 
 ## Features
 
@@ -316,6 +320,10 @@ export const update: FunctionsCacheUpdate = async (newFunctionsCache) => {
 
 See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/cloud-cache.ts) for how to setup cloud cache with [jsonbin](https://jsonbin.io/)
 
+## Logger
+
+If you want to see metric for each function (like opentelemetry or sentry) , add a logger.ts file in the src folder (see [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/src/logger.ts)). The logger will be build and added for each function.
+
 ## Executors
 
 ### Deploy
@@ -417,4 +425,42 @@ pnpm nx script functions --dev
 ```bash
 pnpm nx script functions --dev -p
 # will run the last executed script in development
+```
+
+### Delete
+
+The plugin provide support to delete unused function that are not in the project anymore. The plugin will delete any functions that are not in the `functions` directory.
+
+```json
+...
+	"targets": {
+		"delete-unused": {
+			"executor": "nx-cloud-functions-deployer:delete",
+			"options": {
+				"firebaseProjectProdId": "my-firebase-production-project-id",
+				"firebaseProjectDevId": "my-firebase-development-project-id", // just use the same as prod if you don't have a dev project
+			}
+		},
+```
+
+#### Options
+
+| Option                  | Description                                                              | Default         | Alias         |
+| ----------------------- | ------------------------------------------------------------------------ | --------------- | ------------- |
+| `firebaseProjectProdId` | The firebase project id of the production flavor                         | required        | `prodId`      |
+| `firebaseProjectDevId`  | The firebase project id of the development flavor                        | required        | `devId`       |
+| `prod`                  | If true, use the `firebaseProjectProdId` and look for `prodEnvFileName`. | `false`         | `production`  |
+| `dev`                   | If true, use the `firebaseProjectDevId` and look for `devEnvFileName`.   | `false`         | `development` |
+| `tsconfig`              | The tsconfig file to use for the script in the project directory.        | `tsconfig.json` | `tsconfig`    |
+| `silent`                | Whether to suppress all logs.                                            | `false`         | `s`           |
+| `verbose`               | Whether to run the command with verbose logging.                         | `false`         | `v`           |
+
+#### Examples
+
+```bash
+pnpm nx delete-unused functions
+```
+
+```bash
+pnpm nx delete-unused functions --prod
 ```

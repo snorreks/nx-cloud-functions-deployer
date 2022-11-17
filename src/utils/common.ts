@@ -82,6 +82,9 @@ export const toImportPath = (typescriptFilePath: string): string => {
 		.replace('.ts', '')
 		.replaceAll('\\', '/');
 
+	// TODO migrate from absolute to relative paths from the root
+	// need to find how many ../../../ from tmp to root
+
 	if (platform() === 'win32') {
 		return `file://${importPath}`;
 	}

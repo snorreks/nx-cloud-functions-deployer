@@ -167,17 +167,21 @@ const toFunctionCodeType = (deployFunction: DeployFunction): string => {
 		case 'schedule':
 			return 'schedule';
 		case 'onObjectArchive':
-		case 'onObjectArchiveV2':
 			return 'onArchive';
+		case 'onObjectArchiveV2':
+			return 'onObjectArchived';
 		case 'onObjectDelete':
-		case 'onObjectDeleteV2':
 			return 'onDelete';
+		case 'onObjectDeleteV2':
+			return 'onObjectDeleted';
 		case 'onObjectFinalize':
-		case 'onObjectFinalizeV2':
 			return 'onFinalize';
+		case 'onObjectFinalizeV2':
+			return 'onObjectFinalized';
 		case 'onObjectMetadataUpdate':
-		case 'onObjectMetadataUpdateV2':
 			return 'onMetadataUpdate';
+		case 'onObjectMetadataUpdateV2':
+			return 'onObjectMetadataUpdated';
 		case 'onRefCreate':
 			return 'onCreate';
 		case 'onRefDelete':
@@ -287,6 +291,7 @@ const removeAllOtherOptions = (
 		'projectRoot',
 		'relativeDeployFilePath',
 		'rootFunctionBuilder',
+		'ignoreMissingEnvironmentKey',
 		'startTime',
 		'temporaryDirectory',
 		'tsconfig',

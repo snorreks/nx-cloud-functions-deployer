@@ -11,7 +11,7 @@ export const execute = async ({
 }: {
 	packageManager: PackageManager;
 	commandArguments: string[];
-	cwd: string;
+	cwd?: string;
 	environment?: Environment;
 }) => {
 	if (packageManager === 'global') {

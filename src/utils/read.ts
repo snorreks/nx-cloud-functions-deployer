@@ -6,13 +6,14 @@ import type { Environment } from '$types';
 export const getEnvironment = async (options: {
 	prodEnvFileName?: string;
 	devEnvFileName?: string;
-	prod?: boolean;
+	flavor: 'prod' | 'dev';
 	projectRoot: string;
 	envString?: string;
 }): Promise<Environment | undefined> => {
 	const prodEnvFileName = options.prodEnvFileName || '.env.prod';
 	const devEnvFileName = options.devEnvFileName || '.env.dev';
-	const envFileName = options.prod ? prodEnvFileName : devEnvFileName;
+	const envFileName =
+		options.flavor === 'prod' ? prodEnvFileName : devEnvFileName;
 	try {
 		if (options.envString) {
 			return parseEnvironment(options.envString);

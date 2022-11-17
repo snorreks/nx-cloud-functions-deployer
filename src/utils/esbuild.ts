@@ -37,8 +37,10 @@ export const executeEsbuild = async (options: {
 	alias?: EsbuildAlias;
 	sourceRoot: string;
 	keepNames?: boolean;
+	footer?: string;
 }): Promise<boolean> => {
-	const { inputPath, outputPath, external, sourceRoot, keepNames } = options;
+	const { inputPath, outputPath, external, sourceRoot, keepNames, footer } =
+		options;
 	const plugins = [dirnamePlugin];
 	if (options.alias) {
 		plugins.push(alias(options.alias));
@@ -48,6 +50,7 @@ export const executeEsbuild = async (options: {
 		banner: {
 			js: "import{createRequire}from'module';const require=createRequire(import.meta.url);",
 		},
+		footer: footer ? { js: footer } : undefined,
 		bundle: true,
 		entryPoints: [inputPath],
 		format: 'esm',

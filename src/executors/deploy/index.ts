@@ -26,7 +26,7 @@ import {
 } from './utils/online-checksum';
 import { cacheChecksumLocal, checkForChanges } from './utils/checksum';
 
-const getBaseOptions = async (
+export const getBaseOptions = async (
 	options: DeployExecutorOptions,
 	context: ExecutorContext,
 ): Promise<BaseDeployOptions> => {
@@ -35,7 +35,7 @@ const getBaseOptions = async (
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
-	const flavor: Flavor = options.prod ? 'prod' : 'dev';
+	const flavor: Flavor = options.flavor ?? options.prod ? 'prod' : 'dev';
 
 	const firebaseProjectId =
 		flavor === 'prod'
@@ -81,7 +81,7 @@ const getBaseOptions = async (
 	const packageManager = options.packageManager ?? 'pnpm';
 	const validate = options.validate ?? false;
 	const [environment, alias] = await Promise.all([
-		getEnvironment({ ...options, projectRoot }),
+		getEnvironment({ ...options, projectRoot, flavor }),
 		getAlias(),
 		mkdir(temporaryDirectory, { recursive: true }),
 		validateProject({
@@ -99,6 +99,7 @@ const getBaseOptions = async (
 		dryRun: options.dryRun,
 		force: options.force,
 		only,
+		includeFilePath: options.includeFilePath ?? 'src/logger.ts',
 		tsconfig: options.tsconfig,
 		region: options.region,
 		validate: options.validate,

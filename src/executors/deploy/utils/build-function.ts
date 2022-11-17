@@ -38,6 +38,13 @@ export const buildFunction = async (
 					'src/index.js',
 				);
 
+				const shouldImportLogger = await buildLoggerFile(
+					buildFunctionData,
+				);
+				if (shouldImportLogger) {
+					buildFunctionData.hasLoggerFile = true;
+				}
+
 				await executeEsbuild({
 					inputPath,
 					outputPath,
@@ -45,6 +52,9 @@ export const buildFunction = async (
 					alias: buildFunctionData.alias,
 					external: buildFunctionData.external,
 					sourceRoot: buildFunctionData.workspaceRoot,
+					footer: shouldImportLogger
+						? 'import "./logger.js";'
+						: undefined,
 				});
 				await createEnvironmentFile(buildFunctionData);
 			})(),
@@ -68,5 +78,31 @@ export const buildFunction = async (
 		logger.logFunctionFailed(functionName, errorMessage);
 		logger.debug(error);
 		return undefined;
+	}
+};
+
+const buildLoggerFile = async (
+	buildFunctionData: BuildFunctionData,
+): Promise<boolean> => {
+	try {
+		const inputPath = join(
+			buildFunctionData.projectRoot,
+			buildFunctionData.includeFilePath ?? 'src/logger.ts',
+		);
+		const outputPath = join(buildFunctionData.outputRoot, 'src/logger.js');
+
+		await executeEsbuild({
+			inputPath,
+			outputPath,
+			keepNames: buildFunctionData.keepNames,
+			alias: buildFunctionData.alias,
+			external: buildFunctionData.external,
+			sourceRoot: buildFunctionData.workspaceRoot,
+		});
+
+		return true;
+	} catch (error) {
+		logger.debug('buildLoggerFile', error);
+		return false;
 	}
 };
