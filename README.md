@@ -14,6 +14,7 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 	- [Https Example](#https-example)
 	- [Runtime Options](#runtime-options)
 	- [Cloud functions v2 Example](#cloud-functions-v2-example)
+	- [Limitations](#limitations)
 - [Folder Structure](#folder-structure)
 	- [Database/Firestore Structure](#databasefirestore-structure)
 	- [Custom Structure](#custom-structure)
@@ -210,6 +211,32 @@ export default onCallV2<MyFunctions, 'my_function_name'>(
 		v2: true,
 	},
 ); // the function name will be => myfunctionname
+```
+
+### Limitations
+
+You cannot have comments, variables or [numeric separators](https://mariusschulz.com/blog/numeric-separators-in-typescript) in the options section. If the options section is invalid it will skip the options and deploy as default.
+
+All these lines in the options are not allowed:
+
+```typescript
+import { onCall } from 'nx-cloud-functions-deployer';
+
+const region = 'europe-west1';
+const memory = '2GB';
+
+export default onCall(
+	(data, context) => {
+		return { response: true };
+	},
+	{
+		region,
+		runtimeOptions: {
+			timeoutSeconds: 1_800,
+			memory: memory,
+		}, // a random comment
+	},
+);
 ```
 
 ## Folder Structure
