@@ -14,6 +14,7 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 	- [Https Example](#https-example)
 	- [Runtime Options](#runtime-options)
 	- [Cloud functions v2 Example](#cloud-functions-v2-example)
+	- [Assets and external dependencies](#assets-and-external-dependencies)
 	- [Limitations](#limitations)
 - [Folder Structure](#folder-structure)
 	- [Database/Firestore Structure](#databasefirestore-structure)
@@ -213,6 +214,31 @@ export default onCallV2<MyFunctions, 'my_function_name'>(
 ); // the function name will be => myfunctionname
 ```
 
+### Assets and external dependencies
+
+To include assets and external dependencies you can use the `assets` and `external` options.
+
+External will install the dependencies in the function folder and add them to the package.json. This is useful for dependencies that do not work with bundle.
+
+Assets will copy the files from src/assets to the dist folder (right next to index.js)
+
+```typescript
+import { onCall } from 'nx-cloud-functions-deployer';
+
+export default onCall(
+	(data, context) => {
+		return { response: true };
+	},
+	{
+		assets: ['test.png'],
+		external: ['sharp'],
+		keepNames: true,
+	},
+);
+```
+
+Also note that if you use sharp, you need keepNames: true. See [documentation](https://esbuild.github.io/api/#keep-names)
+
 ### Limitations
 
 You cannot have comments, variables or [numeric separators](https://mariusschulz.com/blog/numeric-separators-in-typescript) in the options section. If the options section is invalid it will skip the options and deploy as default.
@@ -345,7 +371,7 @@ export const update: FunctionsCacheUpdate = async (newFunctionsCache) => {
 };
 ```
 
-See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/cloud-cache.ts) for how to setup cloud cache with [jsonbin](https://jsonbin.io/)
+See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/functions-cache.dev.ts) for how to setup cloud cache with [jsonbin](https://jsonbin.io/)
 
 ## Logger
 
@@ -393,15 +419,15 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 #### Examples
 
 ```bash
-pnpm nx deploy functions --prod
+pnpm nx deploy functions --productionuction
 ```
 
 ```bash
-pnpm nx deploy functions --dev
+pnpm nx deploy functions --developmentelopment
 ```
 
 ```bash
-pnpm nx deploy functions --dev --only my_function,my_other_function --f
+pnpm nx deploy functions --developmentelopment --only my_function,my_other_function --f
 # will deploy only the functions my_function and my_other_function
 # and deploy them even if no files have changed
 ```
@@ -442,15 +468,15 @@ Create a `functions-config.dev.ts` and `functions-config.prod.ts` file in the pr
 #### Examples
 
 ```bash
-pnpm nx script functions --prod
+pnpm nx script functions --production
 ```
 
 ```bash
-pnpm nx script functions --dev
+pnpm nx script functions --development
 ```
 
 ```bash
-pnpm nx script functions --dev -p
+pnpm nx script functions --development -p
 # will run the last executed script in development
 ```
 
@@ -489,5 +515,5 @@ pnpm nx delete-unused functions
 ```
 
 ```bash
-pnpm nx delete-unused functions --prod
+pnpm nx delete-unused functions --production
 ```

@@ -31,11 +31,15 @@ export const getBaseOptions = async (
 	context: ExecutorContext,
 ): Promise<BaseDeployOptions> => {
 	const { projectName, root: workspaceRoot, workspace } = context;
+	logger.log('getBaseOptions', options);
 
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
-	const flavor: Flavor = options.flavor ?? options.prod ? 'prod' : 'dev';
+	let flavor = options.flavor as Flavor | undefined;
+	if (!flavor) {
+		flavor = options.prod ? 'prod' : 'dev';
+	}
 
 	const firebaseProjectId =
 		flavor === 'prod'
