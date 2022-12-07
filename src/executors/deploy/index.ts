@@ -31,7 +31,7 @@ export const getBaseOptions = async (
 	context: ExecutorContext,
 ): Promise<BaseDeployOptions> => {
 	const { projectName, root: workspaceRoot, workspace } = context;
-	logger.log('getBaseOptions', options);
+	logger.debug('getBaseOptions', options);
 
 	if (!projectName) {
 		throw new Error('Project name is not defined');
@@ -127,9 +127,10 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 	logger.setLogSeverity(options);
 	const baseOptions = await getBaseOptions(options, context);
 
-	const buildableFiles = await getBuildableFiles(baseOptions);
-
-	const onlineChecksum = await getOnlineChecksum(baseOptions);
+	const [buildableFiles, onlineChecksum] = await Promise.all([
+		getBuildableFiles(baseOptions),
+		getOnlineChecksum(baseOptions),
+	]);
 
 	if (onlineChecksum) {
 		for (const [functionName, checksum] of Object.entries(onlineChecksum)) {
@@ -140,7 +141,7 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 				deployableFunction.checksum = checksum;
 			}
 		}
-	} else {
+	} else if (!options.force) {
 		logger.info('No online checksum found');
 	}
 
@@ -180,11 +181,17 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 		.filter(isDeployableFunction)
 		.filter((deployableFunction) => !!deployableFunction.checksum);
 
-	if (onlineChecksum) {
-		await updateOnlineChecksum(deployedFiles);
-	} else {
-		await Promise.all(deployableFunctions.map(cacheChecksumLocal));
-	}
+	logger.endSpinner();
+
+	logger.log('Cleaning up & updating checksum...');
+
+	const promises: Promise<void>[] =
+		deployableFunctions.map(cacheChecksumLocal);
+
+	// if (onlineChecksum) {
+	promises.push(updateOnlineChecksum(deployedFiles));
+	// }
+	await Promise.all(promises);
 
 	if (!options.debug) {
 		try {
@@ -194,8 +201,6 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 			logger.debug(error);
 		}
 	}
-
-	logger.endSpinner();
 
 	return {
 		success: !logger.hasFailedFunctions,

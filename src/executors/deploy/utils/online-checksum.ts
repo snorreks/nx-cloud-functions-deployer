@@ -11,12 +11,23 @@ const readFileName = 'read.ts';
 const updateFileName = 'update.ts';
 const jsonFileName = 'checksum.json';
 
-export const getOnlineChecksum = async ({
-	projectRoot,
-	temporaryDirectory,
-	cloudCacheFileName,
-}: BaseDeployOptions): Promise<FunctionsCache | undefined> => {
+export const getOnlineChecksum = async (
+	options: BaseDeployOptions,
+): Promise<FunctionsCache | undefined> => {
+	const { projectRoot, temporaryDirectory, cloudCacheFileName, force } =
+		options;
+	logger.debug('getOnlineChecksum', {
+		projectRoot,
+		temporaryDirectory,
+		cloudCacheFileName,
+		force,
+	});
+
 	try {
+		if (force) {
+			logger.log('Force deploy, skipping online checksum');
+			return;
+		}
 		const fetchFilePath = join(projectRoot, cloudCacheFileName);
 		const fetchExecuteFilePath = join(temporaryDirectory, readFileName);
 

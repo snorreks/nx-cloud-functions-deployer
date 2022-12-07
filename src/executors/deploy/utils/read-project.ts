@@ -116,9 +116,9 @@ export const getBuildableFiles = async (
 					),
 			);
 			logger.warn(
-				`The following functions were not found: ${missingFunctionNames.join(
-					', ',
-				)}`,
+				`${chalk.red(
+					'The following functions were not found',
+				)}: ${missingFunctionNames.join(', ')}`,
 			);
 		}
 	}

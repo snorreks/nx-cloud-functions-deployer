@@ -419,15 +419,15 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 #### Examples
 
 ```bash
-pnpm nx deploy functions --productionuction
+pnpm nx deploy functions --production
 ```
 
 ```bash
-pnpm nx deploy functions --developmentelopment
+pnpm nx deploy functions --development
 ```
 
 ```bash
-pnpm nx deploy functions --developmentelopment --only my_function,my_other_function --f
+pnpm nx deploy functions --development --only my_function,my_other_function --f
 # will deploy only the functions my_function and my_other_function
 # and deploy them even if no files have changed
 ```

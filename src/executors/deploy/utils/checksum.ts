@@ -47,7 +47,11 @@ export const checkForChanges = async (
 			deployFunction.checksum ?? (await getCachedChecksum(outputRoot));
 		const newChecksum = generateChecksum(newCode + environmentString);
 
-		if (cachedChecksum && cachedChecksum === newChecksum) {
+		if (
+			!deployFunction.force &&
+			cachedChecksum &&
+			cachedChecksum === newChecksum
+		) {
 			logger.info(
 				chalk.green(
 					`${chalk.bold(
