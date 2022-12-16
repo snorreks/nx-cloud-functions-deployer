@@ -15,6 +15,7 @@ const getRunScriptOptions = (
 	context: ExecutorContext,
 ): RunScriptOptions => {
 	try {
+		logger.debug('getRunScriptOptions', options);
 		const { projectName, root: workspaceRoot, workspace } = context;
 		if (!projectName) {
 			throw new Error('Project name is not defined');
@@ -42,13 +43,18 @@ const getRunScriptOptions = (
 			`functions-config.${flavor}.ts`,
 		);
 
-		const tsconfigPath = options.tsconfig;
+		let tsconfigPath: string | undefined;
+		if (options.tsconfig) {
+			tsconfigPath = join(projectRoot, options.tsconfig);
+		}
+
 		const dirname = __dirname;
 
 		const envConfigPath = join(dirname, '.env');
 		const runScriptFilePath = join(dirname, 'run-script.js');
 
 		return {
+			verbose: options.verbose,
 			script: options.script,
 			flavor,
 			projectRoot,
@@ -69,6 +75,7 @@ const getRunScriptOptions = (
 
 const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 	try {
+		logger.debug('runScript', options);
 		const {
 			projectRoot,
 			tsconfigPath,
@@ -78,6 +85,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			scriptsRoot,
 			runPrevious,
 			script,
+			verbose,
 		} = options;
 
 		const runScriptEnvironment: RunScriptEnvironment & {
@@ -89,6 +97,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			CFD_SCRIPT_FILE_NAME: script,
 			CFD_RUN_PREVIOUS: runPrevious ? '1' : '0',
 			TS_NODE_PROJECT: tsconfigPath,
+			CFD_VERBOSE: verbose ? '1' : '0',
 		};
 		await runFile({
 			cwd: projectRoot,

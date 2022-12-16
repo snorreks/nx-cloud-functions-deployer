@@ -25,7 +25,7 @@ export type RunScriptEnvironment = {
 	CFD_FUNCTIONS_CONFIG_PATH: string;
 	CFD_SCRIPTS_ROOT: string;
 	CFD_RUN_PREVIOUS: '1' | '0';
-
+	CFD_VERBOSE: '1' | '0';
 	CFD_SCRIPT_FILE_NAME: string | undefined;
 };
 
@@ -43,4 +43,6 @@ export interface RunScriptOptions {
 	runPrevious?: boolean;
 
 	script?: string;
+
+	verbose?: boolean;
 }

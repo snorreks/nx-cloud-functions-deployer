@@ -84,7 +84,7 @@ export const getDeployableFileData = async (
 		logger.info(
 			`Found function ${chalk.bold(
 				buildFunctionData.functionName,
-			)} in ${chalk.bold(buildFunctionData.relativeDeployFilePath)}`,
+			)} in ${chalk.italic(buildFunctionData.relativeDeployFilePath)}`,
 		);
 	}
 

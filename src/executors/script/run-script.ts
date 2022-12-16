@@ -18,16 +18,19 @@ const handleScript = async (
 		scriptFileName: string;
 	},
 ) => {
+	const verbose = options.CFD_VERBOSE === '1';
 	const scriptFileName = options.scriptFileName;
 	const firebaseProjectId = options.CFD_FIREBASE_PROJECT_ID;
 	const functionsConfigPath = options.CFD_FUNCTIONS_CONFIG_PATH;
 	const scriptsRoot = options.CFD_SCRIPTS_ROOT;
 
-	const spinner = createSpinner(
-		`Running script ${chalk.bold(scriptFileName)} in ${chalk.bold(
-			firebaseProjectId,
-		)}...`,
-	).start();
+	const spinner = !verbose
+		? createSpinner(
+				`Running script ${chalk.bold(scriptFileName)} in ${chalk.bold(
+					firebaseProjectId,
+				)}...`,
+		  ).start()
+		: undefined;
 	try {
 		await import(toImportPath(functionsConfigPath));
 
@@ -41,7 +44,7 @@ const handleScript = async (
 		const end = Date.now();
 		const timeInMs = end - start;
 
-		spinner.success({
+		spinner?.success({
 			text: chalk.green(
 				`Successfully executed ${chalk.bold(
 					scriptFileName,
@@ -60,7 +63,7 @@ const handleScript = async (
 
 		process.exit(0);
 	} catch (e) {
-		spinner.error({
+		spinner?.error({
 			text: chalk.red(
 				`Failed to run ${chalk.bold(scriptFileName)} in ${chalk.bold(
 					firebaseProjectId,
@@ -94,7 +97,7 @@ const askScriptFileName = async (
 
 const runScript = async () => {
 	const environment = process.env as RunScriptEnvironment;
-
+	const verbose = environment.CFD_VERBOSE === '1';
 	const cachedScript = await userPreference.get<string>('script');
 
 	const scriptFileName = await getScriptFileName(environment, cachedScript);
@@ -102,8 +105,9 @@ const runScript = async () => {
 	if (scriptFileName !== cachedScript) {
 		await userPreference.set('script', scriptFileName);
 	}
-
-	console.clear();
+	if (!verbose) {
+		console.clear();
+	}
 
 	return handleScript({
 		...environment,
