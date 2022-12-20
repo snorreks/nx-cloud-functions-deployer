@@ -45,3 +45,4 @@ testem.log
 .DS_Store
 Thumbs.db
 example/apps/functions/functions-config.prod.ts
+tsconfig.types.tsbuildinfo
