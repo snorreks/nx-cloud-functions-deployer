@@ -297,6 +297,7 @@ const removeAllOtherOptions = (
 		'tsconfig',
 		'validate',
 		'workspaceRoot',
+		'nodeVersion',
 	];
 
 	delete options.v2;

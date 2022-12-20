@@ -98,6 +98,7 @@ export const getBaseOptions = async (
 	const only = options.only?.split(',').map((name) => name.trim());
 
 	return {
+		nodeVersion: options.nodeVersion,
 		ignoreMissingEnvironmentKey:
 			options.ignoreMissingEnvironmentKey ?? true, // TODO: Change to false in v2
 		dryRun: options.dryRun,

@@ -1,6 +1,6 @@
 import type { Flavor } from './common';
 import type { DeployFunction, FunctionBuilder } from './function-types';
-import type { FunctionOptions } from './helper-options';
+import type { FunctionOptions, NodeVersion } from './helper-options';
 
 export type EsbuildAlias = { [key: string]: string };
 
@@ -65,6 +65,8 @@ interface SharedDeployExecutorBaseOptions {
 	includeFilePath?: string;
 
 	ignoreMissingEnvironmentKey?: boolean;
+
+	nodeVersion?: NodeVersion;
 }
 
 export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {

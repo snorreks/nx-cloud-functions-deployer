@@ -3,6 +3,7 @@
 	"include": ["src/index.ts"],
 	"compilerOptions": {
 		"removeComments": false,
-		"emitDeclarationOnly": true
+		"emitDeclarationOnly": true,
+		"composite": true
 	}
 }

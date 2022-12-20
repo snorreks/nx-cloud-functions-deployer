@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Change, EventContext } from 'firebase-functions';
 import type { RefTriggerOptions } from '$types';
-import type { DataSnapshot } from 'firebase-functions/v1/database';
+import type { DataSnapshot } from 'firebase-functions/lib/common/providers/database';
 
 /**
  * Event handler that fires every time new data is created in Firebase Realtime

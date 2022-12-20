@@ -104,13 +104,13 @@ const compileTypescriptFiles = async () => {
 		};
 
 		await Promise.all([
-			nvexeca('16', 'pnpm', ['tsc', '-noEmit']),
 			(async () => {
-				await nvexeca('16', 'pnpm', [
+				const { childProcess } = await nvexeca('16', 'pnpm', [
 					'tsc',
 					'--project',
 					'./tsconfig.types.json',
 				]);
+				await childProcess;
 				replaceTscAliasPaths({
 					configFile: './tsconfig.types.json',
 				});

@@ -144,6 +144,7 @@ const validateOptions = (
 		external: getValueFromObject(object, 'external'),
 		keepNames: getValueFromObject(object, 'keepNames'), // todo add `?? true` when missing env check is implemented
 		assets: getValueFromObject(object, 'assets'),
+		nodeVersion: getValueFromObject(object, 'nodeVersion'),
 		runtimeOptions: getRunTimeOptions(object),
 	};
 
@@ -198,7 +199,6 @@ const getV2Options = (
 	const httpsOptions: HttpsV2Options = {
 		...object,
 		...baseOptions,
-		region: getValueFromObject(object, 'region'),
 	};
 	logger.debug('getV2Options', httpsOptions);
 	return httpsOptions;

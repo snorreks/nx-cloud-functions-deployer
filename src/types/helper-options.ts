@@ -1,6 +1,7 @@
 import type { RuntimeOptions, SUPPORTED_REGIONS } from 'firebase-functions/v1';
 import type { HttpsOptions as FirebaseHttpsV2Options } from 'firebase-functions/v2/https';
-export { RuntimeOptions };
+import type { StorageOptions } from 'firebase-functions/v2/storage';
+export type NodeVersion = '14' | '16';
 
 export interface BaseFunctionOptions<T extends string = string> {
 	/**
@@ -53,6 +54,8 @@ export interface BaseFunctionOptions<T extends string = string> {
 	 * @see https://firebase.google.com/docs/functions/manage-functions#set_runtime_options
 	 */
 	runtimeOptions?: RuntimeOptions;
+
+	nodeVersion?: NodeVersion;
 }
 
 export type HttpsV1Options<T extends string | number | symbol = string> =
@@ -114,8 +117,6 @@ export interface ScheduleOptions extends BaseFunctionOptions {
 
 export type PubsubOptions = TopicOptions | ScheduleOptions;
 
-import type { StorageOptions } from 'firebase-functions/v2/storage';
-
 export type ObjectTriggerV1Options = BaseFunctionOptions;
 
 export interface ObjectTriggerV2Options
@@ -133,3 +134,5 @@ export type FunctionOptions = {
 	storage: ObjectTriggerOptions;
 	database: RefTriggerOptions;
 };
+
+export { RuntimeOptions };

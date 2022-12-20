@@ -23,6 +23,7 @@ export const createDeployFirebaseJson = async ({
 export const createDeployPackageJson = async ({
 	outputRoot,
 	external,
+	nodeVersion,
 }: BuildFunctionData) => {
 	// const packageJsonPath = join(workspaceRoot, projectRoot, 'package.json');
 	// const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
@@ -31,7 +32,7 @@ export const createDeployPackageJson = async ({
 		type: 'module',
 		main: 'src/index.js',
 		engines: {
-			node: '16',
+			node: nodeVersion ?? '16',
 		},
 	};
 

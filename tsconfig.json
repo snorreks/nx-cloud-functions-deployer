@@ -42,5 +42,10 @@
 			"$utils/*": ["src/utils/*"]
 		}
 	},
-	"include": ["src"]
+	"include": ["src"],
+	"references": [
+		{
+			"path": "./tsconfig.types.json"
+		}
+	]
 }
