@@ -1,7 +1,7 @@
 {
 	"name": "nx-cloud-functions-deployer",
 	"type": "module",
-	"version": "0.9.5",
+	"version": "0.9.6",
 	"description": "Nx plugin to deploy cloud functions",
 	"license": "MIT",
 	"main": "index.js",
@@ -33,6 +33,9 @@
 	"peerDependencies": {
 		"@nrwl/devkit": ">=14.5.0",
 		"tsx": ">=3.9.0"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
 	},
 	"devDependencies": {
 		"@firebase/app-types": "^0.8.1",
