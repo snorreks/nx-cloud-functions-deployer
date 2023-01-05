@@ -60,7 +60,11 @@ export const updateOnlineChecksum = async (
 	deployedFiles: DeployFunctionData[],
 ) => {
 	try {
-		const firstDeployedFile = deployedFiles[0];
+		const filesWithChecksum = deployedFiles.filter(
+			({ checksum }) => !!checksum,
+		);
+
+		const firstDeployedFile = filesWithChecksum[0];
 		if (!firstDeployedFile) {
 			return;
 		}
@@ -70,15 +74,13 @@ export const updateOnlineChecksum = async (
 		const updateFilePath = join(projectRoot, cloudCacheFileName);
 		const executeUpdateFilePath = join(temporaryDirectory, updateFileName);
 
-		const onlineChecksum = deployedFiles
-			.filter(({ checksum }) => !!checksum)
-			.reduce<FunctionsCache>(
-				(acc, { functionName, checksum }) => ({
-					...acc,
-					[functionName]: checksum as string,
-				}),
-				{},
-			);
+		const onlineChecksum = filesWithChecksum.reduce<FunctionsCache>(
+			(acc, { functionName, checksum }) => ({
+				...acc,
+				[functionName]: checksum as string,
+			}),
+			{},
+		);
 
 		logger.debug('Updating online checksum', onlineChecksum);
 
@@ -86,6 +88,8 @@ export const updateOnlineChecksum = async (
 			updateFilePath,
 			newOnlineChecksum: onlineChecksum,
 		});
+
+		logger.info('Updating online checksum');
 
 		await writeFile(executeUpdateFilePath, executeUpdateFileCode);
 

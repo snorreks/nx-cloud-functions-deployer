@@ -63,7 +63,15 @@ export const getDeployableFileData = async (
 		functionName,
 		startTime: Date.now(),
 		path: undefined,
+		sentry: undefined,
 	};
+
+	if (deployableFileLiteData.sentry) {
+		buildFunctionData.sentry = {
+			...deployableFileLiteData.sentry,
+			release: `${functionName}-${deployableFileLiteData.currentTime}`,
+		};
+	}
 
 	if (
 		isRefTriggerFunction(buildFunctionData.deployFunction) ||

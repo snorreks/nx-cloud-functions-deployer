@@ -10,6 +10,7 @@ import type {
 	Flavor,
 	DeployExecutorOptions,
 	DeployFunctionData,
+	SentryLiteData,
 } from '$types';
 import { deployFunction } from './utils/deploy-function';
 import { buildFunction } from './utils/build-function';
@@ -95,9 +96,10 @@ export const getBaseOptions = async (
 			tsconfig: options.tsconfig,
 		}),
 	]);
+
 	const only = options.only?.split(',').map((name) => name.trim());
 
-	return {
+	const baseDeployOptions: BaseDeployOptions = {
 		nodeVersion: options.nodeVersion,
 		ignoreMissingEnvironmentKey:
 			options.ignoreMissingEnvironmentKey ?? true, // TODO: Change to false in v2
@@ -121,7 +123,52 @@ export const getBaseOptions = async (
 		cloudCacheFileName:
 			options.cloudCacheFileName ?? `functions-cache.${flavor}.ts`,
 		defaultRegion: options.region ?? 'us-central1',
+		currentTime: Math.round(new Date().getTime() / 1000),
 	};
+	baseDeployOptions.sentry = validateSentryEnvironments(baseDeployOptions);
+
+	return baseDeployOptions;
+};
+
+const validateSentryEnvironments = (
+	baseDeployOptions: BaseDeployOptions,
+): SentryLiteData | undefined => {
+	const { environment } = baseDeployOptions;
+	if (!environment) {
+		return;
+	}
+
+	const { SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT } = environment;
+
+	if (SENTRY_AUTH_TOKEN && SENTRY_ORG && SENTRY_PROJECT) {
+		logger.log('Sentry environments are defined, uploading sourcemaps');
+		return {
+			token: SENTRY_AUTH_TOKEN,
+			organization: SENTRY_ORG,
+			project: SENTRY_PROJECT,
+		};
+	}
+
+	if (!SENTRY_AUTH_TOKEN && !SENTRY_ORG && !SENTRY_PROJECT) {
+		return;
+	}
+
+	if (!SENTRY_AUTH_TOKEN) {
+		logger.warn(
+			'SENTRY_AUTH_TOKEN is not defined in environment, skipping upload sourcemaps',
+		);
+	}
+	if (!SENTRY_ORG) {
+		logger.warn(
+			'SENTRY_ORG is not defined in environment, skipping upload sourcemaps',
+		);
+	}
+	if (!SENTRY_PROJECT) {
+		logger.warn(
+			'SENTRY_PROJECT is not defined in environment, skipping upload sourcemaps',
+		);
+	}
+	return;
 };
 
 const executor: Executor<DeployExecutorOptions> = async (options, context) => {
@@ -184,8 +231,6 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 
 	logger.endSpinner();
 
-	logger.log('Cleaning up & updating checksum...');
-
 	const promises: Promise<void>[] =
 		deployableFunctions.map(cacheChecksumLocal);
 
@@ -195,6 +240,7 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 	await Promise.all(promises);
 
 	if (!options.debug) {
+		logger.log('Cleaning up...');
 		try {
 			await rm(baseOptions.temporaryDirectory, { recursive: true });
 		} catch (error) {

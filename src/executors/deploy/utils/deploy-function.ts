@@ -11,7 +11,13 @@ export const deployFunction = async (
 ): Promise<DeployFunctionData | undefined> => {
 	const functionName = deployFunctionData.functionName;
 	try {
-		await executeFirebaseDeploy(deployFunctionData);
+		const promises: Promise<unknown>[] = [
+			executeFirebaseDeploy(deployFunctionData),
+		];
+
+		promises.push(uploadSentrySourceMap(deployFunctionData));
+
+		await Promise.all(promises);
 
 		logger.logFunctionDeployed(
 			functionName,
@@ -48,4 +54,73 @@ export const executeFirebaseDeploy = async ({
 			firebaseProjectId,
 		],
 	});
+};
+
+export const uploadSentrySourceMap = async ({
+	sentry,
+	outputRoot,
+	packageManager,
+}: BuildFunctionData) => {
+	try {
+		if (!sentry) {
+			return;
+		}
+		logger.debug('uploadSentrySourceMap', sentry);
+
+		const { release, organization, project, token } = sentry;
+		await execute({
+			packageManager,
+			cwd: outputRoot,
+			commandArguments: [
+				'sentry-cli',
+				'releases',
+				'new',
+				`"${release}"`,
+				'--org',
+				organization,
+				'--project',
+				project,
+				'--auth-token',
+				token,
+			],
+		});
+
+		await execute({
+			packageManager,
+			cwd: outputRoot,
+			commandArguments: [
+				'sentry-cli',
+				'releases',
+				'files',
+				`"${release}"`,
+				'upload-sourcemaps',
+				'src',
+				'--org',
+				organization,
+				'--project',
+				project,
+				'--auth-token',
+				token,
+			],
+		});
+
+		await execute({
+			packageManager,
+			cwd: outputRoot,
+			commandArguments: [
+				'sentry-cli',
+				'releases',
+				'finalize',
+				`"${release}"`,
+				'--org',
+				organization,
+				'--project',
+				project,
+				'--auth-token',
+				token,
+			],
+		});
+	} catch (error) {
+		logger.error('uploadSentrySourceMap', error);
+	}
 };

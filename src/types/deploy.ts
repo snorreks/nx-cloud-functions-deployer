@@ -136,6 +136,24 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 
 export type Environment = { [key: string]: string | undefined };
 
+export interface SentryLiteData {
+	/** The name of the project in sentry. */
+	project: string;
+	/** The organization name in sentry. */
+	organization: string;
+	/**
+	 * The sentry auth token.
+	 *
+	 * @see {@link https://docs.sentry.io/product/cli/configuration/#auth-token}
+	 */
+	token: string;
+}
+
+export interface SentryData extends SentryLiteData {
+	/** The name of the release. */
+	release: string;
+}
+
 export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
 	firebaseProjectId: string;
 	projectRoot: string;
@@ -155,6 +173,11 @@ export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
 	functionsDirectory: string;
 
 	only?: string[];
+
+	currentTime: number;
+
+	/** If this is defined, upload the sourcemaps to sentry. */
+	sentry?: SentryLiteData;
 }
 
 export interface BuildFunctionLiteData<
@@ -175,7 +198,7 @@ export interface BuildFunctionLiteData<
 }
 
 export type BuildFunctionData<T extends FunctionBuilder = FunctionBuilder> =
-	BuildFunctionLiteData<T> &
+	Omit<BuildFunctionLiteData<T>, 'sentry'> &
 		FunctionOptions[T] & {
 			/**
 			 * If the type is `onCreate`, `onUpdate`, or `onDelete`, this is
@@ -202,6 +225,8 @@ export type BuildFunctionData<T extends FunctionBuilder = FunctionBuilder> =
 			hasLoggerFile?: boolean;
 
 			checksum?: string;
+
+			sentry?: SentryData;
 		};
 
 export type DeployFunctionData<T extends FunctionBuilder = FunctionBuilder> =

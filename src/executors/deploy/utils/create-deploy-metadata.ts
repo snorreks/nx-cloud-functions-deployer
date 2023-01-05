@@ -60,7 +60,11 @@ export const createEnvironmentFile = async (
 		return;
 	}
 
-	const environmentFileCode = toDotEnvironmentCode(environment);
+	let environmentFileCode = toDotEnvironmentCode(environment);
+
+	if (buildFunctionData.sentry) {
+		environmentFileCode += `\nSENTRY_RELEASE=${buildFunctionData.sentry.release}`;
+	}
 
 	await writeFile(join(outputRoot, '.env'), environmentFileCode);
 };
