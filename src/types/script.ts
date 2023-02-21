@@ -18,15 +18,18 @@ export interface ScriptExecutorOptions {
 	runPrevious?: boolean;
 
 	script?: string;
+
+	functionsConfigPath?: string | false;
 }
 
 export type RunScriptEnvironment = {
 	CFD_FIREBASE_PROJECT_ID: string;
-	CFD_FUNCTIONS_CONFIG_PATH: string;
+	CFD_FUNCTIONS_CONFIG_PATH?: string;
 	CFD_SCRIPTS_ROOT: string;
 	CFD_RUN_PREVIOUS: '1' | '0';
 	CFD_VERBOSE: '1' | '0';
 	CFD_SCRIPT_FILE_NAME: string | undefined;
+	CFD_ENV_CONFIG_PATH?: string;
 };
 
 export interface RunScriptOptions {
@@ -34,7 +37,7 @@ export interface RunScriptOptions {
 	firebaseProjectId: string;
 	packageManager: PackageManager;
 	scriptsRoot: string;
-	functionsConfigPath: string;
+	functionsConfigPath?: string;
 	envConfigPath: string;
 	projectRoot: string;
 	tsconfigPath?: string;

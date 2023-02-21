@@ -37,6 +37,10 @@ export const getBaseOptions = async (
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
+	if (!workspace) {
+		throw new Error('Workspace is not defined');
+	}
+
 	let flavor = options.flavor as Flavor | undefined;
 	if (!flavor) {
 		flavor = options.prod ? 'prod' : 'dev';

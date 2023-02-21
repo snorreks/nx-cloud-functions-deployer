@@ -2,7 +2,6 @@ import { writeFile } from 'node:fs/promises';
 import { copy } from 'fs-extra';
 import { join } from 'node:path';
 import type { BuildFunctionData } from '$types';
-import { runCommand } from '$utils/execute';
 import { toDotEnvironmentCode } from '$utils/common';
 import { getEnvironmentNeeded } from './read-compiled-file';
 
@@ -22,7 +21,6 @@ export const createDeployFirebaseJson = async ({
 
 export const createDeployPackageJson = async ({
 	outputRoot,
-	external,
 	nodeVersion,
 }: BuildFunctionData) => {
 	// const packageJsonPath = join(workspaceRoot, projectRoot, 'package.json');
@@ -40,14 +38,6 @@ export const createDeployPackageJson = async ({
 		join(outputRoot, 'package.json'),
 		JSON.stringify(newPackageJson, undefined, 2),
 	);
-
-	if (external && external.length > 0) {
-		await runCommand({
-			command: 'npm',
-			commandArguments: ['install', ...external],
-			cwd: outputRoot,
-		});
-	}
 };
 
 export const createEnvironmentFile = async (

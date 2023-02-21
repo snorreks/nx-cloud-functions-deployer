@@ -11,6 +11,9 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
+	if (!workspace) {
+		throw new Error('Workspace is not defined');
+	}
 
 	const relativeProjectPath = workspace.projects[projectName].root;
 	const projectRoot = join(workspaceRoot, relativeProjectPath);

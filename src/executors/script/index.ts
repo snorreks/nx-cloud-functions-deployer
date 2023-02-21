@@ -20,6 +20,9 @@ const getRunScriptOptions = (
 		if (!projectName) {
 			throw new Error('Project name is not defined');
 		}
+		if (!workspace) {
+			throw new Error('Workspace is not defined');
+		}
 
 		const flavor: Flavor = options.prod ? 'prod' : 'dev';
 		const firebaseProjectId =
@@ -37,11 +40,20 @@ const getRunScriptOptions = (
 		const relativeProjectPath = workspace.projects[projectName].root;
 		const projectRoot = join(workspaceRoot, relativeProjectPath);
 		const scriptsRoot = join(projectRoot, options.scriptsRoot ?? 'scripts');
+		const envConfigPath = join(projectRoot, `.env.${flavor}`);
 
-		const functionsConfigPath = join(
-			projectRoot,
-			`functions-config.${flavor}.ts`,
-		);
+		let functionsConfigPath: string | undefined;
+		if (typeof options.functionsConfigPath === 'string') {
+			functionsConfigPath = join(
+				projectRoot,
+				options.functionsConfigPath,
+			);
+		} else if (typeof options.functionsConfigPath === 'undefined') {
+			functionsConfigPath = join(
+				projectRoot,
+				`functions-config.${flavor}.ts`,
+			);
+		}
 
 		let tsconfigPath: string | undefined;
 		if (options.tsconfig) {
@@ -50,7 +62,6 @@ const getRunScriptOptions = (
 
 		const dirname = __dirname;
 
-		const envConfigPath = join(dirname, '.env');
 		const runScriptFilePath = join(dirname, 'run-script.js');
 
 		return {
@@ -98,6 +109,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			CFD_RUN_PREVIOUS: runPrevious ? '1' : '0',
 			TS_NODE_PROJECT: tsconfigPath,
 			CFD_VERBOSE: verbose ? '1' : '0',
+			CFD_ENV_CONFIG_PATH: options.envConfigPath,
 		};
 		await runFile({
 			cwd: projectRoot,

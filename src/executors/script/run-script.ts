@@ -7,6 +7,7 @@ import { join } from 'path';
 import type { RunScriptEnvironment } from '$types';
 import { toDisplayDuration, toImportPath } from '$utils/common';
 import { storage } from './storage';
+import { config } from 'dotenv';
 
 interface ScriptResponse {
 	open?: string;
@@ -23,6 +24,15 @@ const handleScript = async (
 	const firebaseProjectId = options.CFD_FIREBASE_PROJECT_ID;
 	const functionsConfigPath = options.CFD_FUNCTIONS_CONFIG_PATH;
 	const scriptsRoot = options.CFD_SCRIPTS_ROOT;
+	const envConfigPath = options.CFD_ENV_CONFIG_PATH;
+
+	if (envConfigPath) {
+		try {
+			config({ path: envConfigPath });
+		} catch (error) {
+			console.log('error', error);
+		}
+	}
 
 	const spinner = !verbose
 		? createSpinner(
@@ -32,7 +42,13 @@ const handleScript = async (
 		  ).start()
 		: undefined;
 	try {
-		await import(toImportPath(functionsConfigPath));
+		if (functionsConfigPath) {
+			try {
+				await import(toImportPath(functionsConfigPath));
+			} catch (error) {
+				console.log('error', error);
+			}
+		}
 
 		const script = await import(
 			toImportPath(join(scriptsRoot, `${scriptFileName}.ts`))

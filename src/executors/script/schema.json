@@ -59,6 +59,11 @@
 			"type": "string",
 			"description": "The script to run",
 			"aliases": ["file"]
+		},
+		"functionsConfigPath": {
+			"type": ["string", "boolean"],
+			"description": "Default functions-config.${flavor}.ts",
+			"aliases": ["configPath"]
 		}
 	},
 	"required": ["firebaseProjectProdId", "firebaseProjectDevId"]

@@ -1,5 +1,5 @@
-import { spawn } from 'cross-spawn';
 import type { PackageManager } from '$types';
+import { spawn } from 'cross-spawn';
 import { logger } from './logger';
 type Environment = Record<string, string | undefined>;
 
@@ -38,34 +38,6 @@ export const execute = async ({
 	}
 };
 
-// export const runFile = async ({
-// 	packageManager,
-// 	runScriptFilePath,
-// 	cwd,
-// 	tsconfigPath,
-// 	environment,
-// }: {
-// 	packageManager: PackageManager;
-// 	runScriptFilePath: string;
-// 	cwd: string;
-// 	tsconfigPath?: string;
-// 	environment?: Environment;
-// }) => {
-// 	const commandArguments: string[] = ['tsx'];
-
-// 	if (tsconfigPath) {
-// 		commandArguments.push('--tsconfig', tsconfigPath);
-// 	}
-// 	commandArguments.push(runScriptFilePath);
-
-// 	await execute({
-// 		packageManager,
-// 		commandArguments,
-// 		cwd,
-// 		environment,
-// 	});
-// };
-
 export const runFile = async ({
 	runScriptFilePath,
 	cwd,
@@ -102,6 +74,7 @@ export const runFile = async ({
  * @param env the environments ot pass to the command
  * @returns the result of the command
  */
+
 export const runCommand = ({
 	command,
 	commandArguments = [],
@@ -163,3 +136,49 @@ export const runCommand = ({
 		});
 	});
 };
+/*
+
+export const runCommand = async ({
+	command,
+	commandArguments = [],
+	cwd,
+	silent = !logger.verbose,
+	environment = process.env,
+}: {
+	command: string;
+	cwd?: string;
+	commandArguments?: string[];
+	environment?: Environment;
+	silent?: boolean;
+}): Promise<void> => {
+	logger.debug(`Executing "${command} ${commandArguments.join(' ')}"...`);
+	const { childProcess } = await nvexeca('16', command, commandArguments, {
+		cwd,
+		env: environment ?? process.env,
+		stdio: silent ? undefined : 'inherit',
+	});
+	const response = await childProcess;
+	if (!response) {
+		throw new Error('No response from child process');
+	}
+	const { exitCode, failed, isCanceled, escapedCommand, stdout, stderr } =
+		response;
+
+	if (failed) {
+		logger.debug(`stdout: ${stdout}`);
+		logger.debug(`stderr: ${stderr}`);
+		throw new Error(
+			`Command "${escapedCommand}" failed with exit code ${exitCode}`,
+		);
+	}
+	if (isCanceled) {
+		logger.debug(`stdout: ${stdout}`);
+		logger.debug(`stderr: ${stderr}`);
+		throw new Error(
+			`Command "${escapedCommand}" was canceled with exit code ${exitCode}`,
+		);
+	}
+};
+
+
+*/

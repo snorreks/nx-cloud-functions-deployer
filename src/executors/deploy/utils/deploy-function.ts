@@ -1,5 +1,5 @@
 import type { BuildFunctionData, DeployFunctionData } from '$types';
-import { execute, logger } from '$utils';
+import { execute, logger, runCommand } from '$utils';
 
 /**
  * Deploy the function deploy with firebase-tools
@@ -9,8 +9,16 @@ import { execute, logger } from '$utils';
 export const deployFunction = async (
 	deployFunctionData: DeployFunctionData,
 ): Promise<DeployFunctionData | undefined> => {
-	const functionName = deployFunctionData.functionName;
+	const { functionName, external, outputRoot } = deployFunctionData;
 	try {
+		if (external && external.length > 0) {
+			await runCommand({
+				command: 'npm',
+				commandArguments: ['install', ...external],
+				cwd: outputRoot,
+			});
+		}
+
 		const promises: Promise<unknown>[] = [
 			executeFirebaseDeploy(deployFunctionData),
 		];
