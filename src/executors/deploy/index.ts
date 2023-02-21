@@ -7,7 +7,6 @@ import {
 import { join } from 'node:path';
 import type {
 	BaseDeployOptions,
-	Flavor,
 	DeployExecutorOptions,
 	DeployFunctionData,
 	SentryLiteData,
@@ -19,7 +18,13 @@ import {
 	getEsbuildAliasFromTsConfig,
 	validateProject,
 } from './utils/read-project';
-import { logger, getLimiter, getEnvironment } from '$utils';
+import {
+	logger,
+	getLimiter,
+	getEnvironment,
+	getFlavor,
+	getFirebaseProjectId,
+} from '$utils';
 import { EventEmitter } from 'events';
 import {
 	getOnlineChecksum,
@@ -41,15 +46,12 @@ export const getBaseOptions = async (
 		throw new Error('Workspace is not defined');
 	}
 
-	let flavor = options.flavor as Flavor | undefined;
-	if (!flavor) {
-		flavor = options.prod ? 'prod' : 'dev';
-	}
+	const flavor = getFlavor(options);
 
-	const firebaseProjectId =
-		flavor === 'prod'
-			? options.firebaseProjectProdId
-			: options.firebaseProjectDevId;
+	const firebaseProjectId = getFirebaseProjectId({
+		...options,
+		flavor,
+	});
 
 	if (!firebaseProjectId) {
 		throw new Error(

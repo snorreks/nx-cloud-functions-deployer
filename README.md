@@ -4,33 +4,33 @@
 
 This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud Functions for Firebase](https://firebase.google.com/products/functions?gclsrc=ds&gclsrc=ds&gclid=CNmq16LU-_kCFa5IwgodA9cF8A).
 
-- [Features](#features)
-- [Install](#install)
-- [Description](#description)
-- [Prerequisites](#prerequisites)
-- [Helper Functions](#helper-functions)
-	- [Schedule Example](#schedule-example)
-	- [Firestore Example](#firestore-example)
-	- [Https Example](#https-example)
-	- [Runtime Options](#runtime-options)
-	- [Cloud functions v2 Example](#cloud-functions-v2-example)
-	- [Assets and external dependencies](#assets-and-external-dependencies)
-	- [Limitations](#limitations)
-- [Folder Structure](#folder-structure)
-	- [Database/Firestore Structure](#databasefirestore-structure)
-	- [Custom Structure](#custom-structure)
-- [Cloud cache](#cloud-cache)
-- [Logger](#logger)
-- [Executors](#executors)
-	- [Deploy](#deploy)
-		- [Options](#options)
-		- [Examples](#examples)
-	- [Script](#script)
-		- [Options](#options-1)
-		- [Examples](#examples-1)
-	- [Delete](#delete)
-		- [Options](#options-2)
-		- [Examples](#examples-2)
+-   [Features](#features)
+-   [Install](#install)
+-   [Description](#description)
+-   [Prerequisites](#prerequisites)
+-   [Helper Functions](#helper-functions)
+    -   [Schedule Example](#schedule-example)
+    -   [Firestore Example](#firestore-example)
+    -   [Https Example](#https-example)
+    -   [Runtime Options](#runtime-options)
+    -   [Cloud functions v2 Example](#cloud-functions-v2-example)
+    -   [Assets and external dependencies](#assets-and-external-dependencies)
+    -   [Limitations](#limitations)
+-   [Folder Structure](#folder-structure)
+    -   [Database/Firestore Structure](#databasefirestore-structure)
+    -   [Custom Structure](#custom-structure)
+-   [Cloud cache](#cloud-cache)
+-   [Logger](#logger)
+-   [Executors](#executors)
+    -   [Deploy](#deploy)
+        -   [Options](#options)
+        -   [Examples](#examples)
+    -   [Script](#script)
+        -   [Options](#options-1)
+        -   [Examples](#examples-1)
+    -   [Delete](#delete)
+        -   [Options](#options-2)
+        -   [Examples](#examples-2)
 
 ## Features
 
@@ -387,39 +387,40 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 		"deploy": {
 			"executor": "nx-cloud-functions-deployer:deploy",
 			"options": {
-				"firebaseProjectProdId": "my-firebase-production-project-id",
-				"firebaseProjectDevId": "my-firebase-development-project-id", // just use the same as prod if you don't have a dev project
+				"flavors": {
+					"dev": "firebase-project-dev-id",
+					"prod": "firebase-project-prod-id"
+				}
 			}
 		},
 ```
 
 #### Options
 
-| Option                  | Description                                                                                                                                                          | Default                           | Alias            |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------- |
-| `firebaseProjectProdId` | The firebase project id of the production flavor                                                                                                                     | required                          | `prodId`         |
-| `firebaseProjectDevId`  | The firebase project id of the development flavor                                                                                                                    | required                          | `devId`          |
-| `prod`                  | If true, use the `firebaseProjectProdId` and look for `prodEnvFileName`.                                                                                             | `false`                           | `production`     |
-| `dev`                   | If true, use the `firebaseProjectDevId` and look for `devEnvFileName`.                                                                                               | `false`                           | `development`    |
-| `outputDirectory`       | The output directory.                                                                                                                                                | `dist/<relative-path-to-project>` | `outDir`         |
-| `tsconfig`              | The tsconfig file to use for the build in the project directory.                                                                                                     | `tsconfig.json`                   | `tsconfig`       |
-| `region`                | The default region to deploy the functions, if it is not set in the deploy file. See [Cloud Functions Locations](https://cloud.google.com/functions/docs/locations). | `us-central1`                     | `location`       |
-| `silent`                | Whether to suppress all logs.                                                                                                                                        | `false`                           | `s`              |
-| `verbose`               | Whether to run the command with verbose logging.                                                                                                                     | `false`                           | `v`              |
-| `concurrency`           | The number of functions to deploy in parallel                                                                                                                        | `10`                              | `c`              |
-| `devEnvFileName`        | The name of the environment file for the development flavor in the project root.                                                                                     | `.env.dev`                        | `devEnv`         |
-| `prodEnvFileName`       | The name of the environment file for the production flavor the project root                                                                                          | `.env.prod`                       | `prodEnv`        |
-| `envString`             | Stringify version of the environment. This is useful when you want to deploy using CI/CD.                                                                            | undefined                         | `ciEnv`          |
-| `only`                  | Only deploy the given function names separated by comma                                                                                                              | undefined                         | `o`              |
-| `force`                 | Force deploy all functions, even if no files changed                                                                                                                 | `false`                           | `f`              |
-| `packageManager`        | The package manager to use for deploying with firebase-tools. Either: `pnpm`, `npm`, `yarn` or `global`.                                                             | `pnpm`                            | `pm`             |
-| `dryRun`                | If true, then it will only build the function and not deploy them.                                                                                                   | `false`                           | `d`, `dry`       |
-| `functionsDirectory`    | Relative path from the project root to the functions directory.                                                                                                      | `src/controllers`                 | `inputDirectory` |
+| Option               | Description                                                                                                                                                          | Default                           | Alias            |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------- |
+| `flavors`            | A object of the flavors to use, the key is the flavor name and value is the firebase project id.                                                                     | required                          |                  |
+| `flavor`             | The flavor to use, default will be the first key in the `flavors` object                                                                                             |                                   |                  |
+| `prod`               | If true, the `flavor` will be 'prod' if not defined                                                                                                                  | `false`                           | `production`     |
+| `dev`                | If true, the `flavor` will be 'dev' if not defined                                                                                                                   | `false`                           | `development`    |
+| `outputDirectory`    | The output directory.                                                                                                                                                | `dist/<relative-path-to-project>` | `outDir`         |
+| `envFiles`           | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`                                                                            |                                   |                  |
+| `tsconfig`           | The tsconfig file to use for the build in the project directory.                                                                                                     | `tsconfig.json`                   | `tsconfig`       |
+| `region`             | The default region to deploy the functions, if it is not set in the deploy file. See [Cloud Functions Locations](https://cloud.google.com/functions/docs/locations). | `us-central1`                     | `location`       |
+| `silent`             | Whether to suppress all logs.                                                                                                                                        | `false`                           | `s`              |
+| `verbose`            | Whether to run the command with verbose logging.                                                                                                                     | `false`                           | `v`              |
+| `concurrency`        | The number of functions to deploy in parallel                                                                                                                        | `10`                              | `c`              |
+| `envString`          | Stringify version of the environment. This is useful when you want to deploy using CI/CD.                                                                            | undefined                         | `ciEnv`          |
+| `only`               | Only deploy the given function names separated by comma                                                                                                              | undefined                         | `o`              |
+| `force`              | Force deploy all functions, even if no files changed                                                                                                                 | `false`                           | `f`              |
+| `packageManager`     | The package manager to use for deploying with firebase-tools. Either: `pnpm`, `npm`, `yarn` or `global`.                                                             | `pnpm`                            | `pm`             |
+| `dryRun`             | If true, then it will only build the function and not deploy them.                                                                                                   | `false`                           | `d`, `dry`       |
+| `functionsDirectory` | Relative path from the project root to the functions directory.                                                                                                      | `src/controllers`                 | `inputDirectory` |
 
 #### Examples
 
 ```bash
-pnpm nx deploy functions --production
+pnpm nx deploy functions --flavor prod
 ```
 
 ```bash
@@ -444,26 +445,29 @@ Create a `functions-config.dev.ts` and `functions-config.prod.ts` file in the pr
 		"script": {
 			"executor": "nx-cloud-functions-deployer:script",
 			"options": {
-				"firebaseProjectProdId": "my-firebase-production-project-id",
-				"firebaseProjectDevId": "my-firebase-development-project-id", // just use the same as prod if you don't have a dev project
+				"flavors": {
+					"dev": "firebase-project-dev-id",
+					"prod": "firebase-project-prod-id"
+				}
 			}
 		},
 ```
 
 #### Options
 
-| Option                  | Description                                                                          | Default         | Alias         |
-| ----------------------- | ------------------------------------------------------------------------------------ | --------------- | ------------- |
-| `firebaseProjectProdId` | The firebase project id of the production flavor                                     | required        | `prodId`      |
-| `firebaseProjectDevId`  | The firebase project id of the development flavor                                    | required        | `devId`       |
-| `prod`                  | If true, use the `firebaseProjectProdId` and look for `prodEnvFileName`.             | `false`         | `production`  |
-| `dev`                   | If true, use the `firebaseProjectDevId` and look for `devEnvFileName`.               | `false`         | `development` |
-| `tsconfig`              | The tsconfig file to use for the script in the project directory.                    | `tsconfig.json` | `tsconfig`    |
-| `silent`                | Whether to suppress all logs.                                                        | `false`         | `s`           |
-| `verbose`               | Whether to run the command with verbose logging.                                     | `false`         | `v`           |
-| `scriptsRoot`           | Relative path from the project root to the scripts directory.                        | `scripts`       |               |
-| `runPrevious`           | Rerun the last executed script.                                                      | `false`         | `p`           |
-| `script`                | The name of the script to run. If not set, it will prompt you to select from a list. | undefined       | `file`        |
+| Option        | Description                                                                                      | Default         | Alias         |
+| ------------- | ------------------------------------------------------------------------------------------------ | --------------- | ------------- |
+| `flavors`     | A object of the flavors to use, the key is the flavor name and value is the firebase project id. | required        |               |
+| `flavor`      | The flavor to use, default will be the first key in the `flavors` object                         |                 |               |
+| `prod`        | If true, the `flavor` will be 'prod' if not defined                                              | `false`         | `production`  |
+| `dev`         | If true, the `flavor` will be 'dev' if not defined                                               | `false`         | `development` |
+| `envFiles`    | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`        |                 |               |
+| `tsconfig`    | The tsconfig file to use for the script in the project directory.                                | `tsconfig.json` | `tsconfig`    |
+| `silent`      | Whether to suppress all logs.                                                                    | `false`         | `s`           |
+| `verbose`     | Whether to run the command with verbose logging.                                                 | `false`         | `v`           |
+| `scriptsRoot` | Relative path from the project root to the scripts directory.                                    | `scripts`       |               |
+| `runPrevious` | Rerun the last executed script.                                                                  | `false`         | `p`           |
+| `script`      | The name of the script to run. If not set, it will prompt you to select from a list.             | undefined       | `file`        |
 
 #### Examples
 
@@ -472,7 +476,7 @@ pnpm nx script functions --production
 ```
 
 ```bash
-pnpm nx script functions --development
+pnpm nx script functions --flavor dev
 ```
 
 ```bash
@@ -490,23 +494,26 @@ The plugin provide support to delete unused function that are not in the project
 		"delete-unused": {
 			"executor": "nx-cloud-functions-deployer:delete",
 			"options": {
-				"firebaseProjectProdId": "my-firebase-production-project-id",
-				"firebaseProjectDevId": "my-firebase-development-project-id", // just use the same as prod if you don't have a dev project
+				"flavors": {
+					"dev": "firebase-project-dev-id",
+					"prod": "firebase-project-prod-id"
+				}
 			}
 		},
 ```
 
 #### Options
 
-| Option                  | Description                                                              | Default         | Alias         |
-| ----------------------- | ------------------------------------------------------------------------ | --------------- | ------------- |
-| `firebaseProjectProdId` | The firebase project id of the production flavor                         | required        | `prodId`      |
-| `firebaseProjectDevId`  | The firebase project id of the development flavor                        | required        | `devId`       |
-| `prod`                  | If true, use the `firebaseProjectProdId` and look for `prodEnvFileName`. | `false`         | `production`  |
-| `dev`                   | If true, use the `firebaseProjectDevId` and look for `devEnvFileName`.   | `false`         | `development` |
-| `tsconfig`              | The tsconfig file to use for the script in the project directory.        | `tsconfig.json` | `tsconfig`    |
-| `silent`                | Whether to suppress all logs.                                            | `false`         | `s`           |
-| `verbose`               | Whether to run the command with verbose logging.                         | `false`         | `v`           |
+| Option     | Description                                                                                      | Default         | Alias         |
+| ---------- | ------------------------------------------------------------------------------------------------ | --------------- | ------------- |
+| `flavors`  | A object of the flavors to use, the key is the flavor name and value is the firebase project id. | required        |               |
+| `flavor`   | The flavor to use, default will be the first key in the `flavors` object                         |                 |               |
+| `prod`     | If true, the `flavor` will be 'prod' if not defined                                              | `false`         | `production`  |
+| `dev`      | If true, the `flavor` will be 'dev' if not defined                                               | `false`         | `development` |
+| `envFiles` | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`        |                 |               |
+| `tsconfig` | The tsconfig file to use for the script in the project directory.                                | `tsconfig.json` | `tsconfig`    |
+| `silent`   | Whether to suppress all logs.                                                                    | `false`         | `s`           |
+| `verbose`  | Whether to run the command with verbose logging.                                                 | `false`         | `v`           |
 
 #### Examples
 
@@ -515,5 +522,5 @@ pnpm nx delete-unused functions
 ```
 
 ```bash
-pnpm nx delete-unused functions --production
+pnpm nx delete-unused functions --flavor prod
 ```

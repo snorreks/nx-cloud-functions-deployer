@@ -6,13 +6,25 @@
 	"properties": {
 		"firebaseProjectProdId": {
 			"type": "string",
-			"description": "The firebase project id of the production flavor",
+			"description": "(Use flavor and flavors instead) The firebase project id of the production flavor",
 			"aliases": ["prodId"]
 		},
 		"firebaseProjectDevId": {
 			"type": "string",
-			"description": "The firebase project id of the development flavor",
+			"description": "(Use flavor and flavors instead) The firebase project id of the development flavor",
 			"aliases": ["devId"]
+		},
+		"flavor": {
+			"type": "string",
+			"description": "The flavor to run from the flavors object"
+		},
+		"flavors": {
+			"type": "object",
+			"description": "The different flavors to deploy, keyed by the flavor name and value is the firebase project id"
+		},
+		"envFiles": {
+			"type": "object",
+			"description": "The different env files to use, keyed by the flavor name and value is the env file path"
 		},
 		"outputDirectory": {
 			"type": "string",
@@ -69,10 +81,6 @@
 			"description": "Whether to deploy the production flavor",
 			"aliases": ["production"]
 		},
-		"flavor": {
-			"type": "string",
-			"description": "Override the flavor"
-		},
 		"dev": {
 			"type": "boolean",
 			"description": "Whether to deploy the development flavor",
@@ -112,5 +120,5 @@
 			"aliases": ["ignoreMissingEnv"]
 		}
 	},
-	"required": ["firebaseProjectProdId", "firebaseProjectDevId"]
+	"required": []
 }

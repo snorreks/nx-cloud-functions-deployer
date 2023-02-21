@@ -1,10 +1,18 @@
-import type { Flavor, PackageManager } from '$types';
+import type { PackageManager } from '$types';
 
 export interface ScriptExecutorOptions {
-	/** The firebase project id of the production flavor */
-	firebaseProjectProdId: string;
-	/** The firebase project id of the development flavor */
-	firebaseProjectDevId: string;
+	/**
+	 * The firebase project id of the production flavor.
+	 *
+	 * @deprecated use {@link ScriptExecutorOptions.flavors} instead
+	 */
+	firebaseProjectProdId?: string;
+	/**
+	 * The firebase project id of the development flavor
+	 *
+	 * @deprecated use {@link ScriptExecutorOptions.flavors} instead
+	 */
+	firebaseProjectDevId?: string;
 
 	silent?: boolean;
 	verbose?: boolean;
@@ -20,6 +28,10 @@ export interface ScriptExecutorOptions {
 	script?: string;
 
 	functionsConfigPath?: string | false;
+	flavor?: string;
+	flavors?: {
+		[flavor: string]: string;
+	};
 }
 
 export type RunScriptEnvironment = {
@@ -33,7 +45,7 @@ export type RunScriptEnvironment = {
 };
 
 export interface RunScriptOptions {
-	flavor: Flavor;
+	flavor: string;
 	firebaseProjectId: string;
 	packageManager: PackageManager;
 	scriptsRoot: string;

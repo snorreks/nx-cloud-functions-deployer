@@ -6,8 +6,10 @@
 		"deploy": {
 			"executor": "../dist:deploy",
 			"options": {
-				"firebaseProjectDevId": "localekey-dev",
-				"firebaseProjectProdId": "localekey-dev"
+				"flavors": {
+					"dev": "localekey-dev",
+					"prod": "localekey-dev"
+				}
 			}
 		},
 		"build": {
@@ -20,8 +22,10 @@
 		"script": {
 			"executor": "../dist:script",
 			"options": {
-				"firebaseProjectDevId": "localekey-dev",
-				"firebaseProjectProdId": "localekey-dev"
+				"flavors": {
+					"dev": "localekey-dev",
+					"prod": "localekey-dev"
+				}
 			}
 		}
 	}

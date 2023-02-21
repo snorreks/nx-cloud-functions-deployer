@@ -25,6 +25,19 @@
 			"description": "Whether to run the command with verbose logging",
 			"aliases": ["v"]
 		},
+		"flavor": {
+			"type": "string",
+			"description": "The flavor to run from the flavors object"
+		},
+		"flavors": {
+			"type": "object",
+			"description": "The different flavors to deploy, keyed by the flavor name and value is the firebase project id"
+		},
+		"envFiles": {
+			"type": "object",
+			"description": "The different env files to use, keyed by the flavor name and value is the env file path"
+		},
+
 		"prod": {
 			"type": "boolean",
 			"description": "Whether to deploy the production flavor",
@@ -66,5 +79,5 @@
 			"aliases": ["configPath"]
 		}
 	},
-	"required": ["firebaseProjectProdId", "firebaseProjectDevId"]
+	"required": []
 }

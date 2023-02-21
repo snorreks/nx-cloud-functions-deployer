@@ -1,4 +1,3 @@
-import type { Flavor } from './common';
 import type { DeployFunction, FunctionBuilder } from './function-types';
 import type { FunctionOptions, NodeVersion } from './helper-options';
 
@@ -70,9 +69,17 @@ interface SharedDeployExecutorBaseOptions {
 }
 
 export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
-	/** The firebase project id of the production flavor */
+	/**
+	 * The firebase project id of the production flavor.
+	 *
+	 * @deprecated use {@link DeployExecutorOptions.flavors} instead
+	 */
 	firebaseProjectProdId?: string;
-	/** The firebase project id of the development flavor */
+	/**
+	 * The firebase project id of the development flavor
+	 *
+	 * @deprecated use {@link DeployExecutorOptions.flavors} instead
+	 */
 	firebaseProjectDevId?: string;
 	/**
 	 * The output directory of the build
@@ -105,6 +112,7 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	 * The file name ot the .env file to look for when deploying for flavor
 	 * `dev`
 	 *
+	 * @deprecated use {@link DeployExecutorOptions.envFiles} instead
 	 * @default '.env.dev'
 	 */
 	devEnvFileName?: string;
@@ -113,6 +121,7 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	 * The file name ot the .env file to look for when deploying for flavor
 	 * `production`
 	 *
+	 * @deprecated use {@link DeployExecutorOptions.envFiles} instead
 	 * @default '.env.prod'
 	 */
 	prodEnvFileName?: string;
@@ -132,6 +141,14 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 
 	/** Only deploy the given function names, separated by a comma */
 	only?: string;
+
+	flavor?: string;
+	flavors?: {
+		[flavor: string]: string;
+	};
+	envFiles?: {
+		[flavor: string]: string;
+	};
 }
 
 export type Environment = { [key: string]: string | undefined };
@@ -161,7 +178,7 @@ export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
 	outputDirectory: string;
 	defaultRegion: string;
 	temporaryDirectory: string;
-	flavor: Flavor;
+	flavor: string;
 	/** Stringified code of the environments */
 	environment?: Environment;
 	alias?: EsbuildAlias;

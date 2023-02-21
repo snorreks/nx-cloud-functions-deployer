@@ -1,6 +1,5 @@
 import type { Executor, ExecutorContext } from '@nrwl/devkit';
 import type {
-	Flavor,
 	RunScriptEnvironment,
 	RunScriptOptions,
 	ScriptExecutorOptions,
@@ -9,6 +8,7 @@ import { join } from 'node:path';
 import { logger } from '$utils/logger';
 
 import { runFile } from '$utils/execute';
+import { getFirebaseProjectId, getFlavor } from '$utils';
 
 const getRunScriptOptions = (
 	options: ScriptExecutorOptions,
@@ -23,12 +23,12 @@ const getRunScriptOptions = (
 		if (!workspace) {
 			throw new Error('Workspace is not defined');
 		}
+		const flavor = getFlavor(options);
 
-		const flavor: Flavor = options.prod ? 'prod' : 'dev';
-		const firebaseProjectId =
-			flavor === 'prod'
-				? options.firebaseProjectProdId
-				: options.firebaseProjectDevId;
+		const firebaseProjectId = getFirebaseProjectId({
+			...options,
+			flavor,
+		});
 
 		if (!firebaseProjectId) {
 			throw new Error(

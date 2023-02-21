@@ -2,18 +2,18 @@ import { join } from 'node:path';
 import { logger } from './logger';
 import { config } from 'dotenv';
 import type { Environment } from '$types';
+import { getEnvironmentFileName } from './common';
 
 export const getEnvironment = async (options: {
 	prodEnvFileName?: string;
 	devEnvFileName?: string;
-	flavor: 'prod' | 'dev';
+	flavor: string;
 	projectRoot: string;
 	envString?: string;
+	envFiles?: Record<string, string>;
 }): Promise<Environment | undefined> => {
-	const prodEnvFileName = options.prodEnvFileName || '.env.prod';
-	const devEnvFileName = options.devEnvFileName || '.env.dev';
-	const envFileName =
-		options.flavor === 'prod' ? prodEnvFileName : devEnvFileName;
+	const envFileName = getEnvironmentFileName(options);
+
 	try {
 		if (options.envString) {
 			return parseEnvironment(options.envString);

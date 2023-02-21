@@ -72,8 +72,12 @@ const handleScript = async (
 
 		if (typeof response !== 'undefined') {
 			console.log(response);
-			if (response.open) {
-				await open(response.open, { wait: true });
+			if (response.open && typeof response.open === 'string') {
+				try {
+					await open(response.open, { wait: true });
+				} catch (error) {
+					console.error('failed to open link', error);
+				}
 			}
 		}
 
