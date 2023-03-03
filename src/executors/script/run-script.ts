@@ -92,7 +92,11 @@ const handleScript = async (
 		});
 
 		if (typeof response !== 'undefined') {
-			console.log(response);
+			console.log(
+				typeof response === 'object' || Array.isArray(response)
+					? JSON.stringify(response, null, 2)
+					: response,
+			);
 
 			if (isOpenURLResponse(response)) {
 				try {
