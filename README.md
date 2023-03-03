@@ -418,6 +418,7 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 | `packageManager`     | The package manager to use for deploying with firebase-tools. Either: `pnpm`, `npm`, `yarn` or `global`.                                                             | `pnpm`                            | `pm`             |
 | `dryRun`             | If true, then it will only build the function and not deploy them.                                                                                                   | `false`                           | `d`, `dry`       |
 | `functionsDirectory` | Relative path from the project root to the functions directory.                                                                                                      | `src/controllers`                 | `inputDirectory` |
+| `nodeVersion`        | The node version to use for the functions.                                                                                                                           | `16`                              | `node`           |
 
 #### Examples
 

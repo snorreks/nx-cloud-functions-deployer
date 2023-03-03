@@ -103,6 +103,12 @@
 			"default": false,
 			"description": "Will ignore missing environment keys error",
 			"aliases": ["ignoreMissingEnv"]
+		},
+		"nodeVersion": {
+			"type": "string",
+			"enum": ["14", "16", "18"],
+			"description": "The node version to use for the functions",
+			"aliases": ["node"]
 		}
 	},
 	"required": ["flavors"]
