@@ -205,6 +205,7 @@ export type BuildFunctionData<T extends FunctionBuilder = FunctionBuilder> =
 			checksum?: string;
 
 			sentry?: SentryData;
+			nodeVersion: NodeVersion;
 		};
 
 export type DeployFunctionData<T extends FunctionBuilder = FunctionBuilder> =

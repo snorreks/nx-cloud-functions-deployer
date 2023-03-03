@@ -57,6 +57,10 @@ export const getDeployableFileData = async (
 	const buildFunctionData: BuildFunctionData = {
 		...deployableFileLiteData,
 		...deployOptions,
+		nodeVersion:
+			deployOptions?.nodeVersion ??
+			deployableFileLiteData.nodeVersion ??
+			'16',
 		rootFunctionBuilder,
 		region: (deployOptions?.region as string | undefined) ?? defaultRegion,
 		outputRoot: join(outputDirectory, functionName),

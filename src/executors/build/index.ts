@@ -38,6 +38,7 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 		external: options.external,
 		sourceRoot: projectRoot,
 		alias: await getAlias(),
+		nodeVersion: options.nodeVersion ?? '16',
 	});
 
 	const newPackageJson = {

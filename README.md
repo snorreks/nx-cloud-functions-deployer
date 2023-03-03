@@ -40,7 +40,7 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 -   Detect changes and only deploy changed functions
 -   No longer export all functions in a index.ts file, but deploy each function individually for smaller bundles
 -   Configurable deploy options
--   Deploy with Node 16 and esm
+-   Deploy with Node 14/16/18 and esm
 -   Cloud functions v2 support
 
 ## Install

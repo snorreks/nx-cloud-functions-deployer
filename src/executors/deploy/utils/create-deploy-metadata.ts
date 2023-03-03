@@ -30,7 +30,7 @@ export const createDeployPackageJson = async ({
 		type: 'module',
 		main: 'src/index.js',
 		engines: {
-			node: nodeVersion ?? '16',
+			node: nodeVersion,
 		},
 	};
 

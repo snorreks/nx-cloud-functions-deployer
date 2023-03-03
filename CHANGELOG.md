@@ -12,6 +12,7 @@
 -   Renamed dev to development and prod to production
 -   Renamed functions-config.{flavor}.ts to script.config.{flavor}.ts
 -   Now scripts can use prompts from the user
+-   Support node18
 
 ## 0.1.0
 

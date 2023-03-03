@@ -48,6 +48,7 @@ export const buildFunction = async (
 				await executeEsbuild({
 					inputPath,
 					outputPath,
+					nodeVersion: buildFunctionData.nodeVersion,
 					keepNames: buildFunctionData.keepNames,
 					alias: buildFunctionData.alias,
 					external: buildFunctionData.external,
@@ -98,6 +99,7 @@ const buildLoggerFile = async (
 			alias: buildFunctionData.alias,
 			external: buildFunctionData.external,
 			sourceRoot: buildFunctionData.workspaceRoot,
+			nodeVersion: buildFunctionData.nodeVersion,
 		});
 
 		return true;

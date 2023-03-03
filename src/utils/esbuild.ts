@@ -2,7 +2,7 @@ import alias from 'esbuild-plugin-alias';
 import { build, type Loader, type PluginBuild } from 'esbuild';
 import { readFileSync } from 'node:fs';
 import { extname, dirname as _dirname } from 'path';
-import type { EsbuildAlias } from '$types';
+import type { EsbuildAlias, NodeVersion } from '$types';
 
 const nodeModules = new RegExp(
 	/^(?:.*[\\/])?node_modules(?:\/(?!postgres-migrations).*)?$/,
@@ -38,6 +38,7 @@ export const executeEsbuild = async (options: {
 	sourceRoot: string;
 	keepNames?: boolean;
 	footer?: string;
+	nodeVersion: NodeVersion;
 }): Promise<boolean> => {
 	const { inputPath, outputPath, external, sourceRoot, keepNames, footer } =
 		options;
@@ -65,7 +66,7 @@ export const executeEsbuild = async (options: {
 		platform: 'node',
 		plugins,
 		// sourcemap: true,
-		target: 'node16',
+		target: `node${options.nodeVersion}`,
 		keepNames,
 		sourceRoot,
 	});

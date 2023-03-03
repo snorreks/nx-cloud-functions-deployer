@@ -1,7 +1,7 @@
 import type { RuntimeOptions, SUPPORTED_REGIONS } from 'firebase-functions/v1';
 import type { HttpsOptions as FirebaseHttpsV2Options } from 'firebase-functions/v2/https';
 import type { StorageOptions } from 'firebase-functions/v2/storage';
-export type NodeVersion = '14' | '16';
+export type NodeVersion = '14' | '16' | '18';
 
 export interface BaseFunctionOptions<T extends string = string> {
 	/**
@@ -36,7 +36,7 @@ export interface BaseFunctionOptions<T extends string = string> {
 	 *
 	 * @see https://firebase.google.com/docs/functions/locations
 	 */
-	region?: typeof SUPPORTED_REGIONS[number] | string;
+	region?: (typeof SUPPORTED_REGIONS)[number] | string;
 
 	/**
 	 * Path to the assets from the project root directory.
