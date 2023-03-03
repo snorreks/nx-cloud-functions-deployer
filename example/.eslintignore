@@ -1,7 +1,7 @@
 # Files with these extensions are often replaced within angular json and doesnt really exist inside the project
 **/*.mock.ts
 **/*.uat.ts
-**/*.prod.ts
+**/*.production.ts
 **/*.test.ts
 
 # Generics

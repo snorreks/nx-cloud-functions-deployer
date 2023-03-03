@@ -14,8 +14,13 @@ const jsonFileName = 'checksum.json';
 export const getOnlineChecksum = async (
 	options: BaseDeployOptions,
 ): Promise<FunctionsCache | undefined> => {
-	const { projectRoot, temporaryDirectory, cloudCacheFileName, force } =
-		options;
+	const {
+		projectRoot,
+		temporaryDirectory,
+		cloudCacheFileName,
+		force,
+		environment,
+	} = options;
 	logger.debug('getOnlineChecksum', {
 		projectRoot,
 		temporaryDirectory,
@@ -36,6 +41,7 @@ export const getOnlineChecksum = async (
 		const executeFetchFileCode = toExecuteFetchCode({
 			jsonFilePath,
 			fetchFilePath,
+			flavor: options.flavor,
 		});
 
 		await writeFile(fetchExecuteFilePath, executeFetchFileCode);
@@ -43,6 +49,7 @@ export const getOnlineChecksum = async (
 		await runFile({
 			cwd: temporaryDirectory,
 			runScriptFilePath: fetchExecuteFilePath,
+			environment,
 		});
 
 		const onlineChecksumJson = await readFile(jsonFilePath, 'utf-8');
@@ -68,8 +75,12 @@ export const updateOnlineChecksum = async (
 		if (!firstDeployedFile) {
 			return;
 		}
-		const { projectRoot, temporaryDirectory, cloudCacheFileName } =
-			firstDeployedFile;
+		const {
+			projectRoot,
+			temporaryDirectory,
+			cloudCacheFileName,
+			environment,
+		} = firstDeployedFile;
 
 		const updateFilePath = join(projectRoot, cloudCacheFileName);
 		const executeUpdateFilePath = join(temporaryDirectory, updateFileName);
@@ -87,6 +98,7 @@ export const updateOnlineChecksum = async (
 		const executeUpdateFileCode = toExecuteUpdateCode({
 			updateFilePath,
 			newOnlineChecksum: onlineChecksum,
+			flavor: firstDeployedFile.flavor,
 		});
 
 		logger.info('Updating online checksum');
@@ -96,6 +108,7 @@ export const updateOnlineChecksum = async (
 		await runFile({
 			cwd: temporaryDirectory,
 			runScriptFilePath: executeUpdateFilePath,
+			environment,
 		});
 	} catch (error) {
 		logger.warn('Failed to update online checksum');
@@ -106,16 +119,18 @@ export const updateOnlineChecksum = async (
 const toExecuteFetchCode = ({
 	fetchFilePath,
 	jsonFilePath,
+	flavor,
 }: {
 	fetchFilePath: string;
 	jsonFilePath: string;
+	flavor: string;
 }): string => {
 	return `
         import { fetch } from '${toImportPath(fetchFilePath)}'
         import { writeFile } from 'node:fs/promises';
         
         const execute = async () => {
-            const code = await fetch();
+            const code = await fetch({ flavor: '${flavor}'});
             await writeFile('${jsonFilePath.replaceAll(
 				'\\',
 				'/',
@@ -129,21 +144,24 @@ const toExecuteFetchCode = ({
 const toExecuteUpdateCode = ({
 	updateFilePath,
 	newOnlineChecksum,
+	flavor,
 }: {
 	updateFilePath: string;
 	newOnlineChecksum: FunctionsCache;
+	flavor: string;
 }): string => {
 	let executeUpdateCode = `
         import { update } from '${toImportPath(updateFilePath)}'
         update({
+			flavor: '${flavor}',
+			newFunctionsCache: {
     `;
-
 	for (const [functionName, checksum] of Object.entries(newOnlineChecksum)) {
 		executeUpdateCode += `'${functionName}': '${checksum}',`;
 	}
-
 	executeUpdateCode += `
-        });
+        	}
+		});
     `;
 
 	return executeUpdateCode;

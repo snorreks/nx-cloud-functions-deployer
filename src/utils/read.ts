@@ -5,8 +5,6 @@ import type { Environment } from '$types';
 import { getEnvironmentFileName } from './common';
 
 export const getEnvironment = async (options: {
-	prodEnvFileName?: string;
-	devEnvFileName?: string;
 	flavor: string;
 	projectRoot: string;
 	envString?: string;

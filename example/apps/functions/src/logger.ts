@@ -38,7 +38,7 @@ const sdk = new opentelemetry.NodeSDK({
 	traceExporter: new TraceExporter(),
 });
 
-await sdk.start();
+sdk.start();
 
 // Ensure that generated traces are exported when the container is
 //   shutdown.

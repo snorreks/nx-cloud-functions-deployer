@@ -15,7 +15,9 @@ export interface FunctionsCache {
  *
  * return doc.data() as FunctionsCache; };
  */
-export type FunctionsCacheFetch = () => Promise<FunctionsCache | undefined>;
+export type FunctionsCacheFetch = (options: {
+	flavor: string;
+}) => Promise<FunctionsCache | undefined>;
 
 /**
  * Having a cloud-cache.ts file in the root of the project allows you to fetch
@@ -24,6 +26,7 @@ export type FunctionsCacheFetch = () => Promise<FunctionsCache | undefined>;
  * The name of the function has to be `update` and the parameter type has to be
  * `FunctionsCache`.
  */
-export type FunctionsCacheUpdate = (
-	newFunctionsCache: FunctionsCache,
-) => Promise<void>;
+export type FunctionsCacheUpdate = (options: {
+	newFunctionsCache: FunctionsCache;
+	flavor: string;
+}) => Promise<void>;

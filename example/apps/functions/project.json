@@ -7,8 +7,8 @@
 			"executor": "../dist:deploy",
 			"options": {
 				"flavors": {
-					"dev": "localekey-dev",
-					"prod": "localekey-dev"
+					"development": "example-development",
+					"production": "example-production"
 				}
 			}
 		},
@@ -23,8 +23,8 @@
 			"executor": "../dist:script",
 			"options": {
 				"flavors": {
-					"dev": "localekey-dev",
-					"prod": "localekey-dev"
+					"development": "example-development",
+					"production": "example-production"
 				}
 			}
 		}

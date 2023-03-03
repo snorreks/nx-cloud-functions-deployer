@@ -26,7 +26,7 @@ const getRunScriptOptions = (
 		const flavor = getFlavor(options);
 
 		const firebaseProjectId = getFirebaseProjectId({
-			...options,
+			flavors: options.flavors,
 			flavor,
 		});
 
@@ -42,17 +42,11 @@ const getRunScriptOptions = (
 		const scriptsRoot = join(projectRoot, options.scriptsRoot ?? 'scripts');
 		const envConfigPath = join(projectRoot, `.env.${flavor}`);
 
-		let functionsConfigPath: string | undefined;
-		if (typeof options.functionsConfigPath === 'string') {
-			functionsConfigPath = join(
-				projectRoot,
-				options.functionsConfigPath,
-			);
-		} else if (typeof options.functionsConfigPath === 'undefined') {
-			functionsConfigPath = join(
-				projectRoot,
-				`functions-config.${flavor}.ts`,
-			);
+		let scriptConfigPath: string | undefined;
+		if (typeof options.scriptConfigPath === 'string') {
+			scriptConfigPath = join(projectRoot, options.scriptConfigPath);
+		} else if (typeof options.scriptConfigPath === 'undefined') {
+			scriptConfigPath = join(projectRoot, `script-config.${flavor}.ts`);
 		}
 
 		let tsconfigPath: string | undefined;
@@ -71,7 +65,7 @@ const getRunScriptOptions = (
 			projectRoot,
 			tsconfigPath,
 			scriptsRoot,
-			functionsConfigPath,
+			scriptConfigPath,
 			envConfigPath,
 			runScriptFilePath,
 			firebaseProjectId,
@@ -92,7 +86,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			tsconfigPath,
 			runScriptFilePath,
 			firebaseProjectId,
-			functionsConfigPath,
+			scriptConfigPath,
 			scriptsRoot,
 			runPrevious,
 			script,
@@ -103,7 +97,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			TS_NODE_PROJECT?: string;
 		} = {
 			CFD_FIREBASE_PROJECT_ID: firebaseProjectId,
-			CFD_FUNCTIONS_CONFIG_PATH: functionsConfigPath,
+			CFD_SCRIPT_CONFIG_PATH: scriptConfigPath,
 			CFD_SCRIPTS_ROOT: scriptsRoot,
 			CFD_SCRIPT_FILE_NAME: script,
 			CFD_RUN_PREVIOUS: runPrevious ? '1' : '0',

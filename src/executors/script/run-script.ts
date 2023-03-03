@@ -4,15 +4,27 @@ import inquirer from 'inquirer';
 import { createSpinner } from 'nanospinner';
 import open from 'open';
 import { join } from 'path';
-import type { RunScriptEnvironment } from '$types';
+import type {
+	RunScriptEnvironment,
+	ScriptFunction,
+	ScriptOpenURLResponse,
+} from '$types';
 import { toDisplayDuration, toImportPath } from '$utils/common';
 import { storage } from './storage';
 import { config } from 'dotenv';
 
-interface ScriptResponse {
-	open?: string;
-}
 const userPreference = storage();
+
+const isOpenURLResponse = (
+	response: unknown,
+): response is ScriptOpenURLResponse => {
+	return (
+		typeof response === 'object' &&
+		response !== null &&
+		'openURL' in response &&
+		typeof response.openURL === 'string'
+	);
+};
 
 const handleScript = async (
 	options: RunScriptEnvironment & {
@@ -22,7 +34,7 @@ const handleScript = async (
 	const verbose = options.CFD_VERBOSE === '1';
 	const scriptFileName = options.scriptFileName;
 	const firebaseProjectId = options.CFD_FIREBASE_PROJECT_ID;
-	const functionsConfigPath = options.CFD_FUNCTIONS_CONFIG_PATH;
+	const scriptConfigPath = options.CFD_SCRIPT_CONFIG_PATH;
 	const scriptsRoot = options.CFD_SCRIPTS_ROOT;
 	const envConfigPath = options.CFD_ENV_CONFIG_PATH;
 
@@ -42,9 +54,9 @@ const handleScript = async (
 		  ).start()
 		: undefined;
 	try {
-		if (functionsConfigPath) {
+		if (scriptConfigPath) {
 			try {
-				await import(toImportPath(functionsConfigPath));
+				await import(toImportPath(scriptConfigPath));
 			} catch (error) {
 				console.log('error', error);
 			}
@@ -55,7 +67,16 @@ const handleScript = async (
 		);
 		const start = Date.now();
 
-		const response = (await script.default()) as ScriptResponse;
+		const scriptFunction: ScriptFunction = script.default;
+
+		const response = await scriptFunction({
+			prompt: async (questions) => {
+				spinner?.stop();
+				const response = await inquirer.prompt(questions);
+				spinner?.start();
+				return response;
+			},
+		});
 
 		const end = Date.now();
 		const timeInMs = end - start;
@@ -72,9 +93,10 @@ const handleScript = async (
 
 		if (typeof response !== 'undefined') {
 			console.log(response);
-			if (response.open && typeof response.open === 'string') {
+
+			if (isOpenURLResponse(response)) {
 				try {
-					await open(response.open, { wait: true });
+					await open(response.openURL, { wait: true });
 				} catch (error) {
 					console.error('failed to open link', error);
 				}

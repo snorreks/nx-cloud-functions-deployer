@@ -13,9 +13,6 @@ export default onRequest<RequestFunctions, 'test_api'>(
 		});
 	},
 	{
-		timeoutSeconds: 60,
-		v2: true,
 		region: 'europe-west1',
-		invoker: 'public',
 	},
 );

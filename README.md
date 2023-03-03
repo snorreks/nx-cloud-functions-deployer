@@ -352,9 +352,8 @@ export default onCreate<UserData>(
 
 ## Cloud cache
 
-The plugin will detect changes on the deployed functions locally. But it is also possible to cache the changes for the deployed functions on your own server. To do this create a file in the project directory called `functions-cache.dev.ts`
-and `functions-cache.prod.ts`.
-The file needs to export two function `fetch` and `update` which will be called by the plugin.
+The plugin will detect changes on the deployed functions locally. But it is also possible to cache the changes for the deployed functions on your own server. To do this create a file in the project directory called `functions-cache.ts`.
+The file needs to export two function `fetch` and `update` which will be called by the plugin. Note you will also get the environments, so you can use process.env, if you want to hide production secrets for fetching/updating the cache.
 
 ```typescript
 import type {
@@ -362,16 +361,19 @@ import type {
 	FunctionsCacheUpdate,
 } from 'nx-cloud-functions-deployer';
 
-export const fetch: FunctionsCacheFetch = async () => {
+export const fetch: FunctionsCacheFetch = async ({ flavor }) => {
 	// fetch the cache from the cloud
 };
 
-export const update: FunctionsCacheUpdate = async (newFunctionsCache) => {
+export const update: FunctionsCacheUpdate = async ({
+	flavor,
+	newFunctionsCache,
+}) => {
 	// update the cache in the cloud
 };
 ```
 
-See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/functions-cache.dev.ts) for how to setup cloud cache with [jsonbin](https://jsonbin.io/)
+See the [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/functions-cache.ts) for how to setup cloud cache with [jsonbin](https://jsonbin.io/)
 
 ## Logger
 
@@ -388,8 +390,8 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 			"executor": "nx-cloud-functions-deployer:deploy",
 			"options": {
 				"flavors": {
-					"dev": "firebase-project-dev-id",
-					"prod": "firebase-project-prod-id"
+					"development": "firebase-project-development-id",
+					"production": "firebase-project-production-id"
 				}
 			}
 		},
@@ -401,8 +403,8 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------- |
 | `flavors`            | A object of the flavors to use, the key is the flavor name and value is the firebase project id.                                                                     | required                          |                  |
 | `flavor`             | The flavor to use, default will be the first key in the `flavors` object                                                                                             |                                   |                  |
-| `prod`               | If true, the `flavor` will be 'prod' if not defined                                                                                                                  | `false`                           | `production`     |
-| `dev`                | If true, the `flavor` will be 'dev' if not defined                                                                                                                   | `false`                           | `development`    |
+| `production`         | If true, the `flavor` will be 'production' if `flavor` is not defined                                                                                                | `false`                           | `prod`           |
+| `development`        | If true, the `flavor` will be 'development' if `flavor` is not defined                                                                                               | `false`                           | `dev`            |
 | `outputDirectory`    | The output directory.                                                                                                                                                | `dist/<relative-path-to-project>` | `outDir`         |
 | `envFiles`           | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`                                                                            |                                   |                  |
 | `tsconfig`           | The tsconfig file to use for the build in the project directory.                                                                                                     | `tsconfig.json`                   | `tsconfig`       |
@@ -420,7 +422,7 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 #### Examples
 
 ```bash
-pnpm nx deploy functions --flavor prod
+pnpm nx deploy functions --flavor production
 ```
 
 ```bash
@@ -437,7 +439,37 @@ pnpm nx deploy functions --development --only my_function,my_other_function --f
 
 The plugin also provide support to run scripts locally. The plugin will run any files in the `scripts` directory. The files needs to export default a function.
 
-Create a `functions-config.dev.ts` and `functions-config.prod.ts` file in the project root. In these files you set the environment and run any functions before executing a script.
+```ts
+import { firestore } from '$configs/firestore';
+import type { ScriptFunction } from 'nx-cloud-functions-deployer';
+
+export default (async ({ prompt }) => {
+	console.log('prompt', prompt);
+	const { uid } = await prompt<{ uid: string }>({
+		type: 'input',
+		name: 'uid',
+		message: 'Enter the uid',
+		validate: (value) => {
+			if (value.length === 20) {
+				return true;
+			}
+
+			return 'The uid must be 20 characters long';
+		},
+	});
+
+	const documentSnap = await firestore.collection('users').doc(uid).get();
+
+	if (!documentSnap.exists) {
+		throw new Error('User not found');
+	}
+	return { id: documentSnap.id, ...documentSnap.data() };
+}) satisfies ScriptFunction;
+```
+
+You can also add a `script-config.{flavor}.ts` file in the project root. In these files you can execute code before before running a script.
+
+To make firebase work locally see [example](https://github.com/snorreks/nx-cloud-functions-deployer/blob/master/example/apps/functions/src/configs/app.ts).
 
 ```json
 ...
@@ -446,8 +478,8 @@ Create a `functions-config.dev.ts` and `functions-config.prod.ts` file in the pr
 			"executor": "nx-cloud-functions-deployer:script",
 			"options": {
 				"flavors": {
-					"dev": "firebase-project-dev-id",
-					"prod": "firebase-project-prod-id"
+					"development": "firebase-project-development-id",
+					"production": "firebase-project-production-id"
 				}
 			}
 		},
@@ -455,19 +487,19 @@ Create a `functions-config.dev.ts` and `functions-config.prod.ts` file in the pr
 
 #### Options
 
-| Option        | Description                                                                                      | Default         | Alias         |
-| ------------- | ------------------------------------------------------------------------------------------------ | --------------- | ------------- |
-| `flavors`     | A object of the flavors to use, the key is the flavor name and value is the firebase project id. | required        |               |
-| `flavor`      | The flavor to use, default will be the first key in the `flavors` object                         |                 |               |
-| `prod`        | If true, the `flavor` will be 'prod' if not defined                                              | `false`         | `production`  |
-| `dev`         | If true, the `flavor` will be 'dev' if not defined                                               | `false`         | `development` |
-| `envFiles`    | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`        |                 |               |
-| `tsconfig`    | The tsconfig file to use for the script in the project directory.                                | `tsconfig.json` | `tsconfig`    |
-| `silent`      | Whether to suppress all logs.                                                                    | `false`         | `s`           |
-| `verbose`     | Whether to run the command with verbose logging.                                                 | `false`         | `v`           |
-| `scriptsRoot` | Relative path from the project root to the scripts directory.                                    | `scripts`       |               |
-| `runPrevious` | Rerun the last executed script.                                                                  | `false`         | `p`           |
-| `script`      | The name of the script to run. If not set, it will prompt you to select from a list.             | undefined       | `file`        |
+| Option        | Description                                                                                      | Default         | Alias      |
+| ------------- | ------------------------------------------------------------------------------------------------ | --------------- | ---------- |
+| `flavors`     | A object of the flavors to use, the key is the flavor name and value is the firebase project id. | required        |            |
+| `flavor`      | The flavor to use, default will be the first key in the `flavors` object                         |                 |            |
+| `production`  | If true, the `flavor` will be 'production' if not defined                                        | `false`         | `prod`     |
+| `development` | If true, the `flavor` will be 'development' if not defined                                       | `false`         | `dev`      |
+| `envFiles`    | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`        |                 |            |
+| `tsconfig`    | The tsconfig file to use for the script in the project directory.                                | `tsconfig.json` | `tsconfig` |
+| `silent`      | Whether to suppress all logs.                                                                    | `false`         | `s`        |
+| `verbose`     | Whether to run the command with verbose logging.                                                 | `false`         | `v`        |
+| `scriptsRoot` | Relative path from the project root to the scripts directory.                                    | `scripts`       |            |
+| `runPrevious` | Rerun the last executed script.                                                                  | `false`         | `p`        |
+| `script`      | The name of the script to run. If not set, it will prompt you to select from a list.             | undefined       | `file`     |
 
 #### Examples
 
@@ -476,7 +508,7 @@ pnpm nx script functions --production
 ```
 
 ```bash
-pnpm nx script functions --flavor dev
+pnpm nx script functions --flavor development
 ```
 
 ```bash
@@ -495,8 +527,8 @@ The plugin provide support to delete unused function that are not in the project
 			"executor": "nx-cloud-functions-deployer:delete",
 			"options": {
 				"flavors": {
-					"dev": "firebase-project-dev-id",
-					"prod": "firebase-project-prod-id"
+					"development": "firebase-project-development-id",
+					"production": "firebase-project-production-id"
 				}
 			}
 		},
@@ -504,16 +536,16 @@ The plugin provide support to delete unused function that are not in the project
 
 #### Options
 
-| Option     | Description                                                                                      | Default         | Alias         |
-| ---------- | ------------------------------------------------------------------------------------------------ | --------------- | ------------- |
-| `flavors`  | A object of the flavors to use, the key is the flavor name and value is the firebase project id. | required        |               |
-| `flavor`   | The flavor to use, default will be the first key in the `flavors` object                         |                 |               |
-| `prod`     | If true, the `flavor` will be 'prod' if not defined                                              | `false`         | `production`  |
-| `dev`      | If true, the `flavor` will be 'dev' if not defined                                               | `false`         | `development` |
-| `envFiles` | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`        |                 |               |
-| `tsconfig` | The tsconfig file to use for the script in the project directory.                                | `tsconfig.json` | `tsconfig`    |
-| `silent`   | Whether to suppress all logs.                                                                    | `false`         | `s`           |
-| `verbose`  | Whether to run the command with verbose logging.                                                 | `false`         | `v`           |
+| Option        | Description                                                                                      | Default         | Alias      |
+| ------------- | ------------------------------------------------------------------------------------------------ | --------------- | ---------- |
+| `flavors`     | A object of the flavors to use, the key is the flavor name and value is the firebase project id. | required        |            |
+| `flavor`      | The flavor to use, default will be the first key in the `flavors` object                         |                 |            |
+| `production`  | If true, the `flavor` will be 'production' if not defined                                        | `false`         | `prod`     |
+| `development` | If true, the `flavor` will be 'development' if not defined                                       | `false`         | `dev`      |
+| `envFiles`    | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`        |                 |            |
+| `tsconfig`    | The tsconfig file to use for the script in the project directory.                                | `tsconfig.json` | `tsconfig` |
+| `silent`      | Whether to suppress all logs.                                                                    | `false`         | `s`        |
+| `verbose`     | Whether to run the command with verbose logging.                                                 | `false`         | `v`        |
 
 #### Examples
 
@@ -522,5 +554,5 @@ pnpm nx delete-unused functions
 ```
 
 ```bash
-pnpm nx delete-unused functions --flavor prod
+pnpm nx delete-unused functions --flavor production
 ```

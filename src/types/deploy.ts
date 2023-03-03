@@ -51,7 +51,7 @@ interface SharedDeployExecutorBaseOptions {
 	 * The name of the file in the root project that will be used to fetch and
 	 * update the cloud cache.
 	 *
-	 * @default 'functions-cache.{flavor}.ts'
+	 * @default 'functions-cache.ts'
 	 */
 	cloudCacheFileName: string;
 
@@ -70,33 +70,15 @@ interface SharedDeployExecutorBaseOptions {
 
 export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	/**
-	 * The firebase project id of the production flavor.
-	 *
-	 * @deprecated use {@link DeployExecutorOptions.flavors} instead
-	 */
-	firebaseProjectProdId?: string;
-	/**
-	 * The firebase project id of the development flavor
-	 *
-	 * @deprecated use {@link DeployExecutorOptions.flavors} instead
-	 */
-	firebaseProjectDevId?: string;
-	/**
 	 * The output directory of the build
 	 *
 	 * @default `dist/<relative-path-to-project>`
 	 */
 	outputDirectory?: string;
-	/**
-	 * If true, use the {@link firebaseProjectProdId} and look for the
-	 * {@link prodEnvFileName} file
-	 */
-	prod?: boolean;
-	/**
-	 * If true, use the {@link firebaseProjectDevId} and look for the
-	 * {@link devEnvFileName} file
-	 */
-	dev?: boolean;
+	/** If true, will set the flavor as production */
+	production?: boolean;
+	/** If true, will set the flavor as development */
+	development?: boolean;
 	/** Don't log anything */
 	silent?: boolean;
 	/** Get verbose logs */
@@ -109,26 +91,8 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	concurrency?: number;
 
 	/**
-	 * The file name ot the .env file to look for when deploying for flavor
-	 * `dev`
-	 *
-	 * @deprecated use {@link DeployExecutorOptions.envFiles} instead
-	 * @default '.env.dev'
-	 */
-	devEnvFileName?: string;
-
-	/**
-	 * The file name ot the .env file to look for when deploying for flavor
-	 * `production`
-	 *
-	 * @deprecated use {@link DeployExecutorOptions.envFiles} instead
-	 * @default '.env.prod'
-	 */
-	prodEnvFileName?: string;
-
-	/**
-	 * Stringify version of the environment. If this is set, the
-	 * {@link devEnvFileName} and {@link prodEnvFileName} will be ignored.
+	 * Stringify version of the environment. If this is set, .env files will be
+	 * ignored.
 	 *
 	 * This is useful when you want to deploy using CI/CD and don't want to
 	 * store the environment variables in a file.
@@ -143,12 +107,9 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	only?: string;
 
 	flavor?: string;
-	flavors?: {
-		[flavor: string]: string;
-	};
-	envFiles?: {
-		[flavor: string]: string;
-	};
+	flavors: Record<string, string>;
+
+	envFiles?: Record<string, string>;
 }
 
 export type Environment = { [key: string]: string | undefined };

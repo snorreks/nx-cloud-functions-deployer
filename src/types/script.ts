@@ -1,23 +1,26 @@
 import type { PackageManager } from '$types';
+import type { QuestionCollection } from 'inquirer';
+
+export interface ScriptOpenURLResponse {
+	/** If this is defined, the value/url will be opened in the default browser */
+	openURL: string;
+}
+
+export type ScriptResponse = ScriptOpenURLResponse | unknown;
+
+export type ScriptFunction = (options: {
+	prompt<T extends Record<string, unknown>>(
+		questions: QuestionCollection<T>,
+	): Promise<T>;
+}) => Promise<ScriptResponse> | ScriptResponse;
 
 export interface ScriptExecutorOptions {
-	/**
-	 * The firebase project id of the production flavor.
-	 *
-	 * @deprecated use {@link ScriptExecutorOptions.flavors} instead
-	 */
-	firebaseProjectProdId?: string;
-	/**
-	 * The firebase project id of the development flavor
-	 *
-	 * @deprecated use {@link ScriptExecutorOptions.flavors} instead
-	 */
-	firebaseProjectDevId?: string;
-
 	silent?: boolean;
 	verbose?: boolean;
-	prod?: boolean;
-	dev?: boolean;
+	/** If true, will set the flavor as production */
+	production?: boolean;
+	/** If true, will set the flavor as development */
+	development?: boolean;
 	scriptsRoot?: string;
 	packageManager?: PackageManager;
 	tsconfig?: string;
@@ -27,16 +30,14 @@ export interface ScriptExecutorOptions {
 
 	script?: string;
 
-	functionsConfigPath?: string | false;
+	scriptConfigPath?: string | false;
 	flavor?: string;
-	flavors?: {
-		[flavor: string]: string;
-	};
+	flavors: Record<string, string>;
 }
 
 export type RunScriptEnvironment = {
 	CFD_FIREBASE_PROJECT_ID: string;
-	CFD_FUNCTIONS_CONFIG_PATH?: string;
+	CFD_SCRIPT_CONFIG_PATH?: string;
 	CFD_SCRIPTS_ROOT: string;
 	CFD_RUN_PREVIOUS: '1' | '0';
 	CFD_VERBOSE: '1' | '0';
@@ -49,7 +50,7 @@ export interface RunScriptOptions {
 	firebaseProjectId: string;
 	packageManager: PackageManager;
 	scriptsRoot: string;
-	functionsConfigPath?: string;
+	scriptConfigPath?: string;
 	envConfigPath: string;
 	projectRoot: string;
 	tsconfigPath?: string;

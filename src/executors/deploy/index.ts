@@ -49,7 +49,7 @@ export const getBaseOptions = async (
 	const flavor = getFlavor(options);
 
 	const firebaseProjectId = getFirebaseProjectId({
-		...options,
+		flavors: options.flavors,
 		flavor,
 	});
 
@@ -126,8 +126,7 @@ export const getBaseOptions = async (
 		flavor,
 		functionsDirectory: options.functionsDirectory ?? 'src/controllers',
 		packageManager,
-		cloudCacheFileName:
-			options.cloudCacheFileName ?? `functions-cache.${flavor}.ts`,
+		cloudCacheFileName: options.cloudCacheFileName ?? `functions-cache.ts`,
 		defaultRegion: options.region ?? 'us-central1',
 		currentTime: Math.round(new Date().getTime() / 1000),
 	};

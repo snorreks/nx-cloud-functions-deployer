@@ -66,7 +66,6 @@ documentation
 .angular
 **/.aws-sam
 
-envs/**/**.prod.*
 tools/executors/utils/preference.json
 build-storybook.log
 ui-debug.log
@@ -84,5 +83,5 @@ apps/mailvideo/nuxt/static/*.js
 .vercel
 storybook-static
 
-!apps/functions/.env.dev
-!apps/functions/.env.prod
+!apps/functions/.env.development
+!apps/functions/.env.prodcution

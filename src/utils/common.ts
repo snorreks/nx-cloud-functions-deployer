@@ -2,71 +2,43 @@ import type { Environment } from '$types';
 import { platform } from 'node:os';
 
 export const getEnvironmentFileName = (options: {
-	prodEnvFileName?: string;
-	devEnvFileName?: string;
 	flavor: string;
 	projectRoot: string;
 	envFiles?: Record<string, string>;
 }): string => {
-	const { flavor, prodEnvFileName, devEnvFileName, envFiles } = options;
+	const { flavor, envFiles } = options;
 
 	if (envFiles && envFiles[flavor]) {
 		return envFiles[flavor];
 	}
 
-	if (flavor === 'prod' && prodEnvFileName) {
-		return prodEnvFileName;
-	}
-	if (flavor === 'dev' && devEnvFileName) {
-		return devEnvFileName;
-	}
 	return `.env.${flavor}`;
 };
 
 export const getFlavor = (options: {
-	flavors?: Record<string, string>;
+	flavors: Record<string, string>;
 	flavor?: string;
-	prod?: boolean;
-	dev?: boolean;
 }): string => {
 	if (options.flavor) {
 		return options.flavor;
 	}
-	if (options.prod) {
-		return 'prod';
-	}
-	if (options.dev) {
-		return 'dev';
-	}
 
-	return Object.keys(options.flavors ?? {})[0] ?? 'dev';
+	const flavor = Object.keys(options.flavors ?? {})[0];
+	if (!flavor) {
+		throw new Error('No flavor found');
+	}
+	return flavor;
 };
 
 export const getFirebaseProjectId = (options: {
-	flavors?: Record<string, string>;
+	flavors: Record<string, string>;
 	flavor: string;
-	/**
-	 * The firebase project id of the production flavor.
-	 *
-	 * @deprecated use {@link flavors} instead
-	 */
-	firebaseProjectProdId?: string;
-	/**
-	 * The firebase project id of the development flavor
-	 *
-	 * @deprecated use {@link flavors} instead
-	 */
-	firebaseProjectDevId?: string;
-}): string | undefined => {
-	if (options.flavors && options.flavors[options.flavor]) {
-		return options.flavors[options.flavor];
+}): string => {
+	const { flavor, flavors } = options;
+	if (!(flavor in flavors)) {
+		throw new Error(`Flavor "${flavor}" not found in flavors`);
 	}
-
-	if (options.flavor === 'prod') {
-		return options.firebaseProjectProdId;
-	}
-
-	return options.firebaseProjectDevId;
+	return flavors[flavor];
 };
 
 /**
