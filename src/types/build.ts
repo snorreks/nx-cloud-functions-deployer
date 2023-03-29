@@ -2,6 +2,10 @@ import type { PackageManager } from './deploy';
 import type { NodeVersion } from './helper-options';
 
 export interface BuildExecutorOptions {
+	/** Don't log anything */
+	silent?: boolean;
+	/** Get verbose logs */
+	verbose?: boolean;
 	/**
 	 * Clear output directory.
 	 *

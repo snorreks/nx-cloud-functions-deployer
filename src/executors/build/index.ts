@@ -1,11 +1,19 @@
 import type { Executor } from '@nrwl/devkit';
 import type { BuildExecutorOptions } from '$types';
-import { executeEsbuild, getAlias, runCommand, validateProject } from '$utils';
+import {
+	executeEsbuild,
+	getAlias,
+	logger,
+	runCommand,
+	validateProject,
+} from '$utils';
 import { emptyDir } from 'fs-extra';
 import { join } from 'path';
 import { writeFile, mkdir } from 'fs/promises';
 
 const executor: Executor<BuildExecutorOptions> = async (options, context) => {
+	logger.setLogSeverity(options);
+
 	const { projectName, root: workspaceRoot, workspace } = context;
 
 	if (!projectName) {

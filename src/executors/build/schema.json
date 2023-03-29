@@ -33,8 +33,7 @@
 		},
 		"sourcemap": {
 			"type": "boolean",
-			"description": "Generate sourcemaps",
-			"aliases": ["s"]
+			"description": "Generate sourcemaps"
 		},
 		"createPackageJson": {
 			"type": "boolean",
@@ -56,6 +55,16 @@
 			"enum": ["pnpm", "npm", "yarn", "global"],
 			"description": "The package manager to use for deploying with firebase-tools",
 			"aliases": ["pm"]
+		},
+		"verbose": {
+			"type": "boolean",
+			"description": "Whether to run the command with verbose logging",
+			"aliases": ["v"]
+		},
+		"silent": {
+			"type": "boolean",
+			"description": "Whether to suppress all logs",
+			"aliases": ["s"]
 		}
 	},
 	"required": []
