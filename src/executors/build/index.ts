@@ -1,8 +1,9 @@
 import type { Executor } from '@nrwl/devkit';
 import type { BuildExecutorOptions } from '$types';
 import { executeEsbuild, getAlias, runCommand, validateProject } from '$utils';
+import { emptyDir } from 'fs-extra';
 import { join } from 'path';
-import { writeFile, rm, mkdir } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 
 const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	const { projectName, root: workspaceRoot, workspace } = context;
@@ -20,17 +21,17 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	const inputPath = join(projectRoot, options.inputPath ?? 'src/index.ts');
 	const outputRoot = join(projectRoot, options.outputRoot ?? 'dist');
 
-	const clearOutputDirectory = async () => {
+	const setOutputDirectory = async () => {
 		if (options.clear === false) {
-			return;
+			await mkdir(outputRoot, { recursive: true });
+		} else {
+			await emptyDir(outputRoot);
 		}
-		await rm(outputRoot, { recursive: true });
 	};
 
 	const [alias] = await Promise.all([
 		getAlias({ projectRoot, workspaceRoot, tsconfig: options.tsconfig }),
-		clearOutputDirectory(),
-		mkdir(outputRoot, { recursive: true }),
+		setOutputDirectory(),
 		validateProject({
 			packageManager: options.packageManager ?? 'pnpm',
 			projectRoot,

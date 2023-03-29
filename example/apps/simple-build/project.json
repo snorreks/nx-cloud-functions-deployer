@@ -8,7 +8,7 @@
 			"options": {
 				"inputPath": "src/index.ts",
 				"outputRoot": "dist",
-				"createPackageJson": false,
+				"createPackageJson": true,
 				"clear": true
 			}
 		}
