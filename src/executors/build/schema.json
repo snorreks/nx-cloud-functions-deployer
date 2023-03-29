@@ -40,6 +40,22 @@
 			"type": "boolean",
 			"description": "Create a package.json file in the output directory.",
 			"aliases": ["p"]
+		},
+		"tsconfig": {
+			"type": "string",
+			"description": "The tsconfig file to use for the build",
+			"aliases": ["tsconfig"]
+		},
+		"validate": {
+			"type": "boolean",
+			"description": "Will run tsc -noEmits in project root to validate the build",
+			"aliases": ["valid"]
+		},
+		"packageManager": {
+			"type": "string",
+			"enum": ["pnpm", "npm", "yarn", "global"],
+			"description": "The package manager to use for deploying with firebase-tools",
+			"aliases": ["pm"]
 		}
 	},
 	"required": []

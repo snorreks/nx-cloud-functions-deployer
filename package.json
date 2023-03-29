@@ -1,8 +1,8 @@
 {
 	"name": "nx-cloud-functions-deployer",
 	"type": "module",
-	"version": "1.0.31",
-	"description": "Nx plugin to deploy cloud functions",
+	"version": "1.0.32",
+	"description": "Nx plugin to manage firebase cloud functions",
 	"license": "MIT",
 	"main": "index.js",
 	"types": "index.d.ts",

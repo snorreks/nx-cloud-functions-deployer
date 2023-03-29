@@ -13,17 +13,15 @@ import type {
 } from '$types';
 import { deployFunction } from './utils/deploy-function';
 import { buildFunction } from './utils/build-function';
-import {
-	getBuildableFiles,
-	getEsbuildAliasFromTsConfig,
-	validateProject,
-} from './utils/read-project';
+import { getBuildableFiles } from './utils/read-project';
 import {
 	logger,
 	getLimiter,
 	getEnvironment,
 	getFlavor,
 	getFirebaseProjectId,
+	getAlias,
+	validateProject,
 } from '$utils';
 import { EventEmitter } from 'events';
 import {
@@ -68,32 +66,11 @@ export const getBaseOptions = async (
 		join(workspaceRoot, 'dist', relativeProjectPath);
 	const temporaryDirectory = join(workspaceRoot, 'tmp', relativeProjectPath);
 
-	const getAlias = async () => {
-		let alias = await getEsbuildAliasFromTsConfig(
-			projectRoot,
-			options.tsconfig,
-		);
-		if (!alias) {
-			if (options.tsconfig && options.tsconfig !== 'tsconfig.json') {
-				alias = await getEsbuildAliasFromTsConfig(
-					projectRoot,
-					'tsconfig.json',
-				);
-			}
-			if (!alias) {
-				alias = await getEsbuildAliasFromTsConfig(
-					workspaceRoot,
-					'tsconfig.base.json',
-				);
-			}
-		}
-		return alias;
-	};
 	const packageManager = options.packageManager ?? 'pnpm';
 	const validate = options.validate ?? false;
 	const [environment, alias] = await Promise.all([
 		getEnvironment({ ...options, projectRoot, flavor }),
-		getAlias(),
+		getAlias({ projectRoot, workspaceRoot, tsconfig: options.tsconfig }),
 		mkdir(temporaryDirectory, { recursive: true }),
 		validateProject({
 			packageManager,

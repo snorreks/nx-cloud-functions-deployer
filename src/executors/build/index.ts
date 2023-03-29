@@ -1,25 +1,8 @@
 import type { Executor } from '@nrwl/devkit';
 import type { BuildExecutorOptions } from '$types';
-import { executeEsbuild, runCommand } from '$utils';
+import { executeEsbuild, getAlias, runCommand, validateProject } from '$utils';
 import { join } from 'path';
-import { writeFile, rm } from 'fs/promises';
-
-import { getEsbuildAliasFromTsConfig } from '../deploy/utils/read-project';
-
-const getAlias = async (options: {
-	projectRoot: string;
-	workspaceRoot: string;
-}) => {
-	const { projectRoot, workspaceRoot } = options;
-	let alias = await getEsbuildAliasFromTsConfig(projectRoot);
-	if (!alias) {
-		alias = await getEsbuildAliasFromTsConfig(
-			workspaceRoot,
-			'tsconfig.base.json',
-		);
-	}
-	return alias;
-};
+import { writeFile, rm, mkdir } from 'fs/promises';
 
 const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	const { projectName, root: workspaceRoot, workspace } = context;
@@ -45,8 +28,15 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	};
 
 	const [alias] = await Promise.all([
-		getAlias({ projectRoot, workspaceRoot }),
+		getAlias({ projectRoot, workspaceRoot, tsconfig: options.tsconfig }),
 		clearOutputDirectory(),
+		mkdir(outputRoot, { recursive: true }),
+		validateProject({
+			packageManager: options.packageManager ?? 'pnpm',
+			projectRoot,
+			validate: options.validate,
+			tsconfig: options.tsconfig,
+		}),
 	]);
 
 	const createPackageJson = async () => {

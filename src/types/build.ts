@@ -1,3 +1,4 @@
+import type { PackageManager } from './deploy';
 import type { NodeVersion } from './helper-options';
 
 export interface BuildExecutorOptions {
@@ -43,4 +44,30 @@ export interface BuildExecutorOptions {
 	 * @default true
 	 */
 	createPackageJson?: boolean;
+
+	/**
+	 * The name of the tsconfig file in the project root.
+	 *
+	 * @default 'tsconfig.json'
+	 */
+	tsconfig?: string;
+
+	/**
+	 * Will run `tsc -noEmits` to validate the build.
+	 *
+	 * If this is not valid the all build will fail.
+	 *
+	 * @default true
+	 */
+	validate?: boolean;
+
+	/**
+	 * The package manager to use when running firebase-tools.
+	 *
+	 * Set `global` to use the globally installed firebase-tools (`npm i -g
+	 * firebase-tools`).
+	 *
+	 * @default 'pnpm'
+	 */
+	packageManager: PackageManager;
 }
