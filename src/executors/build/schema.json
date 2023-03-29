@@ -5,21 +5,42 @@
 	"description": "A simple build executor for esbuild a function",
 	"additionalProperties": false,
 	"properties": {
-		"input": {
+		"clear": {
+			"type": "boolean",
+			"description": "Clear the output directory",
+			"aliases": ["c"]
+		},
+		"inputPath": {
 			"type": "string",
-			"description": "The input path",
+			"description": "The path to the entry file. Default: 'src/index.ts'",
 			"aliases": ["i"]
 		},
-		"output": {
+		"outputRoot": {
 			"type": "string",
-			"description": "The output path",
+			"description": "The path to the output directory. Default: 'dist'",
 			"aliases": ["o"]
 		},
 		"external": {
 			"type": "array",
 			"description": "The external dependencies",
 			"aliases": ["e"]
+		},
+		"nodeVersion": {
+			"type": "string",
+			"enum": ["14", "16", "18"],
+			"description": "The node version to use for the functions",
+			"aliases": ["node"]
+		},
+		"sourcemap": {
+			"type": "boolean",
+			"description": "Generate sourcemaps",
+			"aliases": ["s"]
+		},
+		"createPackageJson": {
+			"type": "boolean",
+			"description": "Create a package.json file in the output directory.",
+			"aliases": ["p"]
 		}
 	},
-	"required": ["input", "output"]
+	"required": []
 }

@@ -19,7 +19,7 @@
 		"removeComments": true,
 		"resolveJsonModule": true,
 		"stripInternal": true,
-		"importsNotUsedAsValues": "error",
+		"verbatimModuleSyntax": true,
 		"isolatedModules": true,
 		"rootDir": "src",
 		"lib": ["es2021"],

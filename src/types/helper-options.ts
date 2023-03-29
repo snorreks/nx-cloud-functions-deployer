@@ -135,4 +135,4 @@ export type FunctionOptions = {
 	database: RefTriggerOptions;
 };
 
-export { RuntimeOptions };
+export type { RuntimeOptions };

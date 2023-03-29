@@ -2,8 +2,24 @@ import type { Executor } from '@nrwl/devkit';
 import type { BuildExecutorOptions } from '$types';
 import { executeEsbuild, runCommand } from '$utils';
 import { join } from 'path';
-import { writeFile } from 'fs/promises';
+import { writeFile, rm } from 'fs/promises';
+
 import { getEsbuildAliasFromTsConfig } from '../deploy/utils/read-project';
+
+const getAlias = async (options: {
+	projectRoot: string;
+	workspaceRoot: string;
+}) => {
+	const { projectRoot, workspaceRoot } = options;
+	let alias = await getEsbuildAliasFromTsConfig(projectRoot);
+	if (!alias) {
+		alias = await getEsbuildAliasFromTsConfig(
+			workspaceRoot,
+			'tsconfig.base.json',
+		);
+	}
+	return alias;
+};
 
 const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	const { projectName, root: workspaceRoot, workspace } = context;
@@ -18,51 +34,61 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	const relativeProjectPath = workspace.projects[projectName].root;
 	const projectRoot = join(workspaceRoot, relativeProjectPath);
 
-	const inputRoot = join(projectRoot, options.input);
-	const outputRoot = join(projectRoot, options.output);
+	const inputPath = join(projectRoot, options.inputPath ?? 'src/index.ts');
+	const outputRoot = join(projectRoot, options.outputRoot ?? 'dist');
 
-	const getAlias = async () => {
-		let alias = await getEsbuildAliasFromTsConfig(projectRoot);
-		if (!alias) {
-			alias = await getEsbuildAliasFromTsConfig(
-				workspaceRoot,
-				'tsconfig.base.json',
-			);
+	const clearOutputDirectory = async () => {
+		if (options.clear === false) {
+			return;
 		}
-		return alias;
+		await rm(outputRoot, { recursive: true });
 	};
 
-	const responseOk = await executeEsbuild({
-		inputPath: join(inputRoot, 'src/index.ts'),
-		outputPath: join(outputRoot, 'index.js'),
-		external: options.external,
-		sourceRoot: projectRoot,
-		alias: await getAlias(),
-		nodeVersion: options.nodeVersion ?? '16',
-	});
+	const [alias] = await Promise.all([
+		getAlias({ projectRoot, workspaceRoot }),
+		clearOutputDirectory(),
+	]);
 
-	const newPackageJson = {
-		type: 'module',
-		main: 'index.js',
-		engines: {
-			node: '16',
-		},
+	const createPackageJson = async () => {
+		if (options.createPackageJson === false) {
+			return;
+		}
+
+		const newPackageJson = {
+			type: 'module',
+			main: 'index.js',
+			engines: {
+				node: '16',
+			},
+		};
+
+		await writeFile(
+			join(outputRoot, 'package.json'),
+			JSON.stringify(newPackageJson, undefined, 2),
+		);
+
+		const external = options?.external;
+
+		if (external && external.length > 0) {
+			await runCommand({
+				command: 'npm',
+				commandArguments: ['install', ...external],
+				cwd: outputRoot,
+			});
+		}
 	};
 
-	await writeFile(
-		join(outputRoot, 'package.json'),
-		JSON.stringify(newPackageJson, undefined, 2),
-	);
-
-	const external = options?.external;
-
-	if (external && external.length > 0) {
-		await runCommand({
-			command: 'npm',
-			commandArguments: ['install', ...external],
-			cwd: outputRoot,
-		});
-	}
+	const [responseOk] = await Promise.all([
+		executeEsbuild({
+			inputPath,
+			outputPath: join(outputRoot, 'index.js'),
+			external: options.external,
+			sourceRoot: projectRoot,
+			alias,
+			nodeVersion: options.nodeVersion ?? '16',
+		}),
+		createPackageJson(),
+	]);
 
 	return {
 		success: responseOk,
