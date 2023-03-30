@@ -1,7 +1,7 @@
 {
 	"name": "nx-cloud-functions-deployer",
 	"type": "module",
-	"version": "1.0.34",
+	"version": "1.0.35",
 	"description": "Nx plugin to manage firebase cloud functions",
 	"license": "MIT",
 	"main": "index.js",
@@ -31,8 +31,8 @@
 	},
 	"executors": "./executors.json",
 	"peerDependencies": {
-		"@nrwl/devkit": ">=14.5.0",
-		"tsx": ">=3.9.0"
+		"@nrwl/devkit": ">=15.0.0",
+		"tsx": ">=3.0.0"
 	},
 	"devDependencies": {
 		"@firebase/app-types": "^0.9.0",
@@ -48,7 +48,7 @@
 		"cross-spawn": "^7.0.3",
 		"dotenv": "^16.0.3",
 		"esbuild": "^0.17.14",
-		"esbuild-node-externals": "^1.6.0",
+		"esbuild-node-externals": "^1.7.0",
 		"esbuild-plugin-alias": "^0.2.1",
 		"eslint": "^8.37.0",
 		"eslint-config-prettier": "^8.8.0",
@@ -64,10 +64,10 @@
 		"nanospinner": "^1.1.0",
 		"nvexeca": "^8.5.0",
 		"nx": "^15.8.9",
-		"open": "^9.1.0",
+		"open": "8.4.2",
 		"prettier": "^2.8.7",
 		"prettier-plugin-jsdoc": "^0.4.2",
-		"tsc-alias": "^1.8.4",
+		"tsc-alias": "^1.8.5",
 		"tslib": "^2.5.0",
 		"tsx": "^3.12.6",
 		"typescript": "^5.0.2"

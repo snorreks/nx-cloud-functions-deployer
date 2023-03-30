@@ -38,17 +38,14 @@ export const execute = async ({
 	}
 };
 
-export const runFile = async ({
-	runScriptFilePath,
-	cwd,
-	tsconfigPath,
-	environment,
-}: {
+export const runFile = async (options: {
 	runScriptFilePath: string;
 	cwd: string;
 	tsconfigPath?: string;
 	environment?: Environment;
 }) => {
+	logger.debug('runFile', options);
+	const { runScriptFilePath, cwd, tsconfigPath, environment } = options;
 	const commandArguments: string[] = ['--no-warnings', '--loader', 'tsx'];
 
 	if (tsconfigPath) {
@@ -75,19 +72,21 @@ export const runFile = async ({
  * @returns the result of the command
  */
 
-export const runCommand = ({
-	command,
-	commandArguments = [],
-	cwd,
-	silent = !logger.verbose,
-	environment = process.env,
-}: {
+export const runCommand = (options: {
 	command: string;
 	cwd?: string;
 	commandArguments?: string[];
 	environment?: Environment;
 	silent?: boolean;
 }): Promise<void> => {
+	logger.debug('runCommand', options);
+	const {
+		command,
+		cwd,
+		commandArguments = [],
+		environment,
+		silent,
+	} = options;
 	return new Promise((resolve, reject) => {
 		logger.debug(`Executing "${command} ${commandArguments.join(' ')}"...`);
 		const child = spawn(command, commandArguments, {

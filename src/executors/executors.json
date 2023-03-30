@@ -20,6 +20,16 @@
 			"implementation": "./executors/script/index",
 			"schema": "./executors/script/schema.json",
 			"description": "Run a script"
+		},
+		"sam-deploy": {
+			"implementation": "./executors/sam/sam-deploy/index",
+			"schema": "./executors/sam/sam-deploy/schema.json",
+			"description": "Deploy AWS SAM"
+		},
+		"sam-logs": {
+			"implementation": "./executors/sam/sam-logs/index",
+			"schema": "./executors/sam/sam-logs/schema.json",
+			"description": "Watch the logs of a given lambda function"
 		}
 	}
 }

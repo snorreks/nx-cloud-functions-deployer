@@ -3,7 +3,7 @@ import { readdir } from 'fs/promises';
 import inquirer from 'inquirer';
 import { createSpinner } from 'nanospinner';
 import open from 'open';
-import { join } from 'path';
+import { resolve } from 'path';
 import type {
 	RunScriptEnvironment,
 	ScriptFunction,
@@ -63,7 +63,7 @@ const handleScript = async (
 		}
 
 		const script = await import(
-			toImportPath(join(scriptsRoot, `${scriptFileName}.ts`))
+			toImportPath(resolve(scriptsRoot, `${scriptFileName}.ts`))
 		);
 		const start = Date.now();
 
@@ -125,7 +125,6 @@ const askScriptFileName = async (
 	scriptsRoot: string,
 	defaultScript = 'test',
 ): Promise<string> => {
-	console.log('scriptsRoot', scriptsRoot);
 	const answers = await inquirer.prompt({
 		choices: (
 			await readdir(scriptsRoot)

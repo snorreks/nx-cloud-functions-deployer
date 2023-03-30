@@ -105,6 +105,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			CFD_VERBOSE: verbose ? '1' : '0',
 			CFD_ENV_CONFIG_PATH: options.envConfigPath,
 		};
+
 		await runFile({
 			cwd: projectRoot,
 			runScriptFilePath: runScriptFilePath,

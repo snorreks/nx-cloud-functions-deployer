@@ -1,0 +1,39 @@
+{
+	"$schema": "http://json-schema.org/schema",
+	"type": "object",
+	"cli": "nx",
+	"description": "Executor to build and deploy aws sam",
+	"properties": {
+		"flavor": {
+			"type": "string",
+			"description": "The flavor to run from the flavors object"
+		},
+		"flavors": {
+			"type": "object",
+			"description": "The different flavors to deploy, keyed by the flavor name and value is the firebase project id"
+		},
+		"stackNames": {
+			"type": "object",
+			"description": "The different stack names to deploy, keyed by the flavor name and value is the stack name"
+		},
+		"lambdaNames": {
+			"type": "object",
+			"description": "The different lambda names to deploy, keyed by the flavor name and value is the lambda name"
+		},
+		"stack": {
+			"type": "string",
+			"description": "The name of your stack."
+		},
+		"silent": {
+			"type": "boolean",
+			"description": "Whether to suppress all logs",
+			"aliases": ["s"]
+		},
+		"verbose": {
+			"type": "boolean",
+			"description": "Whether to run the command with verbose logging",
+			"aliases": ["v"]
+		}
+	},
+	"required": ["flavors", "stackNames"]
+}
