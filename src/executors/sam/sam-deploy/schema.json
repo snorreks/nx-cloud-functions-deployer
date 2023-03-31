@@ -21,10 +21,6 @@
 			"type": "string",
 			"description": "The template file to use for deployment"
 		},
-		"stackNames": {
-			"type": "object",
-			"description": "The different stack names to deploy, keyed by the flavor name and value is the stack name"
-		},
 		"silent": {
 			"type": "boolean",
 			"description": "Whether to suppress all logs",
@@ -34,6 +30,10 @@
 			"type": "boolean",
 			"description": "Whether to run the command with verbose logging",
 			"aliases": ["v"]
+		},
+		"bucket": {
+			"type": "string",
+			"description": "The bucket to use for deployment"
 		}
 	},
 	"required": ["flavors"]

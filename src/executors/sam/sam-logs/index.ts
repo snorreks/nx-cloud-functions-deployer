@@ -10,9 +10,9 @@ export interface ExecutorOptions {
 	verbose?: boolean;
 	flavors: Record<string, string>;
 
-	stackNames: Record<string, string>;
+	name?: string;
 
-	lambdaNames?: Record<string, string>;
+	tail?: boolean;
 
 	/** The flavor of the project */
 	flavor?: string;
@@ -23,7 +23,7 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 
 	const { projectName, root: workspaceRoot, workspace } = context;
 
-	const { stackNames, lambdaNames } = options;
+	const { flavors, name, tail } = options;
 
 	logger.debug('getBaseOptions', options);
 
@@ -35,8 +35,8 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	}
 
 	const flavor = getFlavor(options);
+	const stackName = flavors[flavor];
 
-	const stackName = stackNames[flavor];
 	if (!stackName) {
 		throw new Error(`Stack name is not defined for flavor ${flavor}`);
 	}
@@ -45,10 +45,12 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	const projectRoot = join(workspaceRoot, relativeProjectPath);
 	const commandArguments = ['logs', '--stack-name', stackName];
 
-	const lambdaName = lambdaNames?.[flavor];
+	if (name) {
+		commandArguments.push('--name', name);
+	}
 
-	if (lambdaName) {
-		commandArguments.push('--name', lambdaName);
+	if (tail) {
+		commandArguments.push('--tail');
 	}
 
 	console.info(`Executing aws:logs...`);

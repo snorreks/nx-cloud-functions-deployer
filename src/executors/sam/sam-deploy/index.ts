@@ -16,7 +16,11 @@ export interface ExecutorOptions {
 	/** The region to deploy this stack */
 	region?: string;
 
-	stackNames: Record<string, string>;
+	/**
+	 * The name of the S3 bucket where this command uploads the artifacts that
+	 * are referenced in your template.
+	 */
+	bucket?: string;
 }
 
 const getEnvironmentParameters = async ({
@@ -45,7 +49,7 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 
 	const { projectName, root: workspaceRoot, workspace } = context;
 
-	const { stackNames, templateFile } = options;
+	const { flavors, templateFile, bucket } = options;
 
 	logger.debug('getBaseOptions', options);
 
@@ -57,8 +61,8 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	}
 
 	const flavor = getFlavor(options);
+	const stackName = flavors[flavor];
 
-	const stackName = stackNames[flavor];
 	if (!stackName) {
 		throw new Error(`Stack name is not defined for flavor ${flavor}`);
 	}
@@ -73,11 +77,18 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 		stackName,
 		'--config-env',
 		flavor,
+		'--capabilities',
+		'CAPABILITY_IAM',
 	];
 
 	if (templateFile) {
 		commandArguments.push('--template-file', templateFile);
 	}
+
+	if (bucket) {
+		commandArguments.push('--s3-bucket', bucket);
+	}
+
 	const parameters = await getEnvironmentParameters({
 		cwd: projectRoot,
 		flavor,

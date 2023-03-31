@@ -32,9 +32,7 @@
 		"resolveJsonModule": true,
 		"strict": true,
 		"stripInternal": true,
-
-		"importsNotUsedAsValues": "error",
-		"isolatedModules": true, // false?
+		"verbatimModuleSyntax": true,
 
 		"paths": {
 			"@shared/types": ["libs/shared/types/src"],

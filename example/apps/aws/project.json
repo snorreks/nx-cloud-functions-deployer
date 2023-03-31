@@ -1,0 +1,36 @@
+{
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"name": "aws",
+	"sourceRoot": "apps/aws/src",
+	"projectType": "application",
+	"targets": {
+		"build": {
+			"executor": "../dist:build",
+			"options": {
+				"createPackageJson": false,
+				"inputPath": "src/index.ts",
+				"outputRoot": "dist",
+				"validate": true
+			}
+		},
+		"deploy": {
+			"executor": "../dist:sam-deploy",
+			"options": {
+				"flavors": {
+					"development": "example-dev-test"
+				},
+				"bucket": "mailvideo-test"
+			}
+		},
+		"logs": {
+			"executor": "../dist:sam-logs",
+			"options": {
+				"flavors": {
+					"development": "example-dev-test"
+				},
+				"name": "ExampleFunction",
+				"tail": true
+			}
+		}
+	}
+}

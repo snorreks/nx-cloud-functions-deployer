@@ -12,17 +12,18 @@
 			"type": "object",
 			"description": "The different flavors to deploy, keyed by the flavor name and value is the firebase project id"
 		},
-		"stackNames": {
-			"type": "object",
-			"description": "The different stack names to deploy, keyed by the flavor name and value is the stack name"
-		},
-		"lambdaNames": {
-			"type": "object",
-			"description": "The different lambda names to deploy, keyed by the flavor name and value is the lambda name"
+		"name": {
+			"type": "string",
+			"description": "The template file to use for deployment"
 		},
 		"stack": {
 			"type": "string",
 			"description": "The name of your stack."
+		},
+		"tail": {
+			"type": "boolean",
+			"description": "Whether to tail the logs",
+			"aliases": ["t"]
 		},
 		"silent": {
 			"type": "boolean",
@@ -35,5 +36,5 @@
 			"aliases": ["v"]
 		}
 	},
-	"required": ["flavors", "stackNames"]
+	"required": ["flavors"]
 }

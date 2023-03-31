@@ -1,0 +1,11 @@
+{
+	"name": "aws",
+	"type": "module",
+	"engines": {
+		"node": "16"
+	},
+	"main": "src/index.js",
+	"dependencies": {},
+	"devDependencies": {},
+	"private": true
+}

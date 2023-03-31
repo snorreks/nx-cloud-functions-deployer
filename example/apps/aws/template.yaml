@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM Template
+
+Parameters:
+    Flavor:
+        Type: String
+        Default: dev
+        Description: Flavor of the project
+
+Resources:
+    ExampleFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: dist
+            Description: 'Example Lambda Function'
+            Handler: index.handler
+            Runtime: nodejs18.x
+            FunctionName: !Sub 'example-${Flavor}-test'
+            Architectures:
+                - x86_64
+            Environment:
+                Variables:
+                    FLAVOR: !Ref Flavor
+        Metadata:
+            BuildMethod: makefile
+
+Outputs:
+    ExampleFunction:
+        Description: 'Example Lambda Function ARN'
+        Value: !GetAtt ExampleFunction.Arn
+    ExampleFunctionIamRole:
+        Description: 'Implicit IAM Role created for Example function'
+        Value: !GetAtt ExampleFunction.Arn
