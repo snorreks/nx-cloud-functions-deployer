@@ -66,6 +66,11 @@
 			"type": ["string", "boolean"],
 			"description": "Default script-config.{flavor}.ts",
 			"aliases": ["configPath"]
+		},
+		"extraEnvs": {
+			"type": "string",
+			"description": "Extra envs to pass to the script",
+			"aliases": ["envs"]
 		}
 	},
 	"required": ["flavors"]

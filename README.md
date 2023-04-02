@@ -31,6 +31,7 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
     -   [Delete](#delete)
         -   [Options](#options-2)
         -   [Examples](#examples-2)
+    -   [SAM](#sam)
 
 ## Features
 
@@ -557,3 +558,7 @@ pnpm nx delete-unused functions
 ```bash
 pnpm nx delete-unused functions --flavor production
 ```
+
+### SAM
+
+There is now also support for aws sam to deploy and watch logs. You need the SAM CLI installed to use this feature. See the example [here](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/aws).

@@ -1,3 +1,4 @@
+import type { ExecutorBaseBuildOptions } from './core';
 import type { DeployFunction, FunctionBuilder } from './function-types';
 import type { FunctionOptions, NodeVersion } from './helper-options';
 
@@ -5,15 +6,9 @@ export type EsbuildAlias = { [key: string]: string };
 
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'global';
 
-interface SharedDeployExecutorBaseOptions {
+interface SharedDeployExecutorBaseOptions extends ExecutorBaseBuildOptions {
 	/** The project flavor */
 	flavor?: string;
-	/**
-	 * The name of the tsconfig file in the project root.
-	 *
-	 * @default 'tsconfig.json'
-	 */
-	tsconfig?: string;
 	/** The default region is us-central1 */
 	region?: string;
 	/** Only build the function, don't deploy it */
@@ -39,15 +34,6 @@ interface SharedDeployExecutorBaseOptions {
 	functionsDirectory?: string;
 
 	/**
-	 * Will run `tsc -noEmits` to validate the build.
-	 *
-	 * If this is not valid the all build will fail.
-	 *
-	 * @default true
-	 */
-	validate?: boolean;
-
-	/**
 	 * The name of the file in the root project that will be used to fetch and
 	 * update the cloud cache.
 	 *
@@ -55,17 +41,7 @@ interface SharedDeployExecutorBaseOptions {
 	 */
 	cloudCacheFileName: string;
 
-	/**
-	 * Will import the file in the deploy script from the project root
-	 * directory. Helpful for setting up opentelemetry.
-	 *
-	 * @default 'src/logger.ts'
-	 */
-	includeFilePath?: string;
-
 	ignoreMissingEnvironmentKey?: boolean;
-
-	nodeVersion?: NodeVersion;
 }
 
 export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {

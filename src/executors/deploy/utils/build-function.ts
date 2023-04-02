@@ -56,6 +56,8 @@ export const buildFunction = async (
 					footer: shouldImportLogger
 						? 'import "./logger.js";'
 						: undefined,
+					requireFix: true,
+					sourcemap: true,
 				});
 				await createEnvironmentFile(buildFunctionData);
 			})(),
@@ -100,6 +102,8 @@ const buildLoggerFile = async (
 			external: buildFunctionData.external,
 			sourceRoot: buildFunctionData.workspaceRoot,
 			nodeVersion: buildFunctionData.nodeVersion,
+			requireFix: buildFunctionData.requireFix,
+			sourcemap: buildFunctionData.sourcemap,
 		});
 
 		return true;

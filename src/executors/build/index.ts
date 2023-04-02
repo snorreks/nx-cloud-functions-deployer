@@ -47,19 +47,23 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 			tsconfig: options.tsconfig,
 		}),
 	]);
+	const main = `index.${options.extension ?? 'js'}`;
 
 	const createPackageJson = async () => {
 		if (options.createPackageJson === false) {
 			return;
 		}
 
-		const newPackageJson = {
+		const newPackageJson: Record<string, unknown> = {
 			type: 'module',
-			main: 'index.js',
-			engines: {
-				node: '16',
-			},
+			main,
 		};
+
+		if (options.nodeVersion) {
+			newPackageJson.engines = {
+				node: options.nodeVersion,
+			};
+		}
 
 		await writeFile(
 			join(outputRoot, 'package.json'),
@@ -79,8 +83,9 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 
 	const [responseOk] = await Promise.all([
 		executeEsbuild({
+			...options,
 			inputPath,
-			outputPath: join(outputRoot, 'index.js'),
+			outputPath: join(outputRoot, main),
 			external: options.external,
 			sourceRoot: projectRoot,
 			alias,

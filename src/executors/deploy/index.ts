@@ -83,6 +83,7 @@ export const getBaseOptions = async (
 	const only = options.only?.split(',').map((name) => name.trim());
 
 	const baseDeployOptions: BaseDeployOptions = {
+		...options,
 		nodeVersion: options.nodeVersion,
 		ignoreMissingEnvironmentKey:
 			options.ignoreMissingEnvironmentKey ?? true, // TODO: Change to false in v2

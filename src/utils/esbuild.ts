@@ -39,33 +39,41 @@ export const executeEsbuild = async (options: {
 	keepNames?: boolean;
 	footer?: string;
 	nodeVersion: NodeVersion;
+	requireFix?: boolean;
+	sourcemap?: boolean;
 }): Promise<boolean> => {
-	const { inputPath, outputPath, external, sourceRoot, keepNames, footer } =
-		options;
+	const {
+		inputPath,
+		outputPath,
+		external,
+		sourceRoot,
+		keepNames,
+		footer,
+		requireFix,
+		sourcemap,
+	} = options;
 	const plugins = [dirnamePlugin];
 	if (options.alias) {
 		plugins.push(alias(options.alias));
 	}
 
 	const result = await build({
-		banner: {
-			js: "import{createRequire}from'module';const require=createRequire(import.meta.url);",
-		},
+		banner: requireFix
+			? {
+					js: "import{createRequire}from'module';const require=createRequire(import.meta.url);",
+			  }
+			: undefined,
 		footer: footer ? { js: footer } : undefined,
 		bundle: true,
 		entryPoints: [inputPath],
 		format: 'esm',
 		external,
 		minify: true,
-		sourcemap: true,
+		sourcemap,
 		treeShaking: true,
-		outExtension: {
-			'.js': '.cjs',
-		},
 		outfile: outputPath,
 		platform: 'node',
 		plugins,
-		// sourcemap: true,
 		target: `node${options.nodeVersion}`,
 		keepNames,
 		sourceRoot,

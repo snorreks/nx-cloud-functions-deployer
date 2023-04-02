@@ -59,8 +59,7 @@ const getRunScriptOptions = (
 		const runScriptFilePath = join(dirname, 'run-script.js');
 
 		return {
-			verbose: options.verbose,
-			script: options.script,
+			...options,
 			flavor,
 			projectRoot,
 			tsconfigPath,
@@ -69,7 +68,6 @@ const getRunScriptOptions = (
 			envConfigPath,
 			runScriptFilePath,
 			firebaseProjectId,
-			runPrevious: options.runPrevious,
 			packageManager: options.packageManager ?? 'pnpm',
 		};
 	} catch (error) {
@@ -91,10 +89,12 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			runPrevious,
 			script,
 			verbose,
+			extraEnvs,
 		} = options;
 
 		const runScriptEnvironment: RunScriptEnvironment & {
 			TS_NODE_PROJECT?: string;
+			[key: string]: string | undefined;
 		} = {
 			CFD_FIREBASE_PROJECT_ID: firebaseProjectId,
 			CFD_SCRIPT_CONFIG_PATH: scriptConfigPath,
@@ -105,6 +105,14 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			CFD_VERBOSE: verbose ? '1' : '0',
 			CFD_ENV_CONFIG_PATH: options.envConfigPath,
 		};
+
+		if (extraEnvs) {
+			for (const extraEnv of extraEnvs.split(',')) {
+				// split by equal
+				const [key, value] = extraEnv.split('=');
+				runScriptEnvironment[key] = value;
+			}
+		}
 
 		await runFile({
 			cwd: projectRoot,

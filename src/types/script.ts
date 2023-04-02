@@ -33,6 +33,8 @@ export interface ScriptExecutorOptions {
 	scriptConfigPath?: string | false;
 	flavor?: string;
 	flavors: Record<string, string>;
+
+	extraEnvs?: string;
 }
 
 export type RunScriptEnvironment = {
@@ -61,4 +63,6 @@ export interface RunScriptOptions {
 	script?: string;
 
 	verbose?: boolean;
+
+	extraEnvs?: string;
 }

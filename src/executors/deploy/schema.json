@@ -36,6 +36,16 @@
 			"description": "Whether to suppress all logs",
 			"aliases": ["s"]
 		},
+		"sourcemap": {
+			"type": "boolean",
+			"description": "Whether to generate sourcemaps",
+			"default": true
+		},
+		"requireFix": {
+			"type": "boolean",
+			"description": "To fix require for esm modules",
+			"default": true
+		},
 		"dryRun": {
 			"type": "boolean",
 			"description": "Whether to run the command as a dry run",

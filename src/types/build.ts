@@ -1,11 +1,7 @@
+import type { ExecutorBaseBuildOptions } from './core';
 import type { PackageManager } from './deploy';
-import type { NodeVersion } from './helper-options';
 
-export interface BuildExecutorOptions {
-	/** Don't log anything */
-	silent?: boolean;
-	/** Get verbose logs */
-	verbose?: boolean;
+export interface BuildExecutorOptions extends ExecutorBaseBuildOptions {
 	/**
 	 * Clear output directory.
 	 *
@@ -27,20 +23,6 @@ export interface BuildExecutorOptions {
 	outputRoot?: string;
 	/** The external dependencies. */
 	external?: string[];
-
-	/**
-	 * The node version to target.
-	 *
-	 * @default '18'
-	 */
-	nodeVersion?: NodeVersion;
-
-	/**
-	 * To enable sourcemaps.
-	 *
-	 * @default true
-	 */
-	sourcemap?: boolean;
 
 	/**
 	 * Create a package.json file in the output directory.
@@ -74,4 +56,6 @@ export interface BuildExecutorOptions {
 	 * @default 'pnpm'
 	 */
 	packageManager: PackageManager;
+
+	extension?: 'js' | 'mjs' | 'cjs';
 }
