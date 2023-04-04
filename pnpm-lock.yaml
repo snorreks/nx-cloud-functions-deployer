@@ -7,12 +7,18 @@ importers:
       chalk:
         specifier: 4.1.2
         version: 4.1.2
+      dotenv:
+        specifier: ^16.0.3
+        version: 16.0.3
       inquirer:
         specifier: ^9.1.5
         version: 9.1.5
       nanospinner:
         specifier: ^1.1.0
         version: 1.1.0
+      open:
+        specifier: 8.4.2
+        version: 8.4.2
     devDependencies:
       '@firebase/app-types':
         specifier: ^0.9.0
@@ -44,9 +50,6 @@ importers:
       cross-spawn:
         specifier: ^7.0.3
         version: 7.0.3
-      dotenv:
-        specifier: ^16.0.3
-        version: 16.0.3
       esbuild:
         specifier: ^0.17.15
         version: 0.17.15
@@ -92,9 +95,6 @@ importers:
       nx:
         specifier: ^15.9.2
         version: 15.9.2
-      open:
-        specifier: 8.4.2
-        version: 8.4.2
       prettier:
         specifier: ^2.8.7
         version: 2.8.7
@@ -3765,7 +3765,6 @@ packages:
   /define-lazy-prop@2.0.0:
     resolution: {integrity: sha512-Ds09qNh8yw3khSjiJjiUInaGX9xlqZDY7JVryGxdxV7NPeuqQfplOpQ66yJFZut3jLa5zOwkXw1g9EI2uKh4Og==}
     engines: {node: '>=8'}
-    dev: true
 
   /degenerator@3.0.3:
     resolution: {integrity: sha512-FTq/qYMeBJACu1gHcXJvzsRBTK6aw5zWCYbEnIOyamOt5UJufWJRQ5XfDb6OuayfJWvmWAHgcZyt43vm/hbj7g==}
@@ -3860,7 +3859,7 @@ packages:
   /dotenv@16.0.3:
     resolution: {integrity: sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==}
     engines: {node: '>=12'}
-    dev: true
+    dev: false
 
   /duplexer2@0.1.4:
     resolution: {integrity: sha512-asLFVfWWtJ90ZyOUHMqk7/S2w2guQKxUI2itj3d92ADHhxUSbCMGi1f1cBcJ7xM1To+pE/Khbwo1yuNbMEPKeA==}
@@ -5750,7 +5749,6 @@ packages:
     resolution: {integrity: sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ==}
     engines: {node: '>=8'}
     hasBin: true
-    dev: true
 
   /is-extglob@2.1.1:
     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==}
@@ -5868,7 +5866,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       is-docker: 2.2.1
-    dev: true
 
   /is-yarn-global@0.3.0:
     resolution: {integrity: sha512-VjSeb/lHmkoyd8ryPVIKvOCn4D1koMqY+vqyjjUfc3xyKtP4dYOxM44sZrnqQSzSds3xyOrUTLTC9LVCVgLngw==}
@@ -7726,7 +7723,6 @@ packages:
       define-lazy-prop: 2.0.0
       is-docker: 2.2.1
       is-wsl: 2.2.0
-    dev: true
 
   /openapi3-ts@3.2.0:
     resolution: {integrity: sha512-/ykNWRV5Qs0Nwq7Pc0nJ78fgILvOT/60OxEmB3v7yQ8a8Bwcm43D4diaYazG/KBn6czA+52XYy931WFLMCUeSg==}
