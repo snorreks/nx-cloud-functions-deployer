@@ -103,7 +103,6 @@ const compileTypescriptFiles = async () => {
 			minify: true,
 			platform: 'node',
 			splitting: false,
-			// format: 'cjs',
 			treeShaking: true,
 			sourcemap: true,
 			plugins: [projectAlias, nodeExternalsPlugin()],

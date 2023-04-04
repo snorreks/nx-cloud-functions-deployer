@@ -126,7 +126,7 @@ export const toImportPath = (typescriptFilePath: string): string => {
 	// need to find how many ../../../ from tmp to root
 
 	if (platform() === 'win32') {
-		return `file://${importPath}`;
+		return `file://${importPath}.ts`;
 	}
 
 	return importPath;
