@@ -11,6 +11,17 @@ const readFileName = 'read.ts';
 const updateFileName = 'update.ts';
 const jsonFileName = 'checksum.json';
 
+export const createExecutePackageJson = async (directory: string) => {
+	const packageJson = {
+		type: 'commonjs',
+	};
+
+	await writeFile(
+		join(directory, 'package.json'),
+		JSON.stringify(packageJson, undefined, 2),
+	);
+};
+
 export const getOnlineChecksum = async (
 	options: BaseDeployOptions,
 ): Promise<FunctionsCache | undefined> => {
@@ -39,12 +50,14 @@ export const getOnlineChecksum = async (
 		const jsonFilePath = join(temporaryDirectory, jsonFileName);
 
 		const executeFetchFileCode = toExecuteFetchCode({
-			jsonFilePath,
 			fetchFilePath,
 			flavor: options.flavor,
+			executeDirectory: temporaryDirectory,
 		});
-
-		await writeFile(fetchExecuteFilePath, executeFetchFileCode);
+		await Promise.all([
+			writeFile(fetchExecuteFilePath, executeFetchFileCode),
+			createExecutePackageJson(temporaryDirectory),
+		]);
 
 		await runFile({
 			cwd: temporaryDirectory,
@@ -99,11 +112,15 @@ export const updateOnlineChecksum = async (
 			updateFilePath,
 			newOnlineChecksum: onlineChecksum,
 			flavor: firstDeployedFile.flavor,
+			executeDirectory: temporaryDirectory,
 		});
 
 		logger.info('Updating online checksum');
 
-		await writeFile(executeUpdateFilePath, executeUpdateFileCode);
+		await Promise.all([
+			writeFile(executeUpdateFilePath, executeUpdateFileCode),
+			createExecutePackageJson(temporaryDirectory),
+		]);
 
 		await runFile({
 			cwd: temporaryDirectory,
@@ -118,23 +135,20 @@ export const updateOnlineChecksum = async (
 
 const toExecuteFetchCode = ({
 	fetchFilePath,
-	jsonFilePath,
 	flavor,
+	executeDirectory,
 }: {
 	fetchFilePath: string;
-	jsonFilePath: string;
 	flavor: string;
+	executeDirectory: string;
 }): string => {
 	return `
-        import { fetch } from '${toImportPath(fetchFilePath)}'
+        import { fetch } from '${toImportPath(fetchFilePath, executeDirectory)}'
         import { writeFile } from 'node:fs/promises';
         
         const execute = async () => {
             const code = await fetch({ flavor: '${flavor}'});
-            await writeFile('${jsonFilePath.replaceAll(
-				'\\',
-				'/',
-			)}', JSON.stringify(code ?? {}, null, 2));
+            await writeFile('${jsonFileName}', JSON.stringify(code ?? {}, null, 2));
         }
 
         execute();
@@ -145,13 +159,18 @@ const toExecuteUpdateCode = ({
 	updateFilePath,
 	newOnlineChecksum,
 	flavor,
+	executeDirectory,
 }: {
 	updateFilePath: string;
 	newOnlineChecksum: FunctionsCache;
 	flavor: string;
+	executeDirectory: string;
 }): string => {
 	let executeUpdateCode = `
-        import { update } from '${toImportPath(updateFilePath)}'
+        import { update } from '${toImportPath(
+			updateFilePath,
+			executeDirectory,
+		)}'
         update({
 			flavor: '${flavor}',
 			newFunctionsCache: {

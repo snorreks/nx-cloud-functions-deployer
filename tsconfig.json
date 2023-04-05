@@ -42,6 +42,7 @@
 		}
 	},
 	"include": ["src"],
+	"files": [],
 	"references": [
 		{
 			"path": "./tsconfig.types.json"

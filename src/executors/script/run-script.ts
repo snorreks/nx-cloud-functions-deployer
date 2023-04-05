@@ -37,6 +37,7 @@ const handleScript = async (
 	const scriptConfigPath = options.CFD_SCRIPT_CONFIG_PATH;
 	const scriptsRoot = options.CFD_SCRIPTS_ROOT;
 	const envConfigPath = options.CFD_ENV_CONFIG_PATH;
+	const projectRoot = options.CFD_PROJECT_ROOT;
 
 	if (envConfigPath) {
 		try {
@@ -56,14 +57,17 @@ const handleScript = async (
 	try {
 		if (scriptConfigPath) {
 			try {
-				await import(toImportPath(scriptConfigPath));
+				await import(toImportPath(scriptConfigPath, projectRoot));
 			} catch (error) {
 				console.log('error', error);
 			}
 		}
 
 		const script = await import(
-			toImportPath(resolve(scriptsRoot, `${scriptFileName}.ts`))
+			toImportPath(
+				resolve(scriptsRoot, `${scriptFileName}.ts`),
+				projectRoot,
+			)
 		);
 		const start = Date.now();
 

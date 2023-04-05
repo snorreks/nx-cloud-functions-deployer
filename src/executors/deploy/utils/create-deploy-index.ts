@@ -10,7 +10,7 @@ import type {
 	ScheduleOptions,
 	TopicOptions,
 } from '$types';
-import { isV2Function, logger } from '$utils';
+import { isV2Function, logger, toImportPath } from '$utils';
 /** The name of the default exported function */
 const functionStart = 'functionStart';
 
@@ -45,12 +45,13 @@ const toDeployIndexCode = (buildFunctionData: BuildFunctionData) => {
 };
 
 const toDeployIndexV1Code = (buildFunctionData: BuildFunctionData) => {
-	const { functionName, absolutePath, region } = buildFunctionData;
+	const { functionName, absolutePath, region, temporaryDirectory } =
+		buildFunctionData;
 	const deployableFilePath = absolutePath;
-	const pathWithoutSuffix = deployableFilePath.replace('.ts', '');
+	const importPath = toImportPath(deployableFilePath, temporaryDirectory);
 	const fileCode = `
 		import { region } from 'firebase-functions';
-		import ${functionStart} from '${pathWithoutSuffix}';
+		import ${functionStart} from '${importPath}';
 		export const ${functionName} = region('${region}').${getRootFunctionCode(
 		buildFunctionData,
 	)}.${toEndCodeV1(buildFunctionData)}
@@ -64,17 +65,22 @@ const toDeployV2IndexCode = (
 		| BuildFunctionData<'https'>
 		| BuildFunctionData<'storage'>,
 ) => {
-	const { functionName, absolutePath, deployFunction, rootFunctionBuilder } =
-		buildFunctionData;
+	const {
+		functionName,
+		absolutePath,
+		deployFunction,
+		rootFunctionBuilder,
+		temporaryDirectory,
+	} = buildFunctionData;
 	const functionCode = toFunctionCodeType(deployFunction);
 
 	const deployableFilePath = absolutePath;
-	const pathWithoutSuffix = deployableFilePath.replace('.ts', '');
+	const importPath = toImportPath(deployableFilePath, temporaryDirectory);
 	const optionsCode = getV2Options(buildFunctionData as HttpsV2Options);
 
 	const fileCode = `
 		import { ${functionCode} } from 'firebase-functions/v2/${rootFunctionBuilder}';
-		import ${functionStart} from '${pathWithoutSuffix}';
+		import ${functionStart} from '${importPath}';
 		export const ${functionName} = ${functionCode}(
 				(${optionsCode}),
 				${functionStart}

@@ -38,6 +38,7 @@ export interface ScriptExecutorOptions {
 }
 
 export type RunScriptEnvironment = {
+	CFD_PROJECT_ROOT: string;
 	CFD_FIREBASE_PROJECT_ID: string;
 	CFD_SCRIPT_CONFIG_PATH?: string;
 	CFD_SCRIPTS_ROOT: string;

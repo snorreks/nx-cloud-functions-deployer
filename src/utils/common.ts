@@ -1,5 +1,5 @@
 import type { Environment } from '$types';
-import { platform } from 'node:os';
+import { logger } from './logger';
 
 export const getEnvironmentFileName = (options: {
 	flavor: string;
@@ -117,17 +117,50 @@ const sortEnvironmentKeys = <T extends Environment>(environment: T): T => {
 	return sortedEnvironment as T;
 };
 
-export const toImportPath = (typescriptFilePath: string): string => {
-	const importPath = typescriptFilePath
+export const toImportPath = (
+	typescriptFilePath: string,
+	executeDirectory: string,
+): string => {
+	typescriptFilePath = typescriptFilePath
 		.replace('.ts', '')
 		.replaceAll('\\', '/');
 
-	// TODO migrate from absolute to relative paths from the root
-	// need to find how many ../../../ from tmp to root
+	executeDirectory = executeDirectory
+		.replace('.ts', '')
+		.replaceAll('\\', '/');
 
-	if (platform() === 'win32') {
-		return `file://${importPath}.ts`;
+	logger.log('toImportPath', { typescriptFilePath, executeDirectory });
+
+	// get relative import path from execute directory to typescript file
+	// split by / and remove empty strings, remove drive letter
+	const typescriptFilePaths = typescriptFilePath.split('/');
+	const executeDirectoryPaths = executeDirectory.split('/');
+
+	// loop through the paths, if they are the same, remove them.
+	// if they are different, then we need to do ../ for each remaining and then add the remaining
+
+	let relativeImportPath = '';
+
+	for (let i = 0; i < typescriptFilePaths.length; i++) {
+		if (typescriptFilePaths[i] === executeDirectoryPaths[i]) {
+			typescriptFilePaths.splice(i, 1);
+			executeDirectoryPaths.splice(i, 1);
+			i--;
+		}
+
+		if (typescriptFilePaths[i] !== executeDirectoryPaths[i]) {
+			Array.from({ length: executeDirectoryPaths.length - i }).forEach(
+				() => {
+					relativeImportPath += '../';
+				},
+			);
+			break;
+		}
 	}
 
-	return importPath;
+	relativeImportPath += typescriptFilePaths.join('/');
+
+	logger.log('toImportPath:relativeImportPath', relativeImportPath);
+
+	return relativeImportPath;
 };

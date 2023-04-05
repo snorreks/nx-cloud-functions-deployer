@@ -96,6 +96,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			TS_NODE_PROJECT?: string;
 			[key: string]: string | undefined;
 		} = {
+			CFD_PROJECT_ROOT: projectRoot,
 			CFD_FIREBASE_PROJECT_ID: firebaseProjectId,
 			CFD_SCRIPT_CONFIG_PATH: scriptConfigPath,
 			CFD_SCRIPTS_ROOT: scriptsRoot,
