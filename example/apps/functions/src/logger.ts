@@ -6,9 +6,9 @@ import { gcpDetector } from '@opentelemetry/resource-detector-gcp';
 import opentelemetry from '@opentelemetry/sdk-node';
 import { CaptureConsole as CaptureConsoleIntegration } from '@sentry/integrations';
 import { ExpressInstrumentation } from 'opentelemetry-instrumentation-express';
-import * as Sentry from '@sentry/node';
+import { close, init, setTag } from '@sentry/node';
 
-Sentry.init({
+init({
 	dsn: '...',
 	integrations: [
 		new CaptureConsoleIntegration({
@@ -40,8 +40,14 @@ const sdk = new opentelemetry.NodeSDK({
 
 sdk.start();
 
+const functionName = process.env['CFD_FUNCTION_NAME']; // We get the function name automatically from the environment variable
+if (functionName) {
+	setTag('function-name', functionName);
+}
+
 // Ensure that generated traces are exported when the container is
 //   shutdown.
 process.on('SIGTERM', async () => {
 	await sdk.shutdown();
+	await close(2000);
 });

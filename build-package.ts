@@ -119,19 +119,19 @@ const compileTypescriptFiles = async () => {
 				...baseBuildOptions,
 				entryPoints: ['./src/executors/deploy/index.ts'],
 				outfile: 'dist/executors/deploy/index.js',
-				external: ['esbuild', 'esbuild-plugin-alias'],
+				external: ['esbuild'],
 			}),
 			build({
 				...baseBuildOptions,
 				entryPoints: ['./src/executors/delete/index.ts'],
 				outfile: 'dist/executors/delete/index.js',
-				external: ['esbuild', 'esbuild-plugin-alias'],
+				external: ['esbuild'],
 			}),
 			build({
 				...baseBuildOptions,
 				entryPoints: ['./src/executors/build/index.ts'],
 				outfile: 'dist/executors/build/index.js',
-				external: ['esbuild', 'esbuild-plugin-alias'],
+				external: ['esbuild'],
 			}),
 			build({
 				...baseBuildOptions,

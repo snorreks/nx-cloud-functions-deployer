@@ -57,6 +57,10 @@ export const getDeployableFileData = async (
 	const buildFunctionData: BuildFunctionData = {
 		...deployableFileLiteData,
 		...deployOptions,
+		environment: {
+			...deployableFileLiteData.environment,
+			CFD_FUNCTION_NAME: functionName,
+		},
 		nodeVersion:
 			deployOptions?.nodeVersion ??
 			deployableFileLiteData.nodeVersion ??

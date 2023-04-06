@@ -1,8 +1,8 @@
-import alias from 'esbuild-plugin-alias';
 import { build, type Loader, type PluginBuild } from 'esbuild';
 import { readFileSync } from 'node:fs';
 import { extname, dirname as _dirname } from 'path';
-import type { EsbuildAlias, NodeVersion } from '$types';
+import type { NodeVersion } from '$types';
+import { logger } from '$utils';
 
 const nodeModules = new RegExp(
 	/^(?:.*[\\/])?node_modules(?:\/(?!postgres-migrations).*)?$/,
@@ -34,14 +34,15 @@ export const executeEsbuild = async (options: {
 	inputPath: string;
 	outputPath: string;
 	external?: string[];
-	alias?: EsbuildAlias;
 	sourceRoot: string;
 	keepNames?: boolean;
 	footer?: string;
 	nodeVersion: NodeVersion;
 	requireFix?: boolean;
 	sourcemap?: boolean;
-}): Promise<boolean> => {
+	tsconfig: string;
+}): Promise<void> => {
+	logger.debug('executeEsbuild', options);
 	const {
 		inputPath,
 		outputPath,
@@ -51,11 +52,9 @@ export const executeEsbuild = async (options: {
 		footer,
 		requireFix,
 		sourcemap,
+		tsconfig,
 	} = options;
 	const plugins = [dirnamePlugin];
-	if (options.alias) {
-		plugins.push(alias(options.alias));
-	}
 
 	const result = await build({
 		banner: requireFix
@@ -71,6 +70,7 @@ export const executeEsbuild = async (options: {
 		minify: true,
 		sourcemap,
 		treeShaking: true,
+		tsconfig,
 		outfile: outputPath,
 		platform: 'node',
 		plugins,
@@ -79,5 +79,7 @@ export const executeEsbuild = async (options: {
 		sourceRoot,
 	});
 
-	return !result.errors?.length;
+	if (result.errors?.length) {
+		throw new Error(result.errors[0].text);
+	}
 };

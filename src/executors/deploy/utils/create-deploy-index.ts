@@ -274,7 +274,6 @@ const removeAllOtherOptions = (
 
 	const keysToDelete: (keyof BuildFunctionData)[] = [
 		'absolutePath',
-		'alias',
 		'assets',
 		'checksum',
 		'cloudCacheFileName',

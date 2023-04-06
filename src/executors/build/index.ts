@@ -1,102 +1,108 @@
 import type { Executor } from '@nrwl/devkit';
 import type { BuildExecutorOptions } from '$types';
-import {
-	executeEsbuild,
-	getAlias,
-	logger,
-	runCommand,
-	validateProject,
-} from '$utils';
+import { executeEsbuild, logger, runCommand, validateProject } from '$utils';
 import { emptyDir } from 'fs-extra';
 import { join } from 'path';
 import { writeFile, mkdir } from 'fs/promises';
 
 const executor: Executor<BuildExecutorOptions> = async (options, context) => {
-	logger.setLogSeverity(options);
+	try {
+		logger.setLogSeverity(options);
 
-	const { projectName, root: workspaceRoot, workspace } = context;
+		const { projectName, root: workspaceRoot, workspace } = context;
 
-	if (!projectName) {
-		throw new Error('Project name is not defined');
-	}
-	if (!workspace) {
-		throw new Error('Workspace is not defined');
-	}
-
-	const relativeProjectPath = workspace.projects[projectName].root;
-	const projectRoot = join(workspaceRoot, relativeProjectPath);
-
-	const inputPath = join(projectRoot, options.inputPath ?? 'src/index.ts');
-	const outputRoot = join(projectRoot, options.outputRoot ?? 'dist');
-
-	const setOutputDirectory = async () => {
-		if (options.clear === false) {
-			await mkdir(outputRoot, { recursive: true });
-		} else {
-			await emptyDir(outputRoot);
+		if (!projectName) {
+			throw new Error('Project name is not defined');
 		}
-	};
+		if (!workspace) {
+			throw new Error('Workspace is not defined');
+		}
 
-	const [alias] = await Promise.all([
-		getAlias({ projectRoot, workspaceRoot, tsconfig: options.tsconfig }),
-		setOutputDirectory(),
-		validateProject({
-			packageManager: options.packageManager ?? 'pnpm',
+		const relativeProjectPath = workspace.projects[projectName].root;
+		const projectRoot = join(workspaceRoot, relativeProjectPath);
+
+		const inputPath = join(
 			projectRoot,
-			validate: options.validate,
-			tsconfig: options.tsconfig,
-		}),
-	]);
-	const main = `index.${options.extension ?? 'js'}`;
+			options.inputPath ?? 'src/index.ts',
+		);
+		const outputRoot = join(projectRoot, options.outputRoot ?? 'dist');
 
-	const createPackageJson = async () => {
-		if (options.createPackageJson === false) {
-			return;
-		}
-
-		const newPackageJson: Record<string, unknown> = {
-			type: 'module',
-			main,
+		const setOutputDirectory = async () => {
+			if (options.clear === false) {
+				await mkdir(outputRoot, { recursive: true });
+			} else {
+				await emptyDir(outputRoot);
+			}
 		};
 
-		if (options.nodeVersion) {
-			newPackageJson.engines = {
-				node: options.nodeVersion,
+		await Promise.all([
+			setOutputDirectory(),
+			validateProject({
+				packageManager: options.packageManager ?? 'pnpm',
+				projectRoot,
+				validate: options.validate,
+				tsconfig: options.tsconfig,
+			}),
+		]);
+		const main = `index.${options.extension ?? 'js'}`;
+
+		const createPackageJson = async () => {
+			if (options.createPackageJson === false) {
+				return;
+			}
+
+			const newPackageJson: Record<string, unknown> = {
+				type: 'module',
+				main,
 			};
-		}
 
-		await writeFile(
-			join(outputRoot, 'package.json'),
-			JSON.stringify(newPackageJson, undefined, 2),
-		);
+			if (options.nodeVersion) {
+				newPackageJson.engines = {
+					node: options.nodeVersion,
+				};
+			}
 
-		const external = options?.external;
+			await writeFile(
+				join(outputRoot, 'package.json'),
+				JSON.stringify(newPackageJson, undefined, 2),
+			);
 
-		if (external && external.length > 0) {
-			await runCommand({
-				command: 'npm',
-				commandArguments: ['install', ...external],
-				cwd: outputRoot,
-			});
-		}
-	};
+			const external = options?.external;
 
-	const [responseOk] = await Promise.all([
-		executeEsbuild({
-			...options,
-			inputPath,
-			outputPath: join(outputRoot, main),
-			external: options.external,
-			sourceRoot: projectRoot,
-			alias,
-			nodeVersion: options.nodeVersion ?? '16',
-		}),
-		createPackageJson(),
-	]);
+			if (external && external.length > 0) {
+				await runCommand({
+					command: 'npm',
+					commandArguments: ['install', ...external],
+					cwd: outputRoot,
+				});
+			}
+		};
 
-	return {
-		success: responseOk,
-	};
+		await Promise.all([
+			executeEsbuild({
+				...options,
+				tsconfig: join(
+					projectRoot,
+					options.tsconfig ?? 'tsconfig.json',
+				),
+				inputPath,
+				outputPath: join(outputRoot, main),
+				external: options.external,
+				sourceRoot: projectRoot,
+				nodeVersion: options.nodeVersion ?? '16',
+			}),
+			createPackageJson(),
+		]);
+
+		return {
+			success: true,
+		};
+	} catch (error) {
+		logger.error(error);
+		return {
+			success: false,
+		};
+	}
 };
 
 export default executor;

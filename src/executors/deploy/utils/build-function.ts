@@ -48,9 +48,12 @@ export const buildFunction = async (
 				await executeEsbuild({
 					inputPath,
 					outputPath,
+					tsconfig: join(
+						buildFunctionData.projectRoot,
+						buildFunctionData.tsconfig ?? 'tsconfig.json',
+					),
 					nodeVersion: buildFunctionData.nodeVersion,
 					keepNames: buildFunctionData.keepNames,
-					alias: buildFunctionData.alias,
 					external: buildFunctionData.external,
 					sourceRoot: buildFunctionData.workspaceRoot,
 					footer: shouldImportLogger
@@ -79,7 +82,7 @@ export const buildFunction = async (
 		const errorMessage = (error as { message?: string } | undefined)
 			?.message;
 		logger.logFunctionFailed(functionName, errorMessage);
-		logger.debug(error);
+		logger.debug('buildFunction', error);
 		return undefined;
 	}
 };
@@ -97,8 +100,11 @@ const buildLoggerFile = async (
 		await executeEsbuild({
 			inputPath,
 			outputPath,
+			tsconfig: join(
+				buildFunctionData.projectRoot,
+				buildFunctionData.tsconfig ?? 'tsconfig.json',
+			),
 			keepNames: buildFunctionData.keepNames,
-			alias: buildFunctionData.alias,
 			external: buildFunctionData.external,
 			sourceRoot: buildFunctionData.workspaceRoot,
 			nodeVersion: buildFunctionData.nodeVersion,

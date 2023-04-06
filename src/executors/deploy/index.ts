@@ -20,7 +20,6 @@ import {
 	getEnvironment,
 	getFlavor,
 	getFirebaseProjectId,
-	getAlias,
 	validateProject,
 } from '$utils';
 import { EventEmitter } from 'events';
@@ -68,9 +67,8 @@ export const getBaseOptions = async (
 
 	const packageManager = options.packageManager ?? 'pnpm';
 	const validate = options.validate ?? false;
-	const [environment, alias] = await Promise.all([
+	const [environment] = await Promise.all([
 		getEnvironment({ ...options, projectRoot, flavor }),
-		getAlias({ projectRoot, workspaceRoot, tsconfig: options.tsconfig }),
 		mkdir(temporaryDirectory, { recursive: true }),
 		validateProject({
 			packageManager,
@@ -95,7 +93,6 @@ export const getBaseOptions = async (
 		region: options.region,
 		validate: options.validate,
 		environment,
-		alias,
 		firebaseProjectId,
 		workspaceRoot,
 		projectRoot,
@@ -157,6 +154,7 @@ const validateSentryEnvironments = (
 const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 	logger.setLogSeverity(options);
 	const baseOptions = await getBaseOptions(options, context);
+	logger.debug('baseOptions', baseOptions);
 
 	const [buildableFiles, onlineChecksum] = await Promise.all([
 		getBuildableFiles(baseOptions),

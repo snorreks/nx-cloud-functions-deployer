@@ -56,6 +56,10 @@ export const createEnvironmentFile = async (
 		environmentFileCode += `\nSENTRY_RELEASE=${buildFunctionData.sentry.release}`;
 	}
 
+	if (!environment.CFD_FUNCTION_NAME) {
+		environmentFileCode += `\nCFD_FUNCTION_NAME=${buildFunctionData.functionName}`;
+	}
+
 	await writeFile(join(outputRoot, '.env'), environmentFileCode);
 };
 

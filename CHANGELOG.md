@@ -1,5 +1,15 @@
 # nx-cloud-functions-deployer
 
+## 1.1.0
+
+### Changes
+
+-   Added support for AWS SAM deploy and logs
+-   Removed esbuild-plugin-alias, now esbuild looks directly at tsconfig.json for paths
+-   Made import paths relative to fix for windows users
+-   Added CFD_FUNCTION_NAME env to each function, so you can use it in your code, example setting tags to sentry.
+-
+
 ## 1.0.0
 
 ### Changes

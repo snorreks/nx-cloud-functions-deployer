@@ -2,8 +2,6 @@ import type { ExecutorBaseBuildOptions } from './core';
 import type { DeployFunction, FunctionBuilder } from './function-types';
 import type { FunctionOptions, NodeVersion } from './helper-options';
 
-export type EsbuildAlias = { [key: string]: string };
-
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'global';
 
 interface SharedDeployExecutorBaseOptions extends ExecutorBaseBuildOptions {
@@ -118,7 +116,6 @@ export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
 	flavor: string;
 	/** Stringified code of the environments */
 	environment?: Environment;
-	alias?: EsbuildAlias;
 
 	/**
 	 * Relative path to the directory where the functions will be deployed from

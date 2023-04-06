@@ -1,5 +1,4 @@
 import type { Environment } from '$types';
-import { logger } from './logger';
 
 export const getEnvironmentFileName = (options: {
 	flavor: string;
@@ -129,8 +128,6 @@ export const toImportPath = (
 		.replace('.ts', '')
 		.replaceAll('\\', '/');
 
-	logger.log('toImportPath', { typescriptFilePath, executeDirectory });
-
 	// get relative import path from execute directory to typescript file
 	// split by / and remove empty strings, remove drive letter
 	const typescriptFilePaths = typescriptFilePath.split('/');
@@ -159,8 +156,6 @@ export const toImportPath = (
 	}
 
 	relativeImportPath += typescriptFilePaths.join('/');
-
-	logger.log('toImportPath:relativeImportPath', relativeImportPath);
 
 	return relativeImportPath;
 };
