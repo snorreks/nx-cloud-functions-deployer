@@ -68,8 +68,16 @@ const copyFiles = async () => {
 				'dist/executors/build/schema.json',
 			),
 			copy(
+				'src/executors/rules/schema.json',
+				'dist/executors/rules/schema.json',
+			),
+			copy(
 				'src/executors/script/schema.json',
 				'dist/executors/script/schema.json',
+			),
+			copy(
+				'src/executors/emulate/schema.json',
+				'dist/executors/emulate/schema.json',
 			),
 			copy(
 				'src/executors/sam/sam-deploy/schema.json',
@@ -135,6 +143,18 @@ const compileTypescriptFiles = async () => {
 			}),
 			build({
 				...baseBuildOptions,
+				entryPoints: ['./src/executors/emulate/index.ts'],
+				outfile: 'dist/executors/emulate/index.js',
+				external: ['esbuild'],
+			}),
+			build({
+				...baseBuildOptions,
+				entryPoints: ['./src/executors/rules/index.ts'],
+				outfile: 'dist/executors/rules/index.js',
+				external: ['esbuild'],
+			}),
+			build({
+				...baseBuildOptions,
 				entryPoints: ['./src/executors/script/index.ts'],
 				outfile: 'dist/executors/script/index.js',
 			}),
@@ -155,12 +175,6 @@ const compileTypescriptFiles = async () => {
 				outfile: 'dist/executors/script/run-script.js',
 				plugins: [projectAlias],
 			}),
-			// build({
-			// 	...baseBuildOptions,
-			// 	entryPoints: ['./src/executors/script/storage.ts'],
-			// 	outfile: 'dist/executors/script/storage.js',
-			// 	plugins: [projectAlias],
-			// }),
 		]);
 		console.log('Typescript files compiled');
 	} catch (error) {

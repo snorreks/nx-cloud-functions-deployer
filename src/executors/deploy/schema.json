@@ -4,6 +4,11 @@
 	"cli": "nx",
 	"description": "Executor to build and deploy cloud functions",
 	"properties": {
+		"deploySentry": {
+			"type": "boolean",
+			"description": "Whether to deploy the sentry release",
+			"aliases": ["sentry"]
+		},
 		"flavor": {
 			"type": "string",
 			"description": "The flavor to run from the flavors object"

@@ -1,7 +1,7 @@
 {
 	"name": "nx-cloud-functions-deployer",
 	"type": "module",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "Nx plugin to manage firebase cloud functions",
 	"license": "MIT",
 	"main": "index.js",
@@ -57,11 +57,11 @@
 		"esbuild": "^0.17.15",
 		"esbuild-node-externals": "^1.7.0",
 		"esbuild-plugin-alias": "^0.2.1",
-		"eslint": "^8.37.0",
+		"eslint": "^8.38.0",
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-prettier": "^4.2.1",
 		"firebase": "^9.19.1",
-		"firebase-admin": "^11.5.0",
+		"firebase-admin": "^11.6.0",
 		"firebase-functions": "^4.2.1",
 		"firebase-functions-test": "^3.0.0",
 		"firebase-tools": "^11.25.3",
@@ -74,6 +74,6 @@
 		"tsc-alias": "^1.8.5",
 		"tslib": "^2.5.0",
 		"tsx": "^3.12.6",
-		"typescript": "^5.0.3"
+		"typescript": "^5.0.4"
 	}
 }

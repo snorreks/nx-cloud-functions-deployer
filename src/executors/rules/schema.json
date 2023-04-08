@@ -1,0 +1,65 @@
+{
+	"$schema": "http://json-schema.org/schema",
+	"type": "object",
+	"cli": "nx",
+	"description": "Executor to build and deploy cloud functions",
+	"properties": {
+		"flavor": {
+			"type": "string",
+			"description": "The flavor to run from the flavors object"
+		},
+		"flavors": {
+			"type": "object",
+			"description": "The different flavors to deploy, keyed by the flavor name and value is the firebase project id"
+		},
+		"silent": {
+			"type": "boolean",
+			"description": "Whether to run the command in silent mode",
+			"aliases": ["s"]
+		},
+		"verbose": {
+			"type": "boolean",
+			"description": "Whether to run the command in verbose mode",
+			"aliases": ["v"]
+		},
+		"packageManager": {
+			"type": "string",
+			"enum": ["pnpm", "npm", "yarn", "global"],
+			"description": "The package manager to use for deploying with firebase-tools",
+			"aliases": ["pm"]
+		},
+		"firebaseJsonPath": {
+			"type": "string",
+			"description": "The path to the firebase.json file"
+		},
+		"only": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"enum": [
+					"firestore",
+					"storage",
+					"firestore:indexes",
+					"firestore:rules"
+				]
+			},
+			"definitions": {
+				"firestore": {
+					"description": "Deploy only firestore rules and indexes"
+				},
+				"storage": {
+					"description": "Deploy only storage rules"
+				},
+				"firestore:indexes": {
+					"description": "Deploy only firestore indexes"
+				},
+				"firestore:rules": {
+					"description": "Deploy only firestore rules"
+				}
+			},
+			"description": "Only deploy the specified components",
+			"aliases": ["o"]
+		}
+	},
+	"required": ["flavors"]
+}

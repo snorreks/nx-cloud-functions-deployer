@@ -16,6 +16,16 @@
 			"schema": "./executors/build/schema.json",
 			"description": "Simple esbuild executer"
 		},
+		"rules": {
+			"implementation": "./executors/rules/index",
+			"schema": "./executors/rules/schema.json",
+			"description": "Deploy firestore and storage rules"
+		},
+		"emulate": {
+			"implementation": "./executors/emulate/index",
+			"schema": "./executors/emulate/schema.json",
+			"description": "Start firebase emulator"
+		},
 		"script": {
 			"implementation": "./executors/script/index",
 			"schema": "./executors/script/schema.json",

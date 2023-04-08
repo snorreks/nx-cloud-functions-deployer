@@ -105,7 +105,10 @@ export const getBaseOptions = async (
 		defaultRegion: options.region ?? 'us-central1',
 		currentTime: Math.round(new Date().getTime() / 1000),
 	};
-	baseDeployOptions.sentry = validateSentryEnvironments(baseDeployOptions);
+	if (options.deploySentry) {
+		baseDeployOptions.sentry =
+			validateSentryEnvironments(baseDeployOptions);
+	}
 
 	return baseDeployOptions;
 };

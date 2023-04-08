@@ -84,6 +84,8 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	flavors: Record<string, string>;
 
 	envFiles?: Record<string, string>;
+
+	deploySentry?: boolean;
 }
 
 export type Environment = { [key: string]: string | undefined };
@@ -178,6 +180,9 @@ export type BuildFunctionData<T extends FunctionBuilder = FunctionBuilder> =
 			checksum?: string;
 
 			sentry?: SentryData;
+
+			flavor: string;
+
 			nodeVersion: NodeVersion;
 		};
 
