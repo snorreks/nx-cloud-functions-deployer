@@ -9,6 +9,7 @@ import { logger } from '$utils/logger';
 
 import { runFile } from '$utils/execute';
 import { getFirebaseProjectId, getFlavor } from '$utils';
+const dirname = __dirname;
 
 const getRunScriptOptions = (
 	options: ScriptExecutorOptions,
@@ -53,8 +54,6 @@ const getRunScriptOptions = (
 		if (options.tsconfig) {
 			tsconfigPath = join(projectRoot, options.tsconfig);
 		}
-
-		const dirname = __dirname;
 
 		const runScriptFilePath = join(dirname, 'run-script.js');
 
@@ -105,7 +104,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			TS_NODE_PROJECT: tsconfigPath,
 			CFD_VERBOSE: verbose ? '1' : '0',
 			CFD_ENV_CONFIG_PATH: options.envConfigPath,
-			CFD_RUN_SCRIPT_FILE_PATH: runScriptFilePath,
+			CFD_RUN_SCRIPT_FILE_DIRECTORY: dirname,
 		};
 
 		if (extraEnvs) {

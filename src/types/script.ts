@@ -46,7 +46,7 @@ export type RunScriptEnvironment = {
 	CFD_VERBOSE: '1' | '0';
 	CFD_SCRIPT_FILE_NAME: string | undefined;
 	CFD_ENV_CONFIG_PATH?: string;
-	CFD_RUN_SCRIPT_FILE_PATH: string;
+	CFD_RUN_SCRIPT_FILE_DIRECTORY: string;
 };
 
 export interface RunScriptOptions {
