@@ -105,6 +105,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 			TS_NODE_PROJECT: tsconfigPath,
 			CFD_VERBOSE: verbose ? '1' : '0',
 			CFD_ENV_CONFIG_PATH: options.envConfigPath,
+			CFD_RUN_SCRIPT_FILE_PATH: runScriptFilePath,
 		};
 
 		if (extraEnvs) {
