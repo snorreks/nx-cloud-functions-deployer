@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{allDocs=**} {
+      allow read, write: if false;
+    }
+    match /users/{uid} {
+      allow read: if true;
+      allow write: if ( isSignedIn() && isUID(uid) )
+    }
+ 
+    function existingData() {
+      return resource.data;
+    }
+    function incomingData() {
+      return request.resource.data;
+    }
+    function currentUser() {
+      return request.auth;
+    }
+    function currentUserToken() {
+      return currentUser().token;
+    }
+    function isSignedIn() {
+      return currentUser() != null;
+    }
+  }
+}

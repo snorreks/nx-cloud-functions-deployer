@@ -61,6 +61,7 @@ export const executeFirebaseDeploy = async ({
 			'--project',
 			firebaseProjectId,
 		],
+		silent: logger.currentLogSeverity !== 'debug',
 	});
 };
 

@@ -57,18 +57,31 @@ const handleScript = async (
 	try {
 		if (scriptConfigPath) {
 			try {
-				await import(toImportPath(scriptConfigPath, projectRoot));
+				const scriptConfigImportPath = toImportPath(
+					scriptConfigPath,
+					projectRoot,
+				);
+				if (verbose) {
+					console.log(
+						'scriptConfigImportPath',
+						scriptConfigImportPath,
+					);
+				}
+				await import(scriptConfigImportPath);
 			} catch (error) {
 				console.log('error', error);
 			}
 		}
 
-		const script = await import(
-			toImportPath(
-				resolve(scriptsRoot, `${scriptFileName}.ts`),
-				projectRoot,
-			)
+		const scriptImportPath = toImportPath(
+			resolve(scriptsRoot, `${scriptFileName}.ts`),
+			projectRoot,
 		);
+		if (verbose) {
+			console.log('scriptImportPath', scriptImportPath);
+		}
+
+		const script = await import(scriptImportPath);
 		const start = Date.now();
 
 		const scriptFunction: ScriptFunction = script.default;

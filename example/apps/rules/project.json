@@ -1,0 +1,26 @@
+{
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"name": "rules",
+	"sourceRoot": "apps/rules/src",
+	"projectType": "application",
+	"targets": {
+		"emulate": {
+			"executor": "../dist:emulate",
+			"options": {
+				"flavors": {
+					"development": "example-development",
+					"production": "example-production"
+				}
+			}
+		},
+		"deploy": {
+			"executor": "../dist:rules",
+			"options": {
+				"flavors": {
+					"development": "example-development",
+					"production": "example-production"
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    match /users/{allFiles=**}{
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // -- Helper functions
+    function currentUser() {
+      return request.auth;
+    }
+    function currentUserToken() {
+      return currentUser().token;
+    }
+    function isSignedIn() {
+      return currentUser() != null;
+    }
+  }
+}

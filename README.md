@@ -31,6 +31,8 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
     -   [Delete](#delete)
         -   [Options](#options-2)
         -   [Examples](#examples-2)
+    -   [Rules](#rules)
+    -   [Emulate](#emulate)
     -   [SAM](#sam)
 
 ## Features
@@ -558,6 +560,14 @@ pnpm nx delete-unused functions
 ```bash
 pnpm nx delete-unused functions --flavor production
 ```
+
+### Rules
+
+See the example [here](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/rules).
+
+### Emulate
+
+See the example [here](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/rules).
 
 ### SAM
 

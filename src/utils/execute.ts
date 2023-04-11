@@ -3,37 +3,31 @@ import { spawn } from 'cross-spawn';
 import { logger } from './logger';
 type Environment = Record<string, string | undefined>;
 
-export const execute = async ({
-	packageManager,
-	commandArguments,
-	cwd,
-	environment,
-}: {
+export const execute = async (options: {
 	packageManager: PackageManager;
 	commandArguments: string[];
 	cwd?: string;
 	environment?: Environment;
+	silent?: boolean;
 }) => {
+	const { packageManager, commandArguments } = options;
 	if (packageManager === 'global') {
 		await runCommand({
+			...options,
 			command: commandArguments[0],
 			commandArguments: commandArguments.slice(1),
-			cwd,
-			environment,
 		});
 	} else if (packageManager === 'npm') {
 		await runCommand({
+			...options,
 			command: 'npm',
 			commandArguments: ['run', ...commandArguments],
-			cwd,
-			environment,
 		});
 	} else {
 		await runCommand({
+			...options,
 			command: packageManager,
 			commandArguments,
-			cwd,
-			environment,
 		});
 	}
 };
