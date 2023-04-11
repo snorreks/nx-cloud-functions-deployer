@@ -37,7 +37,6 @@ const handleScript = async (
 	const scriptConfigPath = options.CFD_SCRIPT_CONFIG_PATH;
 	const scriptsRoot = options.CFD_SCRIPTS_ROOT;
 	const envConfigPath = options.CFD_ENV_CONFIG_PATH;
-	const projectRoot = options.CFD_PROJECT_ROOT;
 
 	if (envConfigPath) {
 		try {
@@ -58,7 +57,7 @@ const handleScript = async (
 		if (scriptConfigPath) {
 			try {
 				const scriptConfigImportPath =
-					toImportPath(scriptConfigPath, projectRoot) + '.ts';
+					toImportPath(scriptConfigPath, scriptsRoot) + '.ts';
 				if (verbose) {
 					console.log(
 						'scriptConfigImportPath',
@@ -74,7 +73,7 @@ const handleScript = async (
 		const scriptImportPath =
 			toImportPath(
 				resolve(scriptsRoot, `${scriptFileName}.ts`),
-				projectRoot,
+				scriptsRoot,
 			) + '.ts';
 		if (verbose) {
 			console.log('scriptImportPath', scriptImportPath);
