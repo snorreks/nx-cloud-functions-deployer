@@ -157,5 +157,9 @@ export const toImportPath = (
 
 	relativeImportPath += typescriptFilePaths.join('/');
 
+	if (!relativeImportPath.startsWith('.')) {
+		relativeImportPath = `./${relativeImportPath}`;
+	}
+
 	return relativeImportPath;
 };
