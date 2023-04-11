@@ -57,10 +57,8 @@ const handleScript = async (
 	try {
 		if (scriptConfigPath) {
 			try {
-				const scriptConfigImportPath = toImportPath(
-					scriptConfigPath,
-					projectRoot,
-				);
+				const scriptConfigImportPath =
+					toImportPath(scriptConfigPath, projectRoot) + '.ts';
 				if (verbose) {
 					console.log(
 						'scriptConfigImportPath',
@@ -73,10 +71,11 @@ const handleScript = async (
 			}
 		}
 
-		const scriptImportPath = toImportPath(
-			resolve(scriptsRoot, `${scriptFileName}.ts`),
-			projectRoot,
-		);
+		const scriptImportPath =
+			toImportPath(
+				resolve(scriptsRoot, `${scriptFileName}.ts`),
+				projectRoot,
+			) + '.ts';
 		if (verbose) {
 			console.log('scriptImportPath', scriptImportPath);
 		}
