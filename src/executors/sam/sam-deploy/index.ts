@@ -39,9 +39,10 @@ const getEnvironmentParameters = async ({
 	}
 
 	const parameters = Object.entries(environment)
-		.map(([key, value]) => `${key}=${value}`)
+		.map(([key, value]) => `${key}='${value}'`)
 		.join(' ');
-	return `' ${parameters} '`;
+
+	return `" ${parameters} "`;
 };
 
 const executor: Executor<ExecutorOptions> = async (options, context) => {
