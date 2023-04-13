@@ -98,6 +98,19 @@ const handleScript = async (
 		const end = Date.now();
 		const timeInMs = end - start;
 
+		if (
+			(response as { success?: boolean } | undefined)?.success === false
+		) {
+			spinner?.error({
+				text: chalk.red(
+					`Failed to run ${chalk.bold(
+						scriptFileName,
+					)} in ${chalk.bold(firebaseProjectId)}!`,
+				),
+			});
+			return process.exit(1);
+		}
+
 		spinner?.success({
 			text: chalk.green(
 				`Successfully executed ${chalk.bold(
@@ -143,9 +156,9 @@ const askScriptFileName = async (
 	defaultScript = 'test',
 ): Promise<string> => {
 	const answers = await inquirer.prompt({
-		choices: (
-			await readdir(scriptsRoot)
-		).map((file) => file.replace('.ts', '')),
+		choices: (await readdir(scriptsRoot))
+			.filter((file) => file.endsWith('.ts'))
+			.map((file) => file.replace('.ts', '')),
 		default() {
 			return defaultScript;
 		},
