@@ -41,6 +41,7 @@ export const executeEsbuild = async (options: {
 	requireFix?: boolean;
 	sourcemap?: boolean;
 	tsconfig: string;
+	minify?: boolean;
 }): Promise<void> => {
 	logger.debug('executeEsbuild', options);
 	const {
@@ -53,6 +54,7 @@ export const executeEsbuild = async (options: {
 		requireFix,
 		sourcemap,
 		tsconfig,
+		minify = true,
 	} = options;
 	const plugins = [dirnamePlugin];
 
@@ -67,7 +69,7 @@ export const executeEsbuild = async (options: {
 		entryPoints: [inputPath],
 		format: 'esm',
 		external,
-		minify: true,
+		minify,
 		sourcemap,
 		treeShaking: true,
 		tsconfig,

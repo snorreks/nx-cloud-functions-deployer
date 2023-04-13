@@ -57,5 +57,7 @@ export interface BuildExecutorOptions extends ExecutorBaseBuildOptions {
 	 */
 	packageManager: PackageManager;
 
+	minify?: boolean;
+
 	extension?: 'js' | 'mjs' | 'cjs';
 }
