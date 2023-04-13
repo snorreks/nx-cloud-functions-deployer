@@ -79,7 +79,7 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 		'--config-env',
 		flavor,
 		'--capabilities',
-		'CAPABILITY_IAM',
+		'CAPABILITY_NAMED_IAM',
 	];
 
 	if (templateFile) {
