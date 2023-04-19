@@ -124,6 +124,11 @@
 			"enum": ["14", "16", "18"],
 			"description": "The node version to use for the functions",
 			"aliases": ["node"]
+		},
+		"retryAmount": {
+			"type": "number",
+			"description": "The amount of times to retry a failed deployment",
+			"aliases": ["retry"]
 		}
 	},
 	"required": ["flavors"]

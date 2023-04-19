@@ -1,9 +1,9 @@
 import chalk from 'chalk';
-import { readdir } from 'fs/promises';
+import { readdir } from 'node:fs/promises';
 import inquirer from 'inquirer';
 import { createSpinner } from 'nanospinner';
 import open from 'open';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import type {
 	RunScriptEnvironment,
 	ScriptFunction,

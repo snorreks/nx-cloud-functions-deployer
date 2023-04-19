@@ -29,6 +29,55 @@ import {
 } from './utils/online-checksum';
 import { cacheChecksumLocal, checkForChanges } from './utils/checksum';
 
+const isDeployableFunction = (
+	deployableFunction?: DeployFunctionData,
+): deployableFunction is DeployFunctionData => !!deployableFunction;
+
+const redeployFailedFunctions = async (
+	deployedFiles: DeployFunctionData[],
+	failedFunctions: DeployFunctionData[],
+	{ retryAmount, concurrency }: DeployExecutorOptions,
+) => {
+	if (!retryAmount) {
+		return;
+	}
+
+	const limit = getLimiter<DeployFunctionData | undefined>(concurrency ?? 10);
+	if (failedFunctions.length > 10) {
+		EventEmitter.defaultMaxListeners = failedFunctions.length;
+	}
+
+	for (let i = 0; i < retryAmount; i++) {
+		const redeployedFiles = (
+			await Promise.all(
+				failedFunctions.map((deployableFunction) =>
+					limit(() => deployFunction(deployableFunction)),
+				),
+			)
+		).filter(isDeployableFunction);
+
+		if (redeployedFiles.length === 0) {
+			continue;
+		}
+
+		// remove redeployed functions from failedFunctions
+		failedFunctions = failedFunctions.filter(
+			(deployableFunction) =>
+				!redeployedFiles.find(
+					(deployedFile) =>
+						deployedFile.functionName ===
+						deployableFunction.functionName,
+				),
+		);
+
+		deployedFiles.push(...redeployedFiles);
+		// if all failed functions were redeployed, break the loop
+		if (failedFunctions.length === 0) {
+			break;
+		}
+	}
+};
+
 export const getBaseOptions = async (
 	options: DeployExecutorOptions,
 	context: ExecutorContext,
@@ -177,10 +226,6 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 		logger.info('No online checksum found');
 	}
 
-	const isDeployableFunction = (
-		deployableFunction?: DeployFunctionData,
-	): deployableFunction is DeployFunctionData => !!deployableFunction;
-
 	let deployableFunctions = (
 		await Promise.all(buildableFiles.map(buildFunction))
 	).filter(isDeployableFunction);
@@ -209,17 +254,28 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 				limit(() => deployFunction(deployableFunction)),
 			),
 		)
-	)
-		.filter(isDeployableFunction)
-		.filter((deployableFunction) => !!deployableFunction.checksum);
+	).filter(isDeployableFunction);
+
+	// check if there are any functions that failed to deploy
+	if (deployableFunctionsAmount !== deployedFiles.length) {
+		await redeployFailedFunctions(
+			deployableFunctions,
+			deployedFiles,
+			options,
+		);
+	}
 
 	logger.endSpinner();
 
+	const deployedFilesToUpdateChecksum = deployedFiles.filter(
+		(deployableFunction) => !!deployableFunction.checksum,
+	);
+
 	const promises: Promise<void>[] =
-		deployableFunctions.map(cacheChecksumLocal);
+		deployedFilesToUpdateChecksum.map(cacheChecksumLocal);
 
 	// if (onlineChecksum) {
-	promises.push(updateOnlineChecksum(deployedFiles));
+	promises.push(updateOnlineChecksum(deployedFilesToUpdateChecksum));
 	// }
 	await Promise.all(promises);
 

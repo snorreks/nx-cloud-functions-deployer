@@ -1,6 +1,6 @@
 import type { BuildFunctionData, Environment } from '$types';
 import { logger } from '$utils';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export const getEnvironmentNeeded = async (

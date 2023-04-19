@@ -1,6 +1,6 @@
 import { build, type Loader, type PluginBuild } from 'esbuild';
 import { readFileSync } from 'node:fs';
-import { extname, dirname as _dirname } from 'path';
+import { extname, dirname as _dirname } from 'node:path';
 import type { NodeVersion } from '$types';
 import { logger } from '$utils';
 

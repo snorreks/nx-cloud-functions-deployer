@@ -16,6 +16,7 @@ export const deployFunction = async (
 				command: 'npm',
 				commandArguments: ['install', ...external],
 				cwd: outputRoot,
+				silent: logger.currentLogSeverity !== 'debug',
 			});
 		}
 

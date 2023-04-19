@@ -139,20 +139,30 @@ class LoggerService implements LoggerInterface {
 		return this._failedDeployedFunctionAmount > 0;
 	}
 
-	private readonly _successfullyDeployedFunctions: {
+	private readonly _functions: {
 		functionName: string;
-		time: number;
-	}[] = [];
-	private readonly _failedDeployedFunctions: {
-		functionName: string;
+		time?: number;
+		status: 'deploying' | 'deployed' | 'failed';
 		errorMessage?: string;
 	}[] = [];
 
 	logFunctionDeployed(functionName: string, time: number): void {
-		this._successfullyDeployedFunctions.push({
-			functionName,
-			time,
-		});
+		const functionIndex = this._functions.findIndex(
+			({ functionName: fn }) => fn === functionName,
+		);
+		if (functionIndex === -1) {
+			this._functions.push({
+				functionName,
+				time,
+				status: 'deployed',
+			});
+		} else {
+			this._functions[functionIndex] = {
+				...this._functions[functionIndex],
+				time,
+				status: 'deployed',
+			};
+		}
 		this.spinnerLog(
 			chalk.green(
 				`Successfully deployed function ${chalk.bold(functionName)}`,
@@ -161,10 +171,22 @@ class LoggerService implements LoggerInterface {
 	}
 
 	logFunctionFailed(functionName: string, errorMessage?: string): void {
-		this._failedDeployedFunctions.push({
-			functionName,
-			errorMessage,
-		});
+		const functionIndex = this._functions.findIndex(
+			({ functionName: fn }) => fn === functionName,
+		);
+		if (functionIndex === -1) {
+			this._functions.push({
+				functionName,
+				errorMessage,
+				status: 'failed',
+			});
+		} else {
+			this._functions[functionIndex] = {
+				...this._functions[functionIndex],
+				errorMessage,
+				status: 'failed',
+			};
+		}
 		this.spinnerLog(
 			chalk.red(
 				`DeployFunction: ${chalk.bold(functionName)} failed to deploy${
@@ -172,6 +194,28 @@ class LoggerService implements LoggerInterface {
 				}`,
 			),
 		);
+	}
+	private get _successfullyDeployedFunctions(): {
+		functionName: string;
+		time: number;
+	}[] {
+		return this._functions
+			.filter(({ status }) => status === 'deployed')
+			.map(({ functionName, time }) => ({
+				functionName,
+				time: time as number,
+			}));
+	}
+	private get _failedDeployedFunctions(): {
+		functionName: string;
+		errorMessage?: string;
+	}[] {
+		return this._functions
+			.filter(({ status }) => status === 'failed')
+			.map(({ functionName, errorMessage }) => ({
+				functionName,
+				errorMessage,
+			}));
 	}
 
 	private get _successfullyDeployedFunctionAmount(): number {

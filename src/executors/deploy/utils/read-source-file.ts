@@ -22,7 +22,7 @@ import {
 	toSnakeCase,
 } from '$utils';
 import chalk from 'chalk';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export const getDeployableFileData = async (

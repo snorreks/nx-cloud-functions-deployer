@@ -2,8 +2,8 @@ import type { Executor } from '@nrwl/devkit';
 import type { BuildExecutorOptions } from '$types';
 import { executeEsbuild, logger, runCommand, validateProject } from '$utils';
 import { emptyDir } from 'fs-extra';
-import { join } from 'path';
-import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'node:path';
+import { writeFile, mkdir } from 'node:fs/promises';
 
 const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	try {

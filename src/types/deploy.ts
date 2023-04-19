@@ -86,6 +86,8 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	envFiles?: Record<string, string>;
 
 	deploySentry?: boolean;
+
+	retryAmount?: number;
 }
 
 export type Environment = { [key: string]: string | undefined };
