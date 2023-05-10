@@ -1,4 +1,4 @@
-import type { Executor, ExecutorContext } from '@nrwl/devkit';
+import type { Executor, ExecutorContext } from '@nx/devkit';
 import type { BaseDeployOptions, DeployExecutorOptions } from '$types';
 import { logger } from '$utils/logger';
 

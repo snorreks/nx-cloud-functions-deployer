@@ -1,4 +1,4 @@
-import type { Executor } from '@nrwl/devkit';
+import type { Executor } from '@nx/devkit';
 import type { BuildExecutorOptions } from '$types';
 import { executeEsbuild, logger, runCommand, validateProject } from '$utils';
 import { emptyDir } from 'fs-extra';

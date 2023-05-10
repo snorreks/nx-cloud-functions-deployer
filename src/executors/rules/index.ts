@@ -1,4 +1,4 @@
-import type { Executor } from '@nrwl/devkit';
+import type { Executor } from '@nx/devkit';
 import { join } from 'node:path';
 import type { PackageManager } from '$types';
 import { logger, getFlavor, getFirebaseProjectId, execute } from '$utils';

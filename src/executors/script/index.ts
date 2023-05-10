@@ -1,4 +1,4 @@
-import type { Executor, ExecutorContext } from '@nrwl/devkit';
+import type { Executor, ExecutorContext } from '@nx/devkit';
 import type {
 	RunScriptEnvironment,
 	RunScriptOptions,

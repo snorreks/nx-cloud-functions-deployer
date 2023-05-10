@@ -1,5 +1,5 @@
 import { getFlavor, logger, runCommand } from '$utils';
-import type { Executor } from '@nrwl/devkit';
+import type { Executor } from '@nx/devkit';
 import { join } from 'node:path';
 
 // See https://github.com/studds/nx-aws/blob/main/packages/sam/src/builders/cloudformation/package/package.ts
