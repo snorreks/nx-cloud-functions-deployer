@@ -1,9 +1,14 @@
-import type { RuntimeOptions, SUPPORTED_REGIONS } from 'firebase-functions/v1';
-import type { HttpsOptions as FirebaseHttpsV2Options } from 'firebase-functions/v2/https';
+import type { HttpsOptions as FirebaseHttpsOptions } from 'firebase-functions/v2/https';
+import type { DocumentOptions as FBDocumentOptions } from 'firebase-functions/lib/v2/providers/firestore';
+import type { ReferenceOptions as FBReferenceOptions } from 'firebase-functions/lib/v2/providers/database';
+
 import type { StorageOptions } from 'firebase-functions/v2/storage';
+import type { ScheduleOptions as FBScheduleOptions } from 'firebase-functions/v2/scheduler';
+import type { GlobalOptions } from 'firebase-functions/v2/options';
 export type NodeVersion = '14' | '16' | '18';
 
-export interface BaseFunctionOptions<T extends string = string> {
+export interface BaseFunctionOptions<T extends string = string>
+	extends GlobalOptions {
 	/**
 	 * The name of the function. If not provided, the name of the function is
 	 * the path from the root of the {@link DeployDirectory} directory to the
@@ -30,49 +35,22 @@ export interface BaseFunctionOptions<T extends string = string> {
 	keepNames?: boolean;
 
 	/**
-	 * The region to deploy the function to. If not provided it will be the
-	 * region set in project.json. If that is not provided it will be
-	 * 'us-central1'
-	 *
-	 * @see https://firebase.google.com/docs/functions/locations
-	 */
-	region?: (typeof SUPPORTED_REGIONS)[number] | string;
-
-	/**
 	 * Path to the assets from the project root directory.
 	 *
 	 * NB this will be placed in the same directory as the function.
 	 */
 	assets?: string[];
 
-	/**
-	 * The runtime options for the function with `runWith`. If not provided
-	 * won't use `runWith`.
-	 *
-	 * Only available for v1 functions.
-	 *
-	 * @see https://firebase.google.com/docs/functions/manage-functions#set_runtime_options
-	 */
-	runtimeOptions?: RuntimeOptions;
-
 	nodeVersion?: NodeVersion;
 }
 
-export type HttpsV1Options<T extends string | number | symbol = string> =
-	BaseFunctionOptions<Extract<T, string>>;
+export interface HttpsOptions<T extends string | number | symbol = string>
+	extends Omit<BaseFunctionOptions<Extract<T, string>>, 'region'>,
+		FirebaseHttpsOptions {}
 
-export interface HttpsV2Options<T extends string | number | symbol = string>
-	extends Omit<
-			BaseFunctionOptions<Extract<T, string>>,
-			'region' | 'runtimeOptions'
-		>,
-		FirebaseHttpsV2Options {}
-
-export type HttpsOptions<T extends string | number | symbol = string> =
-	| HttpsV1Options<T>
-	| HttpsV2Options<T>;
-
-export interface DocumentTriggerOptions extends BaseFunctionOptions {
+export interface DocumentOptions
+	extends Omit<BaseFunctionOptions, 'enforceAppCheck'>,
+		Omit<FBDocumentOptions, 'document'> {
 	/**
 	 * The document path where the function will listen for changed in firestore
 	 *
@@ -85,25 +63,18 @@ export interface DocumentTriggerOptions extends BaseFunctionOptions {
 	 * example // database/users/[uid]/notifications/[notificationId] =>
 	 * 'users/{uid}/notifications/{notificationId}'
 	 */
-	documentPath?: string;
+	document?: string;
 }
 
-export interface RefTriggerOptions extends BaseFunctionOptions {
+export interface ReferenceOptions
+	extends Omit<BaseFunctionOptions, 'enforceAppCheck'>,
+		FBReferenceOptions {
 	ref: string;
 }
 
-export interface TopicOptions extends BaseFunctionOptions {
-	/**
-	 * Select Cloud Pub/Sub topic to listen to.
-	 *
-	 * @param topic Name of Pub/Sub topic, must belong to the same project as
-	 *   the function.
-	 * @see https://firebase.google.com/docs/functions/pubsub-events
-	 */
-	topic: string;
-}
-
-export interface ScheduleOptions extends BaseFunctionOptions {
+export interface ScheduleOptions
+	extends BaseFunctionOptions,
+		FBScheduleOptions {
 	/**
 	 * When to execute the function. If the function is a scheduled function,
 	 * this property is required.
@@ -115,24 +86,14 @@ export interface ScheduleOptions extends BaseFunctionOptions {
 	timeZone?: string;
 }
 
-export type PubsubOptions = TopicOptions | ScheduleOptions;
-
-export type ObjectTriggerV1Options = BaseFunctionOptions;
-
-export interface ObjectTriggerV2Options
-	extends Omit<BaseFunctionOptions, 'region' | 'runtimeOptions'>,
+export interface ObjectTriggerOptions
+	extends Omit<BaseFunctionOptions, 'region'>,
 		StorageOptions {}
-
-export type ObjectTriggerOptions =
-	| ObjectTriggerV1Options
-	| ObjectTriggerV2Options;
 
 export type FunctionOptions = {
 	https: HttpsOptions;
-	firestore: DocumentTriggerOptions;
-	pubsub: PubsubOptions;
+	firestore: DocumentOptions;
+	scheduler: ScheduleOptions;
 	storage: ObjectTriggerOptions;
-	database: RefTriggerOptions;
+	database: ReferenceOptions;
 };
-
-export type { RuntimeOptions };

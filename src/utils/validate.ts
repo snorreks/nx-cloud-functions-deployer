@@ -1,26 +1,22 @@
 import type {
 	DeployFunction,
-	DocumentTriggerFunction,
-	ObjectTriggerFunction,
-	RefTriggerFunction,
-	HttpsFunction,
-	PubsubFunction,
+	FirestoreFunction,
+	StorageFunction,
+	DatabaseFunction,
+	SchedulerFunction,
 	FunctionBuilder,
 	DeployDirectory,
-	HttpsV2Function,
-	FunctionV2,
+	HttpsFunction,
 } from '$types';
 import {
-	documentTriggerFunctions,
-	objectTriggerFunctions,
-	refTriggerFunctions,
+	firestoreFunctions,
+	storageFunctions,
+	databaseFunctions,
 	httpsFunctions,
-	pubsubFunctions,
+	schedulerFunctions,
 	functionBuilders,
 	deployDirectories,
-	httpsV2Functions,
 	functions,
-	functionsV2,
 } from '$constants';
 
 export const isDeployFunction = (
@@ -28,42 +24,30 @@ export const isDeployFunction = (
 ): deployFunction is DeployFunction =>
 	functions.includes(deployFunction as DeployFunction);
 
-export const isDocumentTriggerFunction = (
+export const isFirestoreFunction = (
 	deployFunction: DeployFunction,
-): deployFunction is DocumentTriggerFunction =>
-	documentTriggerFunctions.includes(
-		deployFunction as DocumentTriggerFunction,
-	);
+): deployFunction is FirestoreFunction =>
+	firestoreFunctions.includes(deployFunction as FirestoreFunction);
 
-export const isObjectTriggerFunction = (
+export const isStorageFunction = (
 	deployFunction: DeployFunction,
-): deployFunction is ObjectTriggerFunction =>
-	objectTriggerFunctions.includes(deployFunction as ObjectTriggerFunction);
+): deployFunction is StorageFunction =>
+	storageFunctions.includes(deployFunction as StorageFunction);
 
-export const isRefTriggerFunction = (
+export const isDatabaseFunction = (
 	deployFunction: DeployFunction,
-): deployFunction is RefTriggerFunction =>
-	refTriggerFunctions.includes(deployFunction as RefTriggerFunction);
+): deployFunction is DatabaseFunction =>
+	databaseFunctions.includes(deployFunction as DatabaseFunction);
 
 export const isHttpsFunction = (
 	deployFunction: DeployFunction,
 ): deployFunction is HttpsFunction =>
 	httpsFunctions.includes(deployFunction as HttpsFunction);
 
-export const isHttpsV2Function = (
+export const isSchedulerFunction = (
 	deployFunction: DeployFunction,
-): deployFunction is HttpsV2Function =>
-	httpsV2Functions.includes(deployFunction as HttpsV2Function);
-
-export const isV2Function = (
-	deployFunction: DeployFunction,
-): deployFunction is FunctionV2 =>
-	functionsV2.includes(deployFunction as FunctionV2);
-
-export const isPubsubFunction = (
-	deployFunction: DeployFunction,
-): deployFunction is PubsubFunction =>
-	pubsubFunctions.includes(deployFunction as PubsubFunction);
+): deployFunction is SchedulerFunction =>
+	schedulerFunctions.includes(deployFunction as SchedulerFunction);
 
 export const isFunctionBuilder = (
 	functionBuilder: string,

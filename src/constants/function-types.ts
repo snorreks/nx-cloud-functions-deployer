@@ -1,60 +1,36 @@
-export const documentTriggerFunctions = [
-	'onCreate',
-	'onUpdate',
-	'onDelete',
-	'onWrite',
-	'onDocumentCreate',
-	'onDocumentUpdate',
-	'onDocumentDelete',
-	'onDocumentWrite',
+export const firestoreFunctions = [
+	'onCreated',
+	'onUpdated',
+	'onDeleted',
+	'onWritten',
+	'onDocumentCreated',
+	'onDocumentUpdated',
+	'onDocumentDeleted',
+	'onDocumentWritten',
 ] as const;
 
-export const refTriggerFunctions = [
-	'onRefCreate',
-	'onRefDelete',
-	'onRefUpdate',
-	'onRefWrite',
+export const databaseFunctions = [
+	'onValueCreated',
+	'onValueDeleted',
+	'onValueUpdated',
+	'onValueWritten',
 ] as const;
 
-export const objectV1TriggerFunctions = [
-	'onObjectArchive',
-	'onObjectDelete',
-	'onObjectFinalize',
-	'onObjectMetadataUpdate',
+export const storageFunctions = [
+	'onObjectArchived',
+	'onObjectDeleted',
+	'onObjectFinalized',
+	'onObjectMetadataUpdated',
 ] as const;
 
-export const objectV2TriggerFunctions = [
-	'onObjectArchiveV2',
-	'onObjectDeleteV2',
-	'onObjectFinalizeV2',
-	'onObjectMetadataUpdateV2',
-] as const;
+export const schedulerFunctions = ['onSchedule'] as const;
 
-export const objectTriggerFunctions = [
-	...objectV1TriggerFunctions,
-	...objectV2TriggerFunctions,
-] as const;
-
-export const pubsubFunctions = ['schedule', 'topic'] as const;
-
-export const httpsV1Functions = ['onCall', 'onRequest'] as const;
-
-export const httpsV2Functions = ['onCallV2', 'onRequestV2'] as const;
-
-export const httpsFunctions = [
-	...httpsV1Functions,
-	...httpsV2Functions,
-] as const;
-
-export const functionsV2 = [
-	...httpsV2Functions,
-	...objectV2TriggerFunctions,
-] as const;
+export const httpsFunctions = ['onCall', 'onRequest'] as const;
 
 export const functions = [
-	...refTriggerFunctions,
-	...documentTriggerFunctions,
-	...objectTriggerFunctions,
-	...pubsubFunctions,
+	...databaseFunctions,
+	...firestoreFunctions,
+	...storageFunctions,
+	...schedulerFunctions,
 	...httpsFunctions,
 ] as const;

@@ -87,10 +87,6 @@ export const toCamelCase = (str: string): string => {
 				.replace(/[_-]([a-z0-9])/g, (m) => m[1].toUpperCase());
 };
 
-export const removeUnderScore = (str: string): string => {
-	return str.replace(/_/g, '');
-};
-
 export const toDotEnvironmentCode = <T extends Environment>(
 	environment: T,
 ): string => {

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Change, EventContext } from 'firebase-functions';
-import type { RefTriggerOptions } from '$types';
+import type { DatabaseEvent } from 'firebase-functions/v2/database';
+import type { ReferenceOptions } from '$types';
 import type { DataSnapshot } from 'firebase-functions/lib/common/providers/database';
+import type { Change, ParamsOf } from 'firebase-functions/lib/v2/core';
 
 /**
  * Event handler that fires every time new data is created in Firebase Realtime
@@ -11,12 +12,11 @@ import type { DataSnapshot } from 'firebase-functions/lib/common/providers/datab
  *   Firebase Realtime Database.
  * @returns A Cloud DeployFunction that you can export and deploy.
  */
-export const onRefCreate = (
+export const onValueCreated = <Ref extends string = string>(
 	handler: (
-		snapshot: DataSnapshot,
-		context: EventContext,
+		event: DatabaseEvent<DataSnapshot, ParamsOf<Ref>>,
 	) => PromiseLike<unknown> | unknown,
-	_options: RefTriggerOptions,
+	_options: ReferenceOptions,
 ) => handler;
 
 /**
@@ -27,12 +27,11 @@ export const onRefCreate = (
  *   Firebase Realtime Database.
  * @returns A Cloud DeployFunction that you can export and deploy.
  */
-export const onRefDelete = (
+export const onValueDeleted = <Ref extends string = string>(
 	handler: (
-		snapshot: DataSnapshot,
-		context: EventContext,
+		event: DatabaseEvent<DataSnapshot, ParamsOf<Ref>>,
 	) => PromiseLike<unknown> | unknown,
-	_options: RefTriggerOptions,
+	_options: ReferenceOptions,
 ) => handler;
 
 /**
@@ -43,12 +42,11 @@ export const onRefDelete = (
  *   Database write occurs.
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onRefUpdate = (
+export const onValueUpdated = <Ref extends string = string>(
 	handler: (
-		change: Change<DataSnapshot>,
-		context: EventContext,
+		event: DatabaseEvent<Change<DataSnapshot>, ParamsOf<Ref>>,
 	) => PromiseLike<unknown> | unknown,
-	_options: RefTriggerOptions,
+	_options: ReferenceOptions,
 ) => handler;
 
 /**
@@ -59,10 +57,9 @@ export const onRefUpdate = (
  *   Database write occurs.
  * @returns A Cloud DeployFunction that you can export and deploy.
  */
-export const onRefWrite = (
+export const onValueWritten = <Ref extends string = string>(
 	handler: (
-		change: Change<DataSnapshot>,
-		context: EventContext,
+		event: DatabaseEvent<Change<DataSnapshot>, ParamsOf<Ref>>,
 	) => PromiseLike<unknown> | unknown,
-	_options: RefTriggerOptions,
+	_options: ReferenceOptions,
 ) => handler;

@@ -14,12 +14,12 @@ const config = {
 	ignorePatterns: ['apps/**/*', 'libs/**/*'],
 	overrides: [
 		{
-			extends: ['plugin:@nrwl/nx/typescript'],
+			extends: ['plugin:@nx/typescript'],
 			files: ['*.ts', '*.tsx', '*.svelte'],
 			rules: {},
 		},
 		{
-			extends: ['plugin:@nrwl/nx/javascript'],
+			extends: ['plugin:@nx/javascript'],
 			files: ['*.js', '*.jsx', '*.svelte'],
 			rules: {},
 		},
@@ -28,7 +28,7 @@ const config = {
 		ecmaVersion: 2020,
 		sourceType: 'module',
 	},
-	plugins: ['@nrwl/nx'],
+	plugins: ['@nx'],
 
 	root: true,
 	rules: {

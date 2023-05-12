@@ -68,32 +68,29 @@ export const validateDeployFiles = (
 
 const toRootFunction = (deployFunction: DeployFunction): FunctionBuilder => {
 	switch (deployFunction) {
-		case 'onCreate':
-		case 'onUpdate':
-		case 'onDelete':
-		case 'onWrite':
+		case 'onCreated':
+		case 'onUpdated':
+		case 'onDeleted':
+		case 'onWritten':
+		case 'onDocumentCreated':
+		case 'onDocumentUpdated':
+		case 'onDocumentDeleted':
+		case 'onDocumentWritten':
 			return 'firestore';
-		case 'onRefCreate':
-		case 'onRefUpdate':
-		case 'onRefDelete':
-		case 'onRefWrite':
+		case 'onValueCreated':
+		case 'onValueUpdated':
+		case 'onValueDeleted':
+		case 'onValueWritten':
 			return 'database';
 		case 'onCall':
 		case 'onRequest':
-		case 'onCallV2':
-		case 'onRequestV2':
 			return 'https';
-		case 'schedule':
-		case 'topic':
-			return 'pubsub';
-		case 'onObjectArchive':
-		case 'onObjectDelete':
-		case 'onObjectFinalize':
-		case 'onObjectMetadataUpdate':
-		case 'onObjectArchiveV2':
-		case 'onObjectDeleteV2':
-		case 'onObjectFinalizeV2':
-		case 'onObjectMetadataUpdateV2':
+		case 'onSchedule':
+			return 'scheduler';
+		case 'onObjectArchived':
+		case 'onObjectDeleted':
+		case 'onObjectFinalized':
+		case 'onObjectMetadataUpdated':
 			return 'storage';
 		default:
 			throw new Error('Invalid function type');

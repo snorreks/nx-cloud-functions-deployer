@@ -3,7 +3,7 @@ export * from './function-types';
 export const functionBuilders = [
 	'https',
 	'firestore',
-	'pubsub',
+	'scheduler',
 	'storage',
 	'database',
 ] as const;
@@ -14,6 +14,6 @@ export const deployDirectories = [
 	'callable',
 	'database',
 	'firestore',
-	'schedulers',
+	'scheduler',
 	'storage',
 ] as const;

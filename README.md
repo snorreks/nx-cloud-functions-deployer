@@ -4,6 +4,8 @@
 
 This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud Functions for Firebase](https://firebase.google.com/products/functions?gclsrc=ds&gclsrc=ds&gclid=CNmq16LU-_kCFa5IwgodA9cF8A).
 
+Note from version 2.0.0 this plugin only supports cloud functions v2, if you want v1 support use version 1.x.x.
+
 -   [Features](#features)
 -   [Install](#install)
 -   [Description](#description)
@@ -12,8 +14,6 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
     -   [Schedule Example](#schedule-example)
     -   [Firestore Example](#firestore-example)
     -   [Https Example](#https-example)
-    -   [Runtime Options](#runtime-options)
-    -   [Cloud functions v2 Example](#cloud-functions-v2-example)
     -   [Assets and external dependencies](#assets-and-external-dependencies)
     -   [Limitations](#limitations)
 -   [Folder Structure](#folder-structure)
@@ -74,41 +74,16 @@ pnpm i -D tsx
 
 ## Helper Functions
 
-You need to import the helper functions from `nx-cloud-functions-deployer`. This will allow you to configure your functions and make the functions stronger typed. The helper functions are:
-
-| Name                     | `firebase-functions` equivalent   | Description                |
-| ------------------------ | --------------------------------- | -------------------------- |
-| `onCall`                 | `https.onCall`                    |
-| `onRequest`              | `https.onRequest`                 |
-| `onCallV2`               | `https.onCall`                    | Cloud functions v2         |
-| `onRequestV2`            | `https.onRequest`                 | Cloud functions v2         |
-| `onWrite`                | `firestore.document.onWrite`      | See FirestoreExample       |
-| `onCreate`               | `firestore.document.onCreate`     | See FirestoreExample       |
-| `onUpdate`               | `firestore.document.onUpdate`     | See FirestoreExample       |
-| `onDelete`               | `firestore.document.onDelete`     | See FirestoreExample       |
-| `onDocumentWrite`        | `firestore.document.onWrite`      | Does not wrap the change   |
-| `onDocumentCreate`       | `firestore.document.onCreate`     | Does not wrap the snapshot |
-| `onDocumentUpdate`       | `firestore.document.onUpdate`     | Does not wrap the change   |
-| `onDocumentDelete`       | `firestore.document.onDelete`     | Does not wrap the snapshot |
-| `onRefWrite`             | `database.ref.onWrite`            |
-| `onRefCreate`            | `database.ref.onCreate`           |
-| `onRefUpdate`            | `database.ref.onUpdate`           |
-| `onRefDelete`            | `database.ref.onDelete`           |
-| `onObjectArchive`        | `storage.object.onArchive`        |
-| `onObjectDelete`         | `storage.object.onDelete`         |
-| `onObjectFinalize`       | `storage.object.onFinalize`       |
-| `onObjectMetadataUpdate` | `storage.object.onMetadataUpdate` |
-| `schedule`               | `pubsub.schedule`                 |
-| `topic`                  | `pubsub.topic`                    |
+You need to import the helper functions from `nx-cloud-functions-deployer`. This will allow you to configure your functions and make the functions stronger typed.
 
 ### Schedule Example
 
 For schedule functions options.schedule is required.
 
 ```typescript
-import { schedule } from 'nx-cloud-functions-deployer';
+import { onSchedule } from 'nx-cloud-functions-deployer';
 
-export default schedule(
+export default onSchedule(
 	(context) => {
 		console.log('daily', context);
 	},
@@ -120,7 +95,7 @@ export default schedule(
 
 ### Firestore Example
 
-When you use the `onWrite`, `onCreate`, `onUpdate` or `onDelete` helper functions for firestore. The data will automatically convert the snapshot to
+When you use the `onWritten`, `onCreated`, `onUpdated` or `onDeleted` helper functions for firestore. The data will automatically convert the snapshot to
 
 ```typescript
 {
@@ -140,8 +115,9 @@ export interface UserData extends CoreData {
 ```typescript
 import { onCall } from 'nx-cloud-functions-deployer';
 import type { UserData } from '@my-project/shared';
-export default onCreate<UserData>((user) => {
-	console.log(`User ${user.email} created`);
+
+export default onCreated<UserData>(({ data }) => {
+	console.log(`User ${data.email} created`);
 });
 ```
 
@@ -167,54 +143,10 @@ export type MyFunctions = {
 import { onCall } from 'nx-cloud-functions-deployer';
 import type { MyFunctions } from '@my-project/shared';
 
-export default onCall<MyFunctions, 'my_function_name'>((data, context) => {
+export default onCall<MyFunctions, 'my_function_name'>(({ data }) => {
 	console.log(data); // { message: string }
 	return { response: true };
 });
-```
-
-### Runtime Options
-
-To configure runtime options you can use the `runtimeOptions` option.
-
-```typescript
-import { onCall } from 'nx-cloud-functions-deployer';
-
-export default onCall(
-	(data, context) => {
-		return { response: true };
-	},
-	{
-		runtimeOptions: {
-			timeoutSeconds: 60,
-			memory: '2GB',
-		},
-	},
-);
-```
-
-### Cloud functions v2 Example
-
-To enable cloud functions v2 you can use the `v2` to true in `onCall` and `onRequest` options.
-
-NB: the default function name can not be snake_case anymore, it will have no under score in it.
-
-See https://firebase.google.com/docs/functions/beta#other_limitations
-
-```typescript
-// api/my-function-name.ts
-import { onCallV2 } from 'nx-cloud-functions-deployer';
-import type { MyFunctions } from '@my-project/shared';
-
-export default onCallV2<MyFunctions, 'my_function_name'>(
-	(data, context) => {
-		console.log(data); // { message: string }
-		return { response: true };
-	},
-	{
-		v2: true,
-	},
-); // the function name will be => myfunctionname
 ```
 
 ### Assets and external dependencies
@@ -229,7 +161,7 @@ Assets will copy the files from src/assets to the dist folder (right next to ind
 import { onCall } from 'nx-cloud-functions-deployer';
 
 export default onCall(
-	(data, context) => {
+	({ data }) => {
 		return { response: true };
 	},
 	{
@@ -260,10 +192,9 @@ export default onCall(
 	},
 	{
 		region,
-		runtimeOptions: {
-			timeoutSeconds: 1_800,
-			memory: memory,
-		}, // a random comment
+		timeoutSeconds: 1_800,
+		memory: memory,
+		// a random comment
 	},
 );
 ```
@@ -298,7 +229,6 @@ The folders in controllers will different deployment types:
 -   `firestore` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events)
 -   `database` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events)
 -   `schedule` - [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions)
--   `topic` - [Topic functions](https://firebase.google.com/docs/functions/pubsub-events)
 -   `storage` - [Cloud Storage triggers](https://firebase.google.com/docs/functions/gcp-storage-events)
 
 The default function names will be the path from the `api/callable/database/scheduler` folder to the file. For example, the function `controllers/api/stripe/webhook_endpoint.ts` will be deployed as `stripe_webhook_endpoint`.
@@ -333,22 +263,22 @@ The default function name for database/firestore functions will omit `[id]`. Exa
 ### Custom Structure
 
 To customize the folder structure, change the `functionsDirectory` in options.
-If you change the structure you have to specify the `documentPath` for firestore functions and `ref` for database functions.
+If you change the structure you have to specify the `document` for firestore functions and `ref` for database functions.
 
 Example:
 
 ```typescript
 // controllers/firestore/my-custom-user-created-file.ts
-import { onCreate } from 'nx-cloud-functions-deployer';
+import { onCreated } from 'nx-cloud-functions-deployer';
 import type { UserData } from '@my-project/shared';
 
-export default onCreate<UserData>(
-	(user) => {
-		console.log(`User ${user.email} created`);
+export default onCreated<UserData>(
+	({ data }) => {
+		console.log(`User ${data.email} created`);
 	},
 	{
 		functionName: 'custom_function_name',
-		documentPath: 'users/{id}',
+		document: 'users/{id}',
 	},
 );
 ```
@@ -359,19 +289,13 @@ The plugin will detect changes on the deployed functions locally. But it is also
 The file needs to export two function `fetch` and `update` which will be called by the plugin. Note you will also get the environments, so you can use process.env, if you want to hide production secrets for fetching/updating the cache.
 
 ```typescript
-import type {
-	FunctionsCacheFetch,
-	FunctionsCacheUpdate,
-} from 'nx-cloud-functions-deployer';
+import type { FunctionsCacheFetch, FunctionsCacheUpdate } from 'nx-cloud-functions-deployer';
 
 export const fetch: FunctionsCacheFetch = async ({ flavor }) => {
 	// fetch the cache from the cloud
 };
 
-export const update: FunctionsCacheUpdate = async ({
-	flavor,
-	newFunctionsCache,
-}) => {
+export const update: FunctionsCacheUpdate = async ({ flavor, newFunctionsCache }) => {
 	// update the cache in the cloud
 };
 ```

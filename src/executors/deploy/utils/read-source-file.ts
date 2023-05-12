@@ -1,24 +1,19 @@
 import type {
 	BuildFunctionData,
 	BaseFunctionOptions,
-	DocumentTriggerOptions,
+	DocumentOptions,
 	BuildFunctionLiteData,
 	ScheduleOptions,
-	TopicOptions,
 	DeployFunction,
-	RefTriggerOptions,
+	ReferenceOptions,
 	HttpsOptions,
-	HttpsV2Options,
-	RuntimeOptions,
 } from '$types';
 import {
-	isDocumentTriggerFunction,
+	isFirestoreFunction,
 	isHttpsFunction,
-	isObjectTriggerFunction,
-	isRefTriggerFunction,
-	isV2Function,
+	isStorageFunction,
+	isDatabaseFunction,
 	logger,
-	removeUnderScore,
 	toSnakeCase,
 } from '$utils';
 import chalk from 'chalk';
@@ -45,10 +40,7 @@ export const getDeployableFileData = async (
 	);
 	const functionName =
 		deployOptions?.functionName ??
-		getFunctionNameFromPath(
-			relativeDeployFilePath,
-			isV2Function(deployFunction),
-		);
+		getFunctionNameFromPath(relativeDeployFilePath);
 
 	if (only && !only.includes(functionName)) {
 		return;
@@ -82,12 +74,12 @@ export const getDeployableFileData = async (
 	}
 
 	if (
-		isRefTriggerFunction(buildFunctionData.deployFunction) ||
-		isDocumentTriggerFunction(buildFunctionData.deployFunction)
+		isDatabaseFunction(buildFunctionData.deployFunction) ||
+		isFirestoreFunction(buildFunctionData.deployFunction)
 	) {
 		buildFunctionData.path =
-			(deployOptions as DocumentTriggerOptions)?.documentPath ??
-			(deployOptions as RefTriggerOptions)?.ref;
+			(deployOptions as DocumentOptions)?.document ??
+			(deployOptions as ReferenceOptions)?.ref;
 		if (!buildFunctionData.path) {
 			const defaultPath = getDefaultPath(relativeDeployFilePath);
 			logger.debug(
@@ -161,24 +153,19 @@ const validateOptions = (
 		keepNames: getValueFromObject(object, 'keepNames'), // todo add `?? true` when missing env check is implemented
 		assets: getValueFromObject(object, 'assets'),
 		nodeVersion: getValueFromObject(object, 'nodeVersion'),
-		runtimeOptions: getRunTimeOptions(object),
 	};
 
 	switch (true) {
-		case isDocumentTriggerFunction(deployFunction):
-			return getDocumentTriggerOptions(baseOptions, object);
-		case isV2Function(deployFunction):
-			return getV2Options(baseOptions, object);
+		case isFirestoreFunction(deployFunction):
+			return getDocumentOptions(baseOptions, object);
 		case isHttpsFunction(deployFunction):
-			return getHttpsV1Options(baseOptions);
-		case isObjectTriggerFunction(deployFunction):
+			return getHttpsOptions(baseOptions, object);
+		case isStorageFunction(deployFunction):
 			return baseOptions;
-		case isRefTriggerFunction(deployFunction):
-			return getRefTriggerOptions(baseOptions, object);
-		case deployFunction === 'schedule':
+		case isDatabaseFunction(deployFunction):
+			return getReferenceOptions(baseOptions, object);
+		case deployFunction === 'onSchedule':
 			return getScheduleOptions(baseOptions, object);
-		case deployFunction === 'topic':
-			return getTopicOptions(baseOptions, object);
 		default:
 			throw new Error(`Invalid deploy function: ${deployFunction}`);
 	}
@@ -196,40 +183,34 @@ const getValueFromObject = <Value>(
 	return value as Value;
 };
 
-const getDocumentTriggerOptions = (
+const getDocumentOptions = (
 	baseOptions: BaseFunctionOptions,
 	object: Record<string, unknown>,
-): DocumentTriggerOptions => {
-	const documentOptions: DocumentTriggerOptions = {
+): DocumentOptions => {
+	const documentOptions: DocumentOptions = {
 		...baseOptions,
-		documentPath: getValueFromObject<string>(object, 'documentPath'),
+		document: getValueFromObject<string>(object, 'document'),
 	};
 
 	return documentOptions;
 };
 
-const getV2Options = (
+const getHttpsOptions = (
 	baseOptions: BaseFunctionOptions,
 	object: Record<string, unknown>,
 ): HttpsOptions => {
-	const httpsOptions: HttpsV2Options = {
+	const httpsOptions: HttpsOptions = {
 		...object,
 		...baseOptions,
 	};
-	logger.debug('getV2Options', httpsOptions);
+	logger.debug('getHttpsOptions', httpsOptions);
 	return httpsOptions;
 };
 
-const getHttpsV1Options = (baseOptions: BaseFunctionOptions): HttpsOptions => {
-	return {
-		...baseOptions,
-	};
-};
-
-const getRefTriggerOptions = (
+const getReferenceOptions = (
 	baseOptions: BaseFunctionOptions,
 	object: Record<string, unknown>,
-): RefTriggerOptions => {
+): ReferenceOptions => {
 	const ref = getValueFromObject<string>(object, 'ref');
 	if (!ref) {
 		throw new Error(
@@ -237,7 +218,7 @@ const getRefTriggerOptions = (
 		);
 	}
 
-	const refOptions: RefTriggerOptions = {
+	const refOptions: ReferenceOptions = {
 		...baseOptions,
 		ref,
 	};
@@ -261,32 +242,6 @@ const getScheduleOptions = (
 	};
 
 	return scheduleOptions;
-};
-
-const getTopicOptions = (
-	baseOptions: BaseFunctionOptions,
-	object: Record<string, unknown>,
-): TopicOptions => {
-	const topic = getValueFromObject<string>(object, 'topic');
-	if (!topic) {
-		throw new Error('Topic option is required for topic functions');
-	}
-
-	const topicOptions: TopicOptions = {
-		...baseOptions,
-		topic,
-	};
-
-	return topicOptions;
-};
-
-const getRunTimeOptions = (
-	object: Record<string, unknown>,
-): RuntimeOptions | undefined => {
-	if (!('runtimeOptions' in object)) {
-		return;
-	}
-	return object.runtimeOptions as RuntimeOptions;
 };
 
 const getStringBetweenLastBracket = (code: string) => {
@@ -336,10 +291,7 @@ const getDefaultPath = (relativeDeployFilePath: string): string => {
 	return paths.join('/').replaceAll('[', '{').replaceAll(']', '}');
 };
 
-const getFunctionNameFromPath = (
-	relativeDeployFilePath: string,
-	isV2Function?: boolean,
-) => {
+const getFunctionNameFromPath = (relativeDeployFilePath: string) => {
 	const paths = relativeDeployFilePath.split('/');
 	paths.shift(); // remove the first element, which is the directory type
 	for (const path of paths) {
@@ -350,8 +302,6 @@ const getFunctionNameFromPath = (
 	}
 
 	const functionName = toSnakeCase(paths.join('_').replace(/\.ts$/, ''));
-	if (isV2Function) {
-		return removeUnderScore(functionName);
-	}
+
 	return functionName;
 };

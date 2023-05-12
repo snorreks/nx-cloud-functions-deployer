@@ -1,14 +1,12 @@
-import { schedule } from 'nx-cloud-functions-deployer';
+import { onSchedule } from 'nx-cloud-functions-deployer';
 
-export default schedule(
+export default onSchedule(
 	(context) => {
 		console.log('daily', context);
 	},
 	{
 		schedule: 'every day 00:00',
-		runtimeOptions: {
-			timeoutSeconds: 60,
-			memory: '128MB',
-		},
+		timeoutSeconds: 540,
+		memory: '1GiB',
 	},
 );

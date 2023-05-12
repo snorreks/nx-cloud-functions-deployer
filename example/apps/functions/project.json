@@ -7,9 +7,10 @@
 			"executor": "../dist:deploy",
 			"options": {
 				"flavors": {
-					"development": "example-development",
+					"development": "mailvideo-test",
 					"production": "example-production"
-				}
+				},
+				"packageManager": "global"
 			}
 		},
 		"script": {

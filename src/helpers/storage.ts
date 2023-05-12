@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { EventContext } from 'firebase-functions';
-import type { ObjectTriggerV1Options } from '$types';
-import type { ObjectMetadata } from 'firebase-functions/v1/storage';
+import type { ObjectTriggerOptions } from '$types';
+import type { StorageEvent } from 'firebase-functions/v2/storage';
 
 /**
  * Event handler sent only when a bucket has enabled object versioning. This
@@ -13,12 +12,9 @@ import type { ObjectMetadata } from 'firebase-functions/v1/storage';
  *   archival occurs.
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onObjectArchive = (
-	handler: (
-		object: ObjectMetadata,
-		context: EventContext,
-	) => PromiseLike<unknown> | unknown,
-	_options?: ObjectTriggerV1Options,
+export const onObjectArchived = (
+	handler: (event: StorageEvent) => PromiseLike<unknown> | unknown,
+	_options?: ObjectTriggerOptions,
 ) => handler;
 /**
  * Event handler which fires every time a Google Cloud Storage deletion occurs.
@@ -33,12 +29,9 @@ export const onObjectArchive = (
  *   deletion occurs.
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onObjectDelete = (
-	handler: (
-		object: ObjectMetadata,
-		context: EventContext,
-	) => PromiseLike<unknown> | unknown,
-	_options?: ObjectTriggerV1Options,
+export const onObjectDeleted = (
+	handler: (event: StorageEvent) => PromiseLike<unknown> | unknown,
+	_options?: ObjectTriggerOptions,
 ) => handler;
 
 /**
@@ -53,12 +46,9 @@ export const onObjectDelete = (
  *   object creation occurs.
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onObjectFinalize = (
-	handler: (
-		object: ObjectMetadata,
-		context: EventContext,
-	) => PromiseLike<unknown> | unknown,
-	_options?: ObjectTriggerV1Options,
+export const onObjectFinalized = (
+	handler: (event: StorageEvent) => PromiseLike<unknown> | unknown,
+	_options?: ObjectTriggerOptions,
 ) => handler;
 
 /**
@@ -69,10 +59,7 @@ export const onObjectFinalize = (
  *   metadata update occurs.
  * @returns A Cloud DeployFunction which you can export and deploy.
  */
-export const onObjectMetadataUpdate = (
-	handler: (
-		object: ObjectMetadata,
-		context: EventContext,
-	) => PromiseLike<unknown> | unknown,
-	_options?: ObjectTriggerV1Options,
+export const onObjectMetadataUpdated = (
+	handler: (event: StorageEvent) => PromiseLike<unknown> | unknown,
+	_options?: ObjectTriggerOptions,
 ) => handler;

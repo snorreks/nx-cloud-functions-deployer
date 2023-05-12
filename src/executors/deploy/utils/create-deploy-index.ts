@@ -1,16 +1,12 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type {
-	BaseFunctionOptions,
 	BuildFunctionData,
+	DeployExecutorOptions,
 	DeployFunction,
-	HttpsV1Options,
-	HttpsV2Options,
-	RuntimeOptions,
-	ScheduleOptions,
-	TopicOptions,
+	HttpsOptions,
 } from '$types';
-import { isV2Function, logger, toImportPath } from '$utils';
+import { logger, toImportPath } from '$utils';
 /** The name of the default exported function */
 const functionStart = 'functionStart';
 
@@ -35,36 +31,6 @@ const getTemporaryFilePath = (
 ) => join(temporaryDirectory, `${functionName}.ts`);
 
 const toDeployIndexCode = (buildFunctionData: BuildFunctionData) => {
-	if (isV2Function(buildFunctionData.deployFunction)) {
-		return toDeployV2IndexCode(
-			buildFunctionData as BuildFunctionData<'https'>,
-		);
-	} else {
-		return toDeployIndexV1Code(buildFunctionData);
-	}
-};
-
-const toDeployIndexV1Code = (buildFunctionData: BuildFunctionData) => {
-	const { functionName, absolutePath, region, temporaryDirectory } =
-		buildFunctionData;
-	const deployableFilePath = absolutePath;
-	const importPath = toImportPath(deployableFilePath, temporaryDirectory);
-	const fileCode = `
-		import { region } from 'firebase-functions';
-		import ${functionStart} from '${importPath}';
-		export const ${functionName} = region('${region}').${getRootFunctionCode(
-		buildFunctionData,
-	)}.${toEndCodeV1(buildFunctionData)}
-	`;
-
-	return fileCode;
-};
-
-const toDeployV2IndexCode = (
-	buildFunctionData:
-		| BuildFunctionData<'https'>
-		| BuildFunctionData<'storage'>,
-) => {
 	const {
 		functionName,
 		absolutePath,
@@ -76,21 +42,18 @@ const toDeployV2IndexCode = (
 
 	const deployableFilePath = absolutePath;
 	const importPath = toImportPath(deployableFilePath, temporaryDirectory);
-	const optionsCode = getV2Options(buildFunctionData as HttpsV2Options);
+	const optionsCode = getOptions(buildFunctionData as HttpsOptions);
 
 	const fileCode = `
 		import { ${functionCode} } from 'firebase-functions/v2/${rootFunctionBuilder}';
 		import ${functionStart} from '${importPath}';
-		export const ${functionName} = ${functionCode}(
-				(${optionsCode}),
-				${functionStart}
-			);
+		export const ${functionName} = ${functionCode}(${optionsCode}, ${functionStart});
 	`;
 
 	return fileCode;
 };
 
-const getV2Options = (options: HttpsV2Options): string => {
+const getOptions = (options: HttpsOptions): string => {
 	const optionsCode = toOptionsCode(
 		removeAllOtherOptions(options) as { [key: string]: unknown },
 	);
@@ -98,137 +61,45 @@ const getV2Options = (options: HttpsV2Options): string => {
 	return optionsCode;
 };
 
-const getRootFunctionCode = (buildFunctionData: BuildFunctionData): string => {
-	const { rootFunctionBuilder } = buildFunctionData;
-	const runtimeOptions = (buildFunctionData as HttpsV1Options).runtimeOptions;
-
-	if (!runtimeOptions) {
-		return rootFunctionBuilder;
-	}
-
-	const runWithCode = getRunWithCode(runtimeOptions);
-	return `${runWithCode}.${rootFunctionBuilder}`;
-};
-
-const getRunWithCode = (runtimeOptions: RuntimeOptions): string => {
-	const optionsCode = toOptionsCode(
-		runtimeOptions as { [key: string]: unknown },
-	);
-
-	return `runWith(${optionsCode})`;
-};
-
-const toEndCodeV1 = (deployFileData: BuildFunctionData): string => {
-	const { deployFunction, path } = deployFileData;
-	const functionCode = toFunctionCodeType(deployFunction);
-
-	switch (deployFunction) {
-		case 'onCall':
-		case 'onRequest':
-			return `${functionCode}(${functionStart});`;
-		case 'onCreate':
-		case 'onDelete':
-		case 'onUpdate':
-		case 'onWrite':
-			return `document('${path}').${functionCode}(${functionStart});`;
-		case 'onRefCreate':
-		case 'onRefDelete':
-		case 'onRefUpdate':
-		case 'onRefWrite':
-			return `ref('${path}').${functionCode}(${functionStart});`;
-
-		case 'topic':
-			return getTopicDeployCode(deployFileData);
-		case 'schedule':
-			return getScheduleDeployCode(deployFileData);
-		case 'onObjectArchive':
-		case 'onObjectDelete':
-		case 'onObjectFinalize':
-		case 'onObjectMetadataUpdate':
-			return `object().${functionCode}(${functionStart});`;
-
-		default:
-			throw new Error(`Unknown function type: ${deployFunction}`);
-	}
-};
-
 const toFunctionCodeType = (deployFunction: DeployFunction): string => {
 	switch (deployFunction) {
 		case 'onCall':
-		case 'onCallV2':
 			return 'onCall';
 		case 'onRequest':
-		case 'onRequestV2':
 			return 'onRequest';
-		case 'onCreate':
-			return 'onCreate';
-		case 'onDelete':
-			return 'onDelete';
-		case 'onUpdate':
-			return 'onUpdate';
-		case 'onWrite':
-			return 'onWrite';
-		case 'topic':
-			return 'topic';
-		case 'schedule':
-			return 'schedule';
-		case 'onObjectArchive':
-			return 'onArchive';
-		case 'onObjectArchiveV2':
+		case 'onCreated':
+		case 'onDocumentCreated':
+			return 'onDocumentCreated';
+		case 'onDeleted':
+		case 'onDocumentDeleted':
+			return 'onDocumentDeleted';
+		case 'onUpdated':
+		case 'onDocumentUpdated':
+			return 'onDocumentUpdated';
+		case 'onWritten':
+		case 'onDocumentWritten':
+			return 'onDocumentWritten';
+		case 'onSchedule':
+			return 'onSchedule';
+		case 'onObjectArchived':
 			return 'onObjectArchived';
-		case 'onObjectDelete':
-			return 'onDelete';
-		case 'onObjectDeleteV2':
+		case 'onObjectDeleted':
 			return 'onObjectDeleted';
-		case 'onObjectFinalize':
-			return 'onFinalize';
-		case 'onObjectFinalizeV2':
+		case 'onObjectFinalized':
 			return 'onObjectFinalized';
-		case 'onObjectMetadataUpdate':
-			return 'onMetadataUpdate';
-		case 'onObjectMetadataUpdateV2':
+		case 'onObjectMetadataUpdated':
 			return 'onObjectMetadataUpdated';
-		case 'onRefCreate':
-			return 'onCreate';
-		case 'onRefDelete':
-			return 'onDelete';
-		case 'onRefUpdate':
-			return 'onUpdate';
-		case 'onRefWrite':
-			return 'onWrite';
+		case 'onValueCreated':
+			return 'onValueCreated';
+		case 'onValueDeleted':
+			return 'onValueDeleted';
+		case 'onValueUpdated':
+			return 'onValueUpdated';
+		case 'onValueWritten':
+			return 'onValueWritten';
 		default:
 			throw new Error(`Unknown function type: ${deployFunction}`);
 	}
-};
-
-const getScheduleDeployCode = (deployOptions?: BaseFunctionOptions): string => {
-	if (!deployOptions) {
-		throw new Error('Pubsub deploy options are required');
-	}
-
-	const { timeZone, schedule } = deployOptions as ScheduleOptions;
-	let pubsubCode = `schedule('${schedule}').`;
-
-	if (timeZone) {
-		pubsubCode += `timeZone('${timeZone}').`;
-	}
-
-	pubsubCode += `onRun(${functionStart})`;
-
-	return pubsubCode;
-};
-
-const getTopicDeployCode = (deployOptions?: BaseFunctionOptions): string => {
-	if (!deployOptions) {
-		throw new Error('Pubsub deploy options are required');
-	}
-
-	const { topic } = deployOptions as TopicOptions;
-	let pubsubCode = `topic('${topic}').`;
-
-	pubsubCode += `onRun(${functionStart})`;
-
-	return pubsubCode;
 };
 
 const toOptionsCode = (options: { [key: string]: unknown }): string => {
@@ -265,14 +136,19 @@ const toOptionsCode = (options: { [key: string]: unknown }): string => {
 };
 
 const removeAllOtherOptions = (
-	buildFunctionData: BuildFunctionData | HttpsV2Options,
+	buildFunctionData: BuildFunctionData | HttpsOptions,
 ): Partial<BuildFunctionData> => {
-	const options: Partial<BuildFunctionData> & { v2?: boolean } = {
-		...buildFunctionData,
-		region: buildFunctionData.region as string,
-	};
+	const options: Partial<BuildFunctionData> | Partial<DeployExecutorOptions> =
+		{
+			...buildFunctionData,
+			region: buildFunctionData.region as string,
+		};
 
-	const keysToDelete: (keyof BuildFunctionData)[] = [
+	const keysToDelete: (
+		| keyof BuildFunctionData
+		| keyof DeployExecutorOptions
+		| string
+	)[] = [
 		'absolutePath',
 		'assets',
 		'checksum',
@@ -303,9 +179,14 @@ const removeAllOtherOptions = (
 		'validate',
 		'workspaceRoot',
 		'nodeVersion',
+		'flavors',
+		'debug',
+		'sourcemap',
+		'requireFix',
+		'verbose',
+		'includeFilePath',
+		'currentTime',
 	];
-
-	delete options.v2;
 
 	for (const key of keysToDelete) {
 		delete options[key];
