@@ -4,7 +4,7 @@
 
 This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud Functions for Firebase](https://firebase.google.com/products/functions?gclsrc=ds&gclsrc=ds&gclid=CNmq16LU-_kCFa5IwgodA9cF8A).
 
-Note from version 2.0.0 this plugin only supports cloud functions v2, if you want v1 support use version 1.x.x.
+Note from version 2.0.0 this plugin only supports cloud functions v2, if you want v1 support use version 1.2.2.
 
 -   [Features](#features)
 -   [Install](#install)

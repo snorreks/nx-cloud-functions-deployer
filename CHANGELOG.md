@@ -1,5 +1,13 @@
 # nx-cloud-functions-deployer
 
+## 2.0.0
+
+### Changes
+
+-   Migrated all functions to v2.
+-   Now all firestore triggers needs to be under `firestore` folder, `database` folder is not used for real time database triggers.
+-   Removed v1 support for firebase functions, now only v2 is supported.
+
 ## 1.1.0
 
 ### Changes
@@ -8,7 +16,6 @@
 -   Removed esbuild-plugin-alias, now esbuild looks directly at tsconfig.json for paths
 -   Made import paths relative to fix for windows users
 -   Added CFD_FUNCTION_NAME env to each function, so you can use it in your code, example setting tags to sentry.
--
 
 ## 1.0.0
 
