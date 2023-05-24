@@ -1,5 +1,12 @@
 # nx-cloud-functions-deployer
 
+## 2.1.0
+
+### Changes
+
+-   Added `pnpmFix` option to fix pnpm install issues with firebase-tools and firebase-functions. It will npm install each functions and use the global firebase-tools to deploy.
+-   Fix firestore and document function deploy
+
 ## 2.0.0
 
 ### Changes

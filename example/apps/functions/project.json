@@ -10,7 +10,9 @@
 					"development": "mailvideo-test",
 					"production": "example-production"
 				},
-				"packageManager": "global"
+				"packageManager": "global",
+				"pnpmFix": true,
+				"node": "18"
 			}
 		},
 		"script": {

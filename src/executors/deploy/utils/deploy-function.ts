@@ -9,12 +9,19 @@ import { execute, logger, runCommand } from '$utils';
 export const deployFunction = async (
 	deployFunctionData: DeployFunctionData,
 ): Promise<DeployFunctionData | undefined> => {
-	const { functionName, external, outputRoot } = deployFunctionData;
+	const { functionName, external, outputRoot, pnpmFix } = deployFunctionData;
 	try {
 		if (external && external.length > 0) {
 			await runCommand({
 				command: 'npm',
 				commandArguments: ['install', ...external],
+				cwd: outputRoot,
+				silent: logger.currentLogSeverity !== 'debug',
+			});
+		} else if (pnpmFix) {
+			await runCommand({
+				command: 'npm',
+				commandArguments: ['install'],
 				cwd: outputRoot,
 				silent: logger.currentLogSeverity !== 'debug',
 			});
@@ -50,9 +57,10 @@ export const executeFirebaseDeploy = async ({
 	functionName,
 	outputRoot,
 	packageManager,
+	pnpmFix,
 }: BuildFunctionData) => {
 	await execute({
-		packageManager,
+		packageManager: pnpmFix ? 'global' : packageManager,
 		cwd: outputRoot,
 		commandArguments: [
 			'firebase',

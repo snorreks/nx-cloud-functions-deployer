@@ -129,6 +129,11 @@
 			"type": "number",
 			"description": "The amount of times to retry a failed deployment",
 			"aliases": ["retry"]
+		},
+		"pnpmFix": {
+			"type": "boolean",
+			"default": false,
+			"description": "Will fix the firebase-tools issue with pnpm"
 		}
 	},
 	"required": ["flavors"]

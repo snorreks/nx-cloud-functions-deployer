@@ -40,6 +40,8 @@ interface SharedDeployExecutorBaseOptions extends ExecutorBaseBuildOptions {
 	cloudCacheFileName: string;
 
 	ignoreMissingEnvironmentKey?: boolean;
+
+	pnpmFix?: boolean;
 }
 
 export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
@@ -133,6 +135,8 @@ export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
 
 	/** If this is defined, upload the sourcemaps to sentry. */
 	sentry?: SentryLiteData;
+
+	pnpmFix?: boolean;
 }
 
 export interface BuildFunctionLiteData<

@@ -42,7 +42,7 @@ const toDeployIndexCode = (buildFunctionData: BuildFunctionData) => {
 
 	const deployableFilePath = absolutePath;
 	const importPath = toImportPath(deployableFilePath, temporaryDirectory);
-	const optionsCode = getOptions(buildFunctionData as HttpsOptions);
+	const optionsCode = getOptions(buildFunctionData);
 
 	const fileCode = `
 		import { ${functionCode} } from 'firebase-functions/v2/${rootFunctionBuilder}';
@@ -53,10 +53,13 @@ const toDeployIndexCode = (buildFunctionData: BuildFunctionData) => {
 	return fileCode;
 };
 
-const getOptions = (options: HttpsOptions): string => {
-	const optionsCode = toOptionsCode(
-		removeAllOtherOptions(options) as { [key: string]: unknown },
-	);
+const getOptions = (buildFunctionData: BuildFunctionData): string => {
+	const options = removeAllOtherOptions(buildFunctionData);
+	if (!options.document && buildFunctionData.path) {
+		options.document = buildFunctionData.path;
+	}
+
+	const optionsCode = toOptionsCode(options);
 
 	return optionsCode;
 };
@@ -137,7 +140,7 @@ const toOptionsCode = (options: { [key: string]: unknown }): string => {
 
 const removeAllOtherOptions = (
 	buildFunctionData: BuildFunctionData | HttpsOptions,
-): Partial<BuildFunctionData> => {
+): Partial<BuildFunctionData & { document?: string }> => {
 	const options: Partial<BuildFunctionData> | Partial<DeployExecutorOptions> =
 		{
 			...buildFunctionData,
@@ -186,6 +189,7 @@ const removeAllOtherOptions = (
 		'verbose',
 		'includeFilePath',
 		'currentTime',
+		'pnpmFix',
 	];
 
 	for (const key of keysToDelete) {
