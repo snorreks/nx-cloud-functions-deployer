@@ -55,8 +55,18 @@ const toDeployIndexCode = (buildFunctionData: BuildFunctionData) => {
 
 const getOptions = (buildFunctionData: BuildFunctionData): string => {
 	const options = removeAllOtherOptions(buildFunctionData);
-	if (!options.document && buildFunctionData.path) {
+	if (
+		buildFunctionData.rootFunctionBuilder === 'firestore' &&
+		!options.document &&
+		buildFunctionData.path
+	) {
 		options.document = buildFunctionData.path;
+	} else if (
+		buildFunctionData.rootFunctionBuilder === 'database' &&
+		!options.ref &&
+		buildFunctionData.path
+	) {
+		options.ref = buildFunctionData.path;
 	}
 
 	const optionsCode = toOptionsCode(options);
@@ -140,7 +150,7 @@ const toOptionsCode = (options: { [key: string]: unknown }): string => {
 
 const removeAllOtherOptions = (
 	buildFunctionData: BuildFunctionData | HttpsOptions,
-): Partial<BuildFunctionData & { document?: string }> => {
+): Partial<BuildFunctionData & { document?: string; ref?: string }> => {
 	const options: Partial<BuildFunctionData> | Partial<DeployExecutorOptions> =
 		{
 			...buildFunctionData,
