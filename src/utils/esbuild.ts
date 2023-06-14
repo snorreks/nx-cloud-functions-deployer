@@ -1,34 +1,7 @@
-import { build, type Loader, type PluginBuild } from 'esbuild';
-import { readFileSync } from 'node:fs';
-import { extname, dirname as _dirname } from 'node:path';
+import { build } from 'esbuild';
+import { dirname as _dirname } from 'node:path';
 import type { NodeVersion } from '$types';
 import { logger } from '$utils';
-
-const nodeModules = new RegExp(
-	/^(?:.*[\\/])?node_modules(?:\/(?!postgres-migrations).*)?$/,
-);
-// https://github.com/evanw/esbuild/issues/859
-const dirnamePlugin = {
-	name: 'dirname',
-
-	setup(build: PluginBuild) {
-		build.onLoad({ filter: /.*/ }, ({ path: filePath }) => {
-			if (filePath.match(nodeModules)) {
-				return;
-			}
-			let contents = readFileSync(filePath, 'utf8');
-			const loader = extname(filePath).substring(1) as Loader;
-			const dirname = _dirname(filePath);
-			contents = contents
-				.replace('__dirname', `"${dirname}"`)
-				.replace('__filename', `"${filePath}"`);
-			return {
-				contents,
-				loader,
-			};
-		});
-	},
-};
 
 export const executeEsbuild = async (options: {
 	inputPath: string;
@@ -56,14 +29,19 @@ export const executeEsbuild = async (options: {
 		tsconfig,
 		minify = true,
 	} = options;
-	const plugins = [dirnamePlugin];
 
+	const dirname = _dirname(inputPath).replace(/\\/g, '\\\\');
+	const filename = inputPath.replace(/\\/g, '\\\\');
+
+	const banner = {
+		js:
+			`const __dirname='${dirname}';const __filename='${filename}';` +
+			(requireFix
+				? "import {createRequire} from 'module';const require=createRequire(import.meta.url);"
+				: ''),
+	};
 	const result = await build({
-		banner: requireFix
-			? {
-					js: "import{createRequire}from'module';const require=createRequire(import.meta.url);",
-			  }
-			: undefined,
+		banner,
 		footer: footer ? { js: footer } : undefined,
 		bundle: true,
 		entryPoints: [inputPath],
@@ -75,7 +53,6 @@ export const executeEsbuild = async (options: {
 		tsconfig,
 		outfile: outputPath,
 		platform: 'node',
-		plugins,
 		target: `node${options.nodeVersion}`,
 		keepNames,
 		sourceRoot,
