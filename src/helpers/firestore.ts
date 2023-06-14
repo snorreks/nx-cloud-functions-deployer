@@ -7,7 +7,6 @@ import type {
 	FirestoreEvent,
 	QueryDocumentSnapshot,
 } from 'firebase-functions/v2/firestore';
-import type { DocumentData } from '@google-cloud/firestore';
 
 /** Respond only to document creations. */
 export const onDocumentCreated = <Document extends string = string>(
@@ -90,8 +89,8 @@ export const onUpdated = <T extends CoreData>(
 		return handler({
 			...event,
 			data: {
-				before: toCoreData<T>(event.data.before.data),
-				after: toCoreData<T>(event.data.after.data),
+				before: toCoreData<T>(event.data.before),
+				after: toCoreData<T>(event.data.after),
 			},
 		});
 	};
@@ -100,7 +99,10 @@ export const onUpdated = <T extends CoreData>(
 /** Respond to all document writes (creates, updates, or deletes). */
 export const onWritten = <T extends CoreData>(
 	handler: (
-		event: FirestoreEvent<Change<T>>,
+		event: FirestoreEvent<{
+			before?: T;
+			after: T;
+		}>,
 	) => PromiseLike<unknown> | unknown,
 	_options?: DocumentOptions,
 ) => {
@@ -108,13 +110,17 @@ export const onWritten = <T extends CoreData>(
 		return handler({
 			...event,
 			data: {
-				before: toCoreData<T>(event.data.before.data),
-				after: toCoreData<T>(event.data.after.data),
+				before: event.data.before?.exists
+					? toCoreData<T>(event.data.before)
+					: undefined,
+				after: toCoreData<T>(event.data.after),
 			},
 		});
 	};
 };
-export const toCoreData = <T extends CoreData>(documentSnap: DocumentData): T =>
+export const toCoreData = <T extends CoreData>(
+	documentSnap: DocumentSnapshot,
+): T =>
 	({
 		...documentSnap.data(),
 		id: documentSnap.id,
