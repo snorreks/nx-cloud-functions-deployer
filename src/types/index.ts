@@ -5,3 +5,4 @@ export * from './function-types';
 export * from './build';
 export * from './functions-cache';
 export * from './script';
+export * from './core';

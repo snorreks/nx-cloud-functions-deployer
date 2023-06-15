@@ -127,6 +127,8 @@ export const getBaseOptions = async (
 		}),
 	]);
 
+	logger.debug('---environment', environment);
+
 	const only = options.only?.split(',').map((name) => name.trim());
 
 	const baseDeployOptions: BaseDeployOptions = {

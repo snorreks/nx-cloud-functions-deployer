@@ -1,5 +1,13 @@
 # nx-cloud-functions-deployer
 
+## 2.2.0
+
+### Changes
+
+-   Made esbuild work on linux
+-   Added `deleteAll` option to delete all functions in a project.
+-   Added new executable `read-env` to read the environment variables.
+
 ## 2.1.0
 
 ### Changes

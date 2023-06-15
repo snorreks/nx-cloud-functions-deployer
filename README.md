@@ -30,7 +30,6 @@ From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 
         -   [Examples](#examples-1)
     -   [Delete](#delete)
         -   [Options](#options-2)
-        -   [Examples](#examples-2)
     -   [Rules](#rules)
     -   [Emulate](#emulate)
     -   [SAM](#sam)
@@ -474,16 +473,35 @@ The plugin provide support to delete unused function that are not in the project
 | `tsconfig`    | The tsconfig file to use for the script in the project directory.                                | `tsconfig.json` | `tsconfig` |
 | `silent`      | Whether to suppress all logs.                                                                    | `false`         | `s`        |
 | `verbose`     | Whether to run the command with verbose logging.                                                 | `false`         | `v`        |
+| `deleteAll`   | Whether to delete all functions even if they are in your project.                                | `false`         |            |
 
-#### Examples
+### Read env
 
-```bash
-pnpm nx delete-unused functions
+This will read your .env file in your selected flavor, copy it to the clipboard and print it in console. This is so you can use `envString` when you deploy your functions in CI.
+
+```json
+...
+	"targets": {
+		"delete-unused": {
+			"executor": "nx-cloud-functions-deployer:read-env",
+			"options": {
+				"flavors": {
+					"development": "firebase-project-development-id",
+					"production": "firebase-project-production-id"
+				}
+			}
+		},
 ```
 
-```bash
-pnpm nx delete-unused functions --flavor production
-```
+#### Options
+
+| Option     | Description                                                                                      | Default  | Alias |
+| ---------- | ------------------------------------------------------------------------------------------------ | -------- | ----- |
+| `flavors`  | A object of the flavors to use, the key is the flavor name and value is the firebase project id. | required |       |
+| `flavor`   | The flavor to use, default will be the first key in the `flavors` object                         |          |       |
+| `envFiles` | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`        |          |       |
+| `silent`   | Whether to suppress all logs.                                                                    | `false`  | `s`   |
+| `verbose`  | Whether to run the command with verbose logging.                                                 | `false`  | `v`   |
 
 ### Rules
 

@@ -98,6 +98,11 @@
 			"default": false,
 			"description": "Will ignore missing environment keys error",
 			"aliases": ["ignoreMissingEnv"]
+		},
+		"deleteAll": {
+			"type": "boolean",
+			"default": false,
+			"description": "Will delete all functions in the project"
 		}
 	},
 	"required": ["flavors"]

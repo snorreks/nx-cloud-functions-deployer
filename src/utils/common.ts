@@ -2,7 +2,6 @@ import type { Environment } from '$types';
 
 export const getEnvironmentFileName = (options: {
 	flavor: string;
-	projectRoot: string;
 	envFiles?: Record<string, string>;
 }): string => {
 	const { flavor, envFiles } = options;

@@ -1,7 +1,7 @@
 import type { PackageManager } from '$types';
 import { execute, logger } from '$utils';
 
-export const deleteUnusedFunctions = async (options: {
+export const deleteFunctions = async (options: {
 	firebaseProjectId: string;
 	packageManager: PackageManager;
 	functionNames: string[];
@@ -9,7 +9,7 @@ export const deleteUnusedFunctions = async (options: {
 	try {
 		await executeFirebaseFunctionsDelete(options);
 	} catch (error) {
-		logger.error('deleteUnusedFunctions', error);
+		logger.error('deleteFunctions', error);
 		throw error;
 	}
 };

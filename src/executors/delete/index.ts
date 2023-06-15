@@ -2,18 +2,28 @@ import type { Executor, ExecutorContext } from '@nx/devkit';
 import type { BaseDeployOptions, DeployExecutorOptions } from '$types';
 import { logger } from '$utils/logger';
 
-import { getUnusedFunctionNames } from './read-functions';
-import { deleteUnusedFunctions } from './delete-functions';
+import {
+	getOnlineFunctionNames,
+	getUnusedFunctionNames,
+} from './read-functions';
+import { deleteFunctions } from './delete-functions';
 import { getBaseOptions } from '../deploy';
 
+interface DeleteFunctionsExecutorOptions extends DeployExecutorOptions {
+	deleteAll?: boolean;
+}
+
 const getDeleteUnusedFunctionsOptions = (
-	options: DeployExecutorOptions,
+	options: DeleteFunctionsExecutorOptions,
 	context: ExecutorContext,
 ): Promise<BaseDeployOptions> => {
 	return getBaseOptions(options, context);
 };
 
-const executor: Executor<DeployExecutorOptions> = async (options, context) => {
+const executor: Executor<DeleteFunctionsExecutorOptions> = async (
+	options,
+	context,
+) => {
 	logger.setLogSeverity(options);
 
 	const deleteUnusedFunctionsOptions = await getDeleteUnusedFunctionsOptions(
@@ -21,16 +31,16 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 		context,
 	);
 
-	const unusedFunctionNames = await getUnusedFunctionNames(
-		deleteUnusedFunctionsOptions,
-	);
+	const functionsToDelete = options.deleteAll
+		? await getOnlineFunctionNames(deleteUnusedFunctionsOptions)
+		: await getUnusedFunctionNames(deleteUnusedFunctionsOptions);
 
-	logger.info('unusedFunctionNames', unusedFunctionNames);
+	logger.info('functionsToDelete', functionsToDelete);
 
-	if (unusedFunctionNames.length > 0) {
-		await deleteUnusedFunctions({
+	if (functionsToDelete.length > 0) {
+		await deleteFunctions({
 			...deleteUnusedFunctionsOptions,
-			functionNames: unusedFunctionNames,
+			functionNames: functionsToDelete,
 		});
 	} else {
 		logger.info('No unused functions found');

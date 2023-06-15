@@ -1,0 +1,21 @@
+{
+	"$schema": "http://json-schema.org/schema",
+	"type": "object",
+	"cli": "nx",
+	"description": "Executor to read .env files",
+	"properties": {
+		"flavor": {
+			"type": "string",
+			"description": "The flavor to run from the flavors object"
+		},
+		"flavors": {
+			"type": "object",
+			"description": "The different flavors to deploy, keyed by the flavor name and value is the firebase project id"
+		},
+		"envFiles": {
+			"type": "object",
+			"description": "The different env files to use, keyed by the flavor name and value is the env file path"
+		}
+	},
+	"required": ["flavors"]
+}

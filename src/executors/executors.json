@@ -16,6 +16,11 @@
 			"schema": "./executors/build/schema.json",
 			"description": "Simple esbuild executer"
 		},
+		"read-env": {
+			"implementation": "./executors/read-env/index",
+			"schema": "./executors/read-env/schema.json",
+			"description": "Read .env file"
+		},
 		"rules": {
 			"implementation": "./executors/rules/index",
 			"schema": "./executors/rules/schema.json",

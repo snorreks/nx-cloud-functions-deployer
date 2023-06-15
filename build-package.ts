@@ -80,6 +80,10 @@ const copyFiles = async () => {
 				'dist/executors/emulate/schema.json',
 			),
 			copy(
+				'src/executors/read-env/schema.json',
+				'dist/executors/read-env/schema.json',
+			),
+			copy(
 				'src/executors/sam/sam-deploy/schema.json',
 				'dist/executors/sam/sam-deploy/schema.json',
 			),
@@ -157,6 +161,11 @@ const compileTypescriptFiles = async () => {
 				...baseBuildOptions,
 				entryPoints: ['./src/executors/script/index.ts'],
 				outfile: 'dist/executors/script/index.js',
+			}),
+			build({
+				...baseBuildOptions,
+				entryPoints: ['./src/executors/read-env/index.ts'],
+				outfile: 'dist/executors/read-env/index.js',
 			}),
 			build({
 				...baseBuildOptions,

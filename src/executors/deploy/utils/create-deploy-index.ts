@@ -151,11 +151,10 @@ const toOptionsCode = (options: { [key: string]: unknown }): string => {
 const removeAllOtherOptions = (
 	buildFunctionData: BuildFunctionData | HttpsOptions,
 ): Partial<BuildFunctionData & { document?: string; ref?: string }> => {
-	const options: Partial<BuildFunctionData> | Partial<DeployExecutorOptions> =
-		{
-			...buildFunctionData,
-			region: buildFunctionData.region as string,
-		};
+	const options: { [key: string]: unknown } = {
+		...buildFunctionData,
+		region: buildFunctionData.region as string,
+	};
 
 	const keysToDelete: (
 		| keyof BuildFunctionData
