@@ -5,7 +5,7 @@ export type CallableFunctions = {
 export type RequestFunctions = {
 	[key: string]: [
 		{
-			[key: string]: string;
+			[key: string]: unknown;
 		},
 		unknown,
 	];

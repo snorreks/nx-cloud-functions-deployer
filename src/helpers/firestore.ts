@@ -118,9 +118,8 @@ export const onWritten = <T extends CoreData>(
 		});
 	};
 };
-export const toCoreData = <T extends CoreData>(
-	documentSnap: DocumentSnapshot,
-): T =>
+
+const toCoreData = <T extends CoreData>(documentSnap: DocumentSnapshot): T =>
 	({
 		...documentSnap.data(),
 		id: documentSnap.id,
