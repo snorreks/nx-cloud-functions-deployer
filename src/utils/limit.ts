@@ -1,4 +1,4 @@
-import { EventEmitter } from 'node:events';
+// import { EventEmitter } from 'node:events';
 
 class Node<ValueType extends () => unknown = () => unknown> {
 	value: ValueType;
@@ -144,9 +144,9 @@ export const runFunctions = async <T>(
 
 	const limiter = getConcurrencyLimiter<T>(concurrency);
 
-	if (functions.length > 10 && concurrency > 10) {
-		EventEmitter.defaultMaxListeners = functions.length;
-	}
+	// if (functions.length > 10 && concurrency > 10) {
+	// 	EventEmitter.defaultMaxListeners = functions.length;
+	// }
 
 	return Promise.all(functions.map(limiter));
 };

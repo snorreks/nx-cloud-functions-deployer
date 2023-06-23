@@ -235,11 +235,21 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 	}
 
 	let deployableFunctions = (
-		await Promise.all(buildableFiles.map(buildFunction))
+		await runFunctions(
+			buildableFiles.map(
+				(buildableFile) => () => buildFunction(buildableFile),
+			),
+			options.concurrency ?? 10,
+		)
 	).filter(isDeployableFunction);
 
 	deployableFunctions = (
-		await Promise.all(buildableFiles.map(checkForChanges))
+		await runFunctions(
+			deployableFunctions.map(
+				(buildableFile) => () => checkForChanges(buildableFile),
+			),
+			options.concurrency ?? 10,
+		)
 	).filter(isDeployableFunction);
 
 	const deployableFunctionsAmount = deployableFunctions.length;
