@@ -199,6 +199,8 @@ const removeAllOtherOptions = (
 		'includeFilePath',
 		'currentTime',
 		'pnpmFix',
+		'retryAmount',
+		'deubg',
 	];
 
 	for (const key of keysToDelete) {

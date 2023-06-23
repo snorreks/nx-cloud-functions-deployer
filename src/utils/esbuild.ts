@@ -40,6 +40,7 @@ export const executeEsbuild = async (options: {
 				? "import {createRequire} from 'module';const require=createRequire(import.meta.url);"
 				: ''),
 	};
+
 	const result = await build({
 		banner,
 		footer: footer ? { js: footer } : undefined,

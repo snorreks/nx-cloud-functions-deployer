@@ -1,3 +1,5 @@
+import { EventEmitter } from 'node:events';
+
 class Node<ValueType extends () => unknown = () => unknown> {
 	value: ValueType;
 	next?: Node<ValueType>;
@@ -17,27 +19,23 @@ class Queue<ValueType extends () => unknown = () => unknown>
 	enqueue(value: ValueType): void {
 		const node = new Node<ValueType>(value);
 
-		if (this._head) {
-			if (this._tail) {
-				this._tail.next = node;
-			}
-			this._tail = node;
+		if (this._tail) {
+			this._tail.next = node;
 		} else {
 			this._head = node;
-			this._tail = node;
 		}
 
+		this._tail = node;
 		this._size++;
 	}
 
 	dequeue(): ValueType | undefined {
-		const current = this._head;
-		if (!current) {
+		if (!this._head) {
 			return;
 		}
-		if (this._head) {
-			this._head = this._head.next;
-		}
+
+		const current = this._head;
+		this._head = this._head.next;
 		this._size--;
 		return current.value;
 	}
@@ -62,19 +60,12 @@ class Queue<ValueType extends () => unknown = () => unknown>
 	}
 }
 
-/**
- * Limit the amount of concurrent executions of a function.
- *
- * @param concurrency The maximum amount of concurrent executions.
- * @returns A function that accepts a function to limit.
- */
-export const getLimiter = <ReturnType>(
+type AsyncFunction<T> = () => Promise<T>;
+
+const getConcurrencyLimiter = <ReturnType>(
 	concurrency: number,
-): ((
-	fn: (...params: unknown[]) => Promise<ReturnType>,
-	...args: unknown[]
-) => Promise<ReturnType>) => {
-	const queue = new Queue();
+): ((fn: AsyncFunction<ReturnType>) => Promise<ReturnType>) => {
+	const queue = new Queue<AsyncFunction<void>>();
 	let activeCount = 0;
 
 	const next = () => {
@@ -82,61 +73,80 @@ export const getLimiter = <ReturnType>(
 
 		if (queue.size > 0) {
 			const task = queue.dequeue();
-			if (task) {
-				task();
-			}
+			task && task();
 		}
 	};
 
-	const run = async (
-		fn: (...params: unknown[]) => Promise<ReturnType>,
-		resolve: (value: Promise<ReturnType>) => void,
-		args: unknown[],
+	const executeConcurrentFunction = async (
+		fn: AsyncFunction<ReturnType>,
+		resolve: (value: ReturnType | PromiseLike<ReturnType>) => void,
 	) => {
 		activeCount++;
-		const result = (async () => fn(...args))();
-
-		resolve(result);
-
 		try {
-			await result;
-		} catch {
-			// Ignore errors
+			const result = await fn();
+			resolve(result);
+		} catch (err) {
+			console.error(err); // log error for debugging
+			resolve(Promise.reject(err)); // reject promise with the error
+		} finally {
+			next();
 		}
-
-		next();
 	};
 
 	const enqueue = (
-		fn: (...params: unknown[]) => Promise<ReturnType>,
-		resolve: (value: Promise<ReturnType>) => void,
-		args: unknown[],
+		fn: AsyncFunction<ReturnType>,
+		resolve: (value: ReturnType | PromiseLike<ReturnType>) => void,
 	) => {
-		queue.enqueue(run.bind(undefined, fn, resolve, args));
+		queue.enqueue(executeConcurrentFunction.bind(undefined, fn, resolve));
 
 		(async () => {
-			// This function needs to wait until the next microtask before comparing
-			// `activeCount` to `concurrency`, because `activeCount` is updated asynchronously
-			// when the run function is dequeued and called. The comparison in the if-statement
-			// needs to happen asynchronously as well to get an up-to-date value for `activeCount`.
 			await Promise.resolve();
 
 			if (activeCount < concurrency && queue.size > 0) {
 				const task = queue.dequeue();
-				if (task) {
-					task();
-				}
+				task && task();
 			}
 		})();
 	};
 
-	const generator = (
-		fn: (...params: unknown[]) => Promise<ReturnType>,
-		...args: unknown[]
-	): Promise<ReturnType> =>
+	const generator = (fn: AsyncFunction<ReturnType>): Promise<ReturnType> =>
 		new Promise<ReturnType>((resolve) => {
-			enqueue(fn, resolve, args);
+			enqueue(fn, resolve);
 		});
 
 	return generator;
+};
+
+/**
+ * Executes a list of functions concurrently, with a limit on the maximum number
+ * of concurrent executions.
+ *
+ * @param functions - An array of functions to execute.
+ * @param concurrency - The maximum number of concurrent function executions.
+ * @returns - A promise that resolves to an array of return values of the
+ *   executed functions.
+ */
+export const runFunctions = async <T>(
+	functions: AsyncFunction<T>[],
+	concurrency: number,
+): Promise<T[]> => {
+	if (concurrency < 1) {
+		throw new Error('Concurrency must be at least 1.');
+	}
+
+	if (concurrency === 1) {
+		const results: T[] = [];
+		for (const fn of functions) {
+			results.push(await fn());
+		}
+		return results;
+	}
+
+	const limiter = getConcurrencyLimiter<T>(concurrency);
+
+	if (functions.length > 10 && concurrency > 10) {
+		EventEmitter.defaultMaxListeners = functions.length;
+	}
+
+	return Promise.all(functions.map(limiter));
 };

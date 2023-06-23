@@ -281,6 +281,7 @@ class LoggerService implements LoggerInterface {
 
 	startSpinner(deployableFunctionsAmount: number, projectId: string): void {
 		this._deployableFunctionsAmount = deployableFunctionsAmount;
+		this._functions.length = 0;
 		this._projectId = projectId;
 		if (this.verbose) {
 			return;

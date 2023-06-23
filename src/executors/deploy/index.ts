@@ -16,13 +16,12 @@ import { buildFunction } from './utils/build-function';
 import { getBuildableFiles } from './utils/read-project';
 import {
 	logger,
-	getLimiter,
+	runFunctions,
 	getEnvironment,
 	getFlavor,
 	getFirebaseProjectId,
 	validateProject,
 } from '$utils';
-import { EventEmitter } from 'events';
 import {
 	getOnlineChecksum,
 	updateOnlineChecksum,
@@ -33,47 +32,54 @@ const isDeployableFunction = (
 	deployableFunction?: DeployFunctionData,
 ): deployableFunction is DeployFunctionData => !!deployableFunction;
 
-const redeployFailedFunctions = async (
-	deployedFiles: DeployFunctionData[],
-	failedFunctions: DeployFunctionData[],
-	{ retryAmount, concurrency }: DeployExecutorOptions,
-) => {
+const redeployFailedFunctions = async (options: {
+	deployedFiles: DeployFunctionData[];
+	failedFunctions: DeployFunctionData[];
+	retryAmount?: number;
+	firebaseProjectId: string;
+}) => {
+	const { deployedFiles, retryAmount, firebaseProjectId } = options;
+	let { failedFunctions } = options;
 	if (!retryAmount) {
 		return;
 	}
+	// Stop the initial spinner before starting the retry process
+	logger.endSpinner();
 
-	const limit = getLimiter<DeployFunctionData | undefined>(concurrency ?? 10);
-	if (failedFunctions.length > 10) {
-		EventEmitter.defaultMaxListeners = failedFunctions.length;
-	}
+	// Print out the number of successful and failed functions
+	const successCount = deployedFiles.length;
+	const failedCount = failedFunctions.length;
+	logger.log(
+		`Deployment completed with ${successCount} successful and ${failedCount} failed functions.`,
+	);
+	logger.log('Starting retries for failed functions...');
+
+	// Start a new spinner specifically for the retries
+	logger.startSpinner(failedCount, firebaseProjectId);
 
 	for (let i = 0; i < retryAmount; i++) {
-		const redeployedFiles = (
-			await Promise.all(
-				failedFunctions.map((deployableFunction) =>
-					limit(() => deployFunction(deployableFunction)),
-				),
-			)
-		).filter(isDeployableFunction);
-
-		if (redeployedFiles.length === 0) {
-			continue;
-		}
-
-		// remove redeployed functions from failedFunctions
-		failedFunctions = failedFunctions.filter(
-			(deployableFunction) =>
-				!redeployedFiles.find(
-					(deployedFile) =>
-						deployedFile.functionName ===
-						deployableFunction.functionName,
-				),
-		);
-
-		deployedFiles.push(...redeployedFiles);
-		// if all failed functions were redeployed, break the loop
-		if (failedFunctions.length === 0) {
-			break;
+		for (const deployableFunction of failedFunctions) {
+			try {
+				const deployedFile = await deployFunction(deployableFunction);
+				if (deployedFile) {
+					// remove redeployed function from failedFunctions
+					failedFunctions = failedFunctions.filter(
+						(failedFunction) =>
+							failedFunction.functionName !==
+							deployableFunction.functionName,
+					);
+					deployedFiles.push(deployedFile);
+					// if all failed functions were redeployed, break the loop
+					if (failedFunctions.length === 0) {
+						return;
+					}
+				}
+			} catch (error) {
+				logger.error(
+					`Redeploy of ${deployableFunction.functionName} failed`,
+					error,
+				);
+			}
 		}
 	}
 };
@@ -243,28 +249,31 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 		baseOptions.firebaseProjectId,
 	);
 
-	const limit = getLimiter<DeployFunctionData | undefined>(
-		options.concurrency ?? 10,
-	);
-	if (deployableFunctionsAmount > 10) {
-		EventEmitter.defaultMaxListeners = deployableFunctionsAmount;
-	}
-
 	const deployedFiles = (
-		await Promise.all(
-			deployableFunctions.map((deployableFunction) =>
-				limit(() => deployFunction(deployableFunction)),
+		await runFunctions(
+			deployableFunctions.map(
+				(deployableFunction) => () =>
+					deployFunction(deployableFunction),
 			),
+			options.concurrency ?? 10,
 		)
 	).filter(isDeployableFunction);
 
 	// check if there are any functions that failed to deploy
 	if (deployableFunctionsAmount !== deployedFiles.length) {
-		await redeployFailedFunctions(
-			deployableFunctions,
+		await redeployFailedFunctions({
 			deployedFiles,
-			options,
-		);
+			failedFunctions: deployableFunctions.filter(
+				(deployableFunction) =>
+					!deployedFiles.find(
+						(deployedFile) =>
+							deployedFile.functionName ===
+							deployableFunction.functionName,
+					),
+			),
+			retryAmount: options.retryAmount,
+			firebaseProjectId: baseOptions.firebaseProjectId,
+		});
 	}
 
 	logger.endSpinner();
