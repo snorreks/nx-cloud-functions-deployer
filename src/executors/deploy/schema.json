@@ -66,6 +66,10 @@
 			"description": "The number of functions to deploy in parallel",
 			"aliases": ["c"]
 		},
+		"retryConcurrency": {
+			"type": "number",
+			"description": "The number of functions to deploy in parallel when retrying"
+		},
 		"devEnvFileName": {
 			"type": "string",
 			"description": "The name of the environment file for the development flavor",

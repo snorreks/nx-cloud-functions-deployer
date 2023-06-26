@@ -62,9 +62,16 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	/**
 	 * The amount of functions to deploy in parallel
 	 *
-	 * @default 10
+	 * @default 5
 	 */
 	concurrency?: number;
+
+	/**
+	 * The amount of functions to deploy in parallel when retrying
+	 *
+	 * @default 1
+	 */
+	retryConcurrency?: number;
 
 	/**
 	 * Stringify version of the environment. If this is set, .env files will be

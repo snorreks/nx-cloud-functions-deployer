@@ -1,9 +1,5 @@
 import type { Executor, ExecutorContext } from '@nx/devkit';
-import {
-	mkdir,
-	rm,
-	// rm,
-} from 'node:fs/promises';
+import { mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import type {
 	BaseDeployOptions,
@@ -36,6 +32,7 @@ const redeployFailedFunctions = async (options: {
 	deployedFiles: DeployFunctionData[];
 	failedFunctions: DeployFunctionData[];
 	retryAmount?: number;
+	retryConcurrency?: number;
 	firebaseProjectId: string;
 }) => {
 	const { deployedFiles, retryAmount, firebaseProjectId } = options;
@@ -58,28 +55,29 @@ const redeployFailedFunctions = async (options: {
 	logger.startSpinner(failedCount, firebaseProjectId);
 
 	for (let i = 0; i < retryAmount; i++) {
-		for (const deployableFunction of failedFunctions) {
-			try {
-				const deployedFile = await deployFunction(deployableFunction);
-				if (deployedFile) {
-					// remove redeployed function from failedFunctions
-					failedFunctions = failedFunctions.filter(
-						(failedFunction) =>
-							failedFunction.functionName !==
-							deployableFunction.functionName,
-					);
-					deployedFiles.push(deployedFile);
-					// if all failed functions were redeployed, break the loop
-					if (failedFunctions.length === 0) {
-						return;
-					}
-				}
-			} catch (error) {
-				logger.error(
-					`Redeploy of ${deployableFunction.functionName} failed`,
-					error,
-				);
-			}
+		const successfullyRedeployedFunctions = (
+			await runFunctions(
+				failedFunctions.map(
+					(deployableFunction) => () =>
+						deployFunction(deployableFunction),
+				),
+				options.retryConcurrency ?? 1,
+			)
+		).filter(isDeployableFunction);
+
+		failedFunctions = failedFunctions.filter(
+			(failedFunction) =>
+				!successfullyRedeployedFunctions.some(
+					(redeployedFunction) =>
+						redeployedFunction.functionName ===
+						failedFunction.functionName,
+				),
+		);
+
+		deployedFiles.push(...successfullyRedeployedFunctions);
+		// if all failed functions were redeployed, break the loop
+		if (failedFunctions.length === 0) {
+			return;
 		}
 	}
 };
@@ -221,6 +219,8 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 		getOnlineChecksum(baseOptions),
 	]);
 
+	const concurrency = options.concurrency ?? 5;
+
 	if (onlineChecksum) {
 		for (const [functionName, checksum] of Object.entries(onlineChecksum)) {
 			const deployableFunction = buildableFiles.find(
@@ -239,7 +239,7 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 			buildableFiles.map(
 				(buildableFile) => () => buildFunction(buildableFile),
 			),
-			options.concurrency ?? 10,
+			concurrency,
 		)
 	).filter(isDeployableFunction);
 
@@ -248,7 +248,7 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 			deployableFunctions.map(
 				(buildableFile) => () => checkForChanges(buildableFile),
 			),
-			options.concurrency ?? 10,
+			concurrency,
 		)
 	).filter(isDeployableFunction);
 
@@ -265,7 +265,7 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 				(deployableFunction) => () =>
 					deployFunction(deployableFunction),
 			),
-			options.concurrency ?? 10,
+			concurrency,
 		)
 	).filter(isDeployableFunction);
 

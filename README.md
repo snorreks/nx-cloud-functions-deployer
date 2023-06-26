@@ -23,15 +23,14 @@ From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 
 -   [Logger](#logger)
 -   [Executors](#executors)
     -   [Deploy](#deploy)
-        -   [Options](#options)
-        -   [Examples](#examples)
+        -   [Options](#deploy-options)
+        -   [Examples](#deploy-examples)
     -   [Script](#script)
-        -   [Options](#options-1)
-        -   [Examples](#examples-1)
+        -   [Options](#script-options)
+        -   [Examples](#script-examples)
     -   [Delete](#delete)
-        -   [Options](#options-2)
+        -   [Options](#delete-options)
     -   [Rules](#rules)
-    -   [Emulate](#emulate)
     -   [SAM](#sam)
 
 ## Features
@@ -98,8 +97,8 @@ When you use the `onWritten`, `onCreated`, `onUpdated` or `onDeleted` helper fun
 
 ```typescript
 {
-	...documentSnapshot.data(),
-	id: documentSnapshot.id,
+ ...documentSnapshot.data(),
+ id: documentSnapshot.id,
 }
 ```
 
@@ -307,23 +306,23 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 
 ## Executors
 
-### Deploy
+### deploy
 
 ```json
 ...
-	"targets": {
-		"deploy": {
-			"executor": "nx-cloud-functions-deployer:deploy",
-			"options": {
-				"flavors": {
-					"development": "firebase-project-development-id",
-					"production": "firebase-project-production-id"
-				}
-			}
-		},
+ "targets": {
+  "deploy": {
+   "executor": "nx-cloud-functions-deployer:deploy",
+   "options": {
+    "flavors": {
+     "development": "firebase-project-development-id",
+     "production": "firebase-project-production-id"
+    }
+   }
+  },
 ```
 
-#### Options
+#### deploy options
 
 | Option               | Description                                                                                                                                                          | Default                           | Alias            |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------- |
@@ -337,7 +336,7 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 | `region`             | The default region to deploy the functions, if it is not set in the deploy file. See [Cloud Functions Locations](https://cloud.google.com/functions/docs/locations). | `us-central1`                     | `location`       |
 | `silent`             | Whether to suppress all logs.                                                                                                                                        | `false`                           | `s`              |
 | `verbose`            | Whether to run the command with verbose logging.                                                                                                                     | `false`                           | `v`              |
-| `concurrency`        | The number of functions to deploy in parallel                                                                                                                        | `10`                              | `c`              |
+| `concurrency`        | The number of functions to deploy in parallel                                                                                                                        | `5`                               | `c`              |
 | `envString`          | Stringify version of the environment. This is useful when you want to deploy using CI/CD.                                                                            | undefined                         | `ciEnv`          |
 | `only`               | Only deploy the given function names separated by comma                                                                                                              | undefined                         | `o`              |
 | `force`              | Force deploy all functions, even if no files changed                                                                                                                 | `false`                           | `f`              |
@@ -346,7 +345,7 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 | `functionsDirectory` | Relative path from the project root to the functions directory.                                                                                                      | `src/controllers`                 | `inputDirectory` |
 | `nodeVersion`        | The node version to use for the functions.                                                                                                                           | `16`                              | `node`           |
 
-#### Examples
+#### deploy examples
 
 ```bash
 pnpm nx deploy functions --flavor production
@@ -362,7 +361,7 @@ pnpm nx deploy functions --development --only my_function,my_other_function --f
 # and deploy them even if no files have changed
 ```
 
-### Script
+### script
 
 The plugin also provide support to run scripts locally. The plugin will run any files in the `scripts` directory. The files needs to export default a function.
 
@@ -400,19 +399,19 @@ To make firebase work locally see [example](https://github.com/snorreks/nx-cloud
 
 ```json
 ...
-	"targets": {
-		"script": {
-			"executor": "nx-cloud-functions-deployer:script",
-			"options": {
-				"flavors": {
-					"development": "firebase-project-development-id",
-					"production": "firebase-project-production-id"
-				}
-			}
-		},
+ "targets": {
+  "script": {
+   "executor": "nx-cloud-functions-deployer:script",
+   "options": {
+    "flavors": {
+     "development": "firebase-project-development-id",
+     "production": "firebase-project-production-id"
+    }
+   }
+  },
 ```
 
-#### Options
+#### script options
 
 | Option        | Description                                                                                      | Default         | Alias      |
 | ------------- | ------------------------------------------------------------------------------------------------ | --------------- | ---------- |
@@ -428,7 +427,7 @@ To make firebase work locally see [example](https://github.com/snorreks/nx-cloud
 | `runPrevious` | Rerun the last executed script.                                                                  | `false`         | `p`        |
 | `script`      | The name of the script to run. If not set, it will prompt you to select from a list.             | undefined       | `file`     |
 
-#### Examples
+#### script examples
 
 ```bash
 pnpm nx script functions --production
@@ -443,25 +442,25 @@ pnpm nx script functions --development -p
 # will run the last executed script in development
 ```
 
-### Delete
+### delete
 
 The plugin provide support to delete unused function that are not in the project anymore. The plugin will delete any functions that are not in the `functions` directory.
 
 ```json
 ...
-	"targets": {
-		"delete-unused": {
-			"executor": "nx-cloud-functions-deployer:delete",
-			"options": {
-				"flavors": {
-					"development": "firebase-project-development-id",
-					"production": "firebase-project-production-id"
-				}
-			}
-		},
+ "targets": {
+  "delete-unused": {
+   "executor": "nx-cloud-functions-deployer:delete",
+   "options": {
+    "flavors": {
+     "development": "firebase-project-development-id",
+     "production": "firebase-project-production-id"
+    }
+   }
+  },
 ```
 
-#### Options
+#### delete options
 
 | Option        | Description                                                                                      | Default         | Alias      |
 | ------------- | ------------------------------------------------------------------------------------------------ | --------------- | ---------- |
@@ -475,25 +474,25 @@ The plugin provide support to delete unused function that are not in the project
 | `verbose`     | Whether to run the command with verbose logging.                                                 | `false`         | `v`        |
 | `deleteAll`   | Whether to delete all functions even if they are in your project.                                | `false`         |            |
 
-### Read env
+### read-env
 
 This will read your .env file in your selected flavor, copy it to the clipboard and print it in console. This is so you can use `envString` when you deploy your functions in CI.
 
 ```json
 ...
-	"targets": {
-		"delete-unused": {
-			"executor": "nx-cloud-functions-deployer:read-env",
-			"options": {
-				"flavors": {
-					"development": "firebase-project-development-id",
-					"production": "firebase-project-production-id"
-				}
-			}
-		},
+ "targets": {
+  "delete-unused": {
+   "executor": "nx-cloud-functions-deployer:read-env",
+   "options": {
+    "flavors": {
+     "development": "firebase-project-development-id",
+     "production": "firebase-project-production-id"
+    }
+   }
+  },
 ```
 
-#### Options
+#### read-env options
 
 | Option     | Description                                                                                      | Default  | Alias |
 | ---------- | ------------------------------------------------------------------------------------------------ | -------- | ----- |
@@ -503,14 +502,10 @@ This will read your .env file in your selected flavor, copy it to the clipboard 
 | `silent`   | Whether to suppress all logs.                                                                    | `false`  | `s`   |
 | `verbose`  | Whether to run the command with verbose logging.                                                 | `false`  | `v`   |
 
-### Rules
+### rules
 
 See the example [here](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/rules).
 
-### Emulate
-
-See the example [here](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/rules).
-
-### SAM
+### sam
 
 There is now also support for aws sam to deploy and watch logs. You need the SAM CLI installed to use this feature. See the example [here](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/aws).
