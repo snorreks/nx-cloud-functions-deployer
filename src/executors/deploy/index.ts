@@ -22,7 +22,11 @@ import {
 	getOnlineChecksum,
 	updateOnlineChecksum,
 } from './utils/online-checksum';
-import { cacheChecksumLocal, checkForChanges } from './utils/checksum';
+import {
+	cacheChecksumLocal,
+	checkForChanges,
+	checksumsFolderPath,
+} from './utils/checksum';
 
 const isDeployableFunction = (
 	deployableFunction?: DeployFunctionData,
@@ -123,6 +127,15 @@ export const getBaseOptions = async (
 	const [environment] = await Promise.all([
 		getEnvironment({ ...options, projectRoot, flavor }),
 		mkdir(temporaryDirectory, { recursive: true }),
+		mkdir(
+			checksumsFolderPath({
+				outputDirectory,
+				flavor,
+			}),
+			{
+				recursive: true,
+			},
+		),
 		validateProject({
 			packageManager,
 			projectRoot,

@@ -6,8 +6,15 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const algorithm = 'md5';
-const checksumFileName = `checksum.${algorithm}`;
 const encoding = 'hex';
+
+const checksumsFolderName = '.checksums';
+
+export const checksumsFolderPath = (options: {
+	outputDirectory: string;
+	flavor: string;
+}): string =>
+	join(options.outputDirectory, checksumsFolderName, options.flavor);
 
 // function that makes a Record<string, string> into a string
 
@@ -44,7 +51,8 @@ export const checkForChanges = async (
 
 		const environmentString = environment && recordToString(environment);
 		const cachedChecksum =
-			deployFunction.checksum ?? (await getCachedChecksum(outputRoot));
+			deployFunction.checksum ??
+			(await getCachedChecksum(deployFunction));
 		const newChecksum = generateChecksum(newCode + environmentString);
 
 		if (
@@ -79,11 +87,21 @@ const generateChecksum = (code: string): string => {
 	return createHash(algorithm).update(code, 'utf8').digest(encoding);
 };
 
-const getCachedChecksum = async (
-	outputRoot: string,
-): Promise<string | undefined> => {
+const getCachedChecksum = async ({
+	outputDirectory,
+	functionName,
+	flavor,
+}: DeployFunctionData): Promise<string | undefined> => {
 	try {
-		return await readFile(join(outputRoot, checksumFileName), 'utf8');
+		const checksumFileName = `${functionName}.${algorithm}`;
+
+		return await readFile(
+			join(
+				checksumsFolderPath({ outputDirectory, flavor }),
+				checksumFileName,
+			),
+			'utf8',
+		);
 	} catch (error) {
 		logger.debug(error);
 		return;
@@ -91,15 +109,24 @@ const getCachedChecksum = async (
 };
 
 export const cacheChecksumLocal = async ({
-	outputRoot,
+	outputDirectory,
 	checksum,
+	flavor,
+	functionName,
 }: DeployFunctionData): Promise<void> => {
 	try {
 		if (!checksum) {
 			return;
 		}
+		const checksumFileName = `${functionName}.${algorithm}`;
 
-		await writeFile(join(outputRoot, checksumFileName), checksum);
+		await writeFile(
+			join(
+				checksumsFolderPath({ outputDirectory, flavor }),
+				checksumFileName,
+			),
+			checksum,
+		);
 	} catch (error) {
 		logger.debug(error);
 	}
