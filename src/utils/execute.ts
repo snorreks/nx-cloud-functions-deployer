@@ -40,7 +40,7 @@ export const runFile = async (options: {
 }) => {
 	logger.debug('runFile', options);
 	const { runScriptFilePath, cwd, tsconfigPath, environment } = options;
-	const commandArguments: string[] = ['--no-warnings', '--loader', 'tsx'];
+	const commandArguments: string[] = ['--no-warnings', '--import', 'tsx'];
 
 	if (tsconfigPath) {
 		commandArguments.push('--tsconfig', tsconfigPath);

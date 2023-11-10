@@ -6,7 +6,6 @@
 		"importHelpers": true,
 		"strictNullChecks": true,
 		"skipDefaultLibCheck": true,
-		"baseUrl": ".",
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,
 		"noFallthroughCasesInSwitch": true,
@@ -21,11 +20,12 @@
 		"stripInternal": true,
 		"verbatimModuleSyntax": true,
 		"rootDir": "src",
+		"baseUrl": ".",
 		"lib": ["ES2021"],
-		"module": "NodeNext",
+		"module": "ESNext",
 		"target": "ES2021",
 		"esModuleInterop": true,
-		"moduleResolution": "node",
+		"moduleResolution": "Bundler",
 		"noUnusedLocals": true,
 		"allowSyntheticDefaultImports": true,
 		"skipLibCheck": true,
@@ -41,7 +41,7 @@
 			"$utils/*": ["src/utils/*"]
 		}
 	},
-	"include": ["src"],
+	"include": ["src/**/*.ts", "src/**/*.d.ts"],
 	"files": [],
 	"references": [
 		{

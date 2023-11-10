@@ -1,0 +1,15 @@
+{
+	"$schema": "https://json.schemastore.org/prettierrc",
+	"arrowParens": "always",
+	"bracketSameLine": true,
+	"endOfLine": "auto",
+	"jsdocCapitalizeDescription": false,
+	"plugins": ["prettier-plugin-jsdoc"],
+	"semi": true,
+	"singleQuote": true,
+	"tabWidth": 4,
+	"trailingComma": "all",
+	"tsdoc": true,
+	"useTabs": true,
+	"printWidth": 80
+}

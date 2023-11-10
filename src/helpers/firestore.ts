@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { CoreData, DocumentOptions } from '$types';
-import type { ParamsOf } from 'firebase-functions/lib/v2/core';
+import type { ParamsOf } from 'firebase-functions/v2/core';
 import type {
 	Change,
 	DocumentSnapshot,
@@ -123,4 +123,4 @@ const toCoreData = <T extends CoreData>(documentSnap: DocumentSnapshot): T =>
 	({
 		...documentSnap.data(),
 		id: documentSnap.id,
-	} as T);
+	}) as T;

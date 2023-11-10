@@ -30,17 +30,15 @@ export const buildFunction = async (
 		// - Create the deploy firebase.json file
 		await Promise.all([
 			(async () => {
-				const inputPath = await createTemporaryIndexFunctionFile(
-					buildFunctionData,
-				);
+				const inputPath =
+					await createTemporaryIndexFunctionFile(buildFunctionData);
 				const outputPath = join(
 					buildFunctionData.outputRoot,
 					'src/index.js',
 				);
 
-				const shouldImportLogger = await buildLoggerFile(
-					buildFunctionData,
-				);
+				const shouldImportLogger =
+					await buildLoggerFile(buildFunctionData);
 				if (shouldImportLogger) {
 					buildFunctionData.hasLoggerFile = true;
 				}
