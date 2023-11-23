@@ -1,7 +1,6 @@
 {
 	"editor.codeActionsOnSave": {
-		"source.fixAll.eslint": true
-		// "source.sortImports": true
+		"source.fixAll.eslint": "explicit"
 	},
 	"eslint.validate": ["typescript"],
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -21,5 +20,10 @@
 		"outfile",
 		"preinstall",
 		"rawlist"
-	]
+	],
+	"[dart]": {
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit"
+		}
+	}
 }
