@@ -41,7 +41,7 @@ From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 
 -   Detect changes and only deploy changed functions
 -   No longer export all functions in a index.ts file, but deploy each function individually for smaller bundles
 -   Configurable deploy options
--   Deploy with Node 14/16/18 and esm
+-   Deploy with Node 14/16/18/20 and esm
 -   Cloud functions v2 support
 
 ## Install
