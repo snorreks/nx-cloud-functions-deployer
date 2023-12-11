@@ -112,7 +112,7 @@ const compileTypescriptFiles = async () => {
 
 		const baseBuildOptions: BuildOptions = {
 			bundle: true,
-			minify: true,
+			minify: false,
 			platform: 'node',
 			splitting: false,
 			treeShaking: true,

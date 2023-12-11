@@ -84,7 +84,9 @@ const handleScript = async (
 		const script = await import(scriptImportPath);
 		const start = Date.now();
 
-		const scriptFunction: ScriptFunction = script.default;
+
+		const scriptFunction = toScriptFunction(scriptFileName, script);
+
 
 		const response = await scriptFunction({
 			prompt: async (questions) => {
@@ -150,6 +152,32 @@ const handleScript = async (
 		process.exit(1);
 	}
 };
+
+const toScriptFunction = (scriptFileName:string, script: any): ScriptFunction =>{
+	if(typeof script.handler === 'function') {
+		return script;
+	}
+
+	const defaultScript = script.default;
+
+	if(!defaultScript) {
+		throw new Error(`Script ${scriptFileName} does not export a default function`);
+	}
+	
+	if(typeof defaultScript === 'function') {
+		return defaultScript;
+	}
+
+	if(typeof defaultScript.handler === 'function') {
+		return defaultScript.handler;
+	}
+
+	if(typeof defaultScript.default === 'function') {
+		return defaultScript.default;
+	}
+
+	throw new Error(`Script ${scriptFileName} does not export a default function`);
+}
 
 const askScriptFileName = async (
 	scriptsRoot: string,
