@@ -36,6 +36,7 @@ const toDeployIndexCode = (buildFunctionData: BuildFunctionData) => {
 		absolutePath,
 		deployFunction,
 		rootFunctionBuilder,
+		region,
 		temporaryDirectory,
 	} = buildFunctionData;
 	const functionCode = toFunctionCodeType(deployFunction);
@@ -43,6 +44,16 @@ const toDeployIndexCode = (buildFunctionData: BuildFunctionData) => {
 	const deployableFilePath = absolutePath;
 	const importPath = toImportPath(deployableFilePath, temporaryDirectory);
 	const optionsCode = getOptions(buildFunctionData);
+
+	if (rootFunctionBuilder === 'auth') {
+		// Auth functions don't support v2 yet, so we need to use v1, and v1 syntax syntax is different:
+		const fileCode = `
+		import { region } from 'firebase-functions';
+		import ${functionStart} from '${importPath}';
+		export const ${functionName} = region('${region}').runWith(${optionsCode}).auth.user().${functionCode}(${functionStart});
+	`;
+		return fileCode;
+	}
 
 	const fileCode = `
 		import { ${functionCode} } from 'firebase-functions/v2/${rootFunctionBuilder}';
@@ -110,6 +121,14 @@ const toFunctionCodeType = (deployFunction: DeployFunction): string => {
 			return 'onValueUpdated';
 		case 'onValueWritten':
 			return 'onValueWritten';
+		case 'onAuthCreate':
+			return 'onCreate';
+		case 'onAuthDelete':
+			return 'onDelete';
+		case 'beforeAuthCreate':
+			return 'beforeCreate';
+		case 'beforeAuthSignIn':
+			return 'beforeSignIn';
 		default:
 			throw new Error(`Unknown function type: ${deployFunction}`);
 	}
@@ -201,6 +220,8 @@ const removeAllOtherOptions = (
 		'pnpmFix',
 		'retryAmount',
 		'deubg',
+		'minify',
+		'useLogger',
 	];
 
 	for (const key of keysToDelete) {

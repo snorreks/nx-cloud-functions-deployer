@@ -89,7 +89,7 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 				outputPath: join(outputRoot, main),
 				external: options.external,
 				sourceRoot: projectRoot,
-				nodeVersion: options.nodeVersion ?? '16',
+				nodeVersion: options.nodeVersion ?? '20',
 			}),
 			createPackageJson(),
 		]);

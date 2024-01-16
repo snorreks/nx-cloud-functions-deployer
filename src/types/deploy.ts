@@ -42,6 +42,8 @@ interface SharedDeployExecutorBaseOptions extends ExecutorBaseBuildOptions {
 	ignoreMissingEnvironmentKey?: boolean;
 
 	pnpmFix?: boolean;
+
+	useLogger?: boolean;
 }
 
 export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
@@ -59,6 +61,8 @@ export interface DeployExecutorOptions extends SharedDeployExecutorBaseOptions {
 	silent?: boolean;
 	/** Get verbose logs */
 	verbose?: boolean;
+
+	minify?: boolean;
 	/**
 	 * The amount of functions to deploy in parallel
 	 *
@@ -144,6 +148,8 @@ export interface BaseDeployOptions extends SharedDeployExecutorBaseOptions {
 	sentry?: SentryLiteData;
 
 	pnpmFix?: boolean;
+
+	minify?: boolean;
 }
 
 export interface BuildFunctionLiteData<

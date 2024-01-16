@@ -1,5 +1,13 @@
 # nx-cloud-functions-deployer
 
+## 2.5.0
+
+### Changes
+
+-   Emulate command (can now build all functions and emulate it with one firebase.json file)
+-   Added auth triggers: onCreate, onDelete, beforeCreate, beforeDelete.
+-   Added "minify" option to deploy command.
+
 ## 2.2.0
 
 ### Changes

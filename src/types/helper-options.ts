@@ -90,10 +90,13 @@ export interface ObjectTriggerOptions
 	extends Omit<BaseFunctionOptions, 'region'>,
 		StorageOptions {}
 
+export type AuthTriggerOptions = Omit<BaseFunctionOptions, 'region'>;
+
 export type FunctionOptions = {
 	https: HttpsOptions;
 	firestore: DocumentOptions;
 	scheduler: ScheduleOptions;
 	storage: ObjectTriggerOptions;
 	database: ReferenceOptions;
+	auth: AuthTriggerOptions;
 };

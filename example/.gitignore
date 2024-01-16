@@ -85,3 +85,5 @@ storybook-static
 
 !apps/functions/.env.development
 !apps/functions/.env.prodcution
+
+.nx

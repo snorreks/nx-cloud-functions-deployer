@@ -4,4 +4,5 @@ export * from './helpers/https';
 export * from './helpers/scheduler';
 export * from './helpers/storage';
 export * from './helpers/https';
+export * from './helpers/auth';
 export * from './types';
