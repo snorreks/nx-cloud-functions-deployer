@@ -59,6 +59,7 @@ export const buildFunction = async (
 						: undefined,
 					requireFix: true,
 					sourcemap: true,
+					minify: buildFunctionData.minify,
 				});
 				await createEnvironmentFile(buildFunctionData);
 			})(),
@@ -89,6 +90,10 @@ const buildLoggerFile = async (
 	buildFunctionData: BuildFunctionData,
 ): Promise<boolean> => {
 	try {
+		if (buildFunctionData.useLogger === false) {
+			return false;
+		}
+
 		const inputPath = join(
 			buildFunctionData.projectRoot,
 			buildFunctionData.includeFilePath ?? 'src/logger.ts',

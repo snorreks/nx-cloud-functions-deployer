@@ -118,7 +118,7 @@ const compileTypescriptFiles = async () => {
 			treeShaking: true,
 			sourcemap: true,
 			plugins: [projectAlias, nodeExternalsPlugin()],
-			target: 'node18',
+			target: 'node20',
 		};
 
 		await Promise.all([

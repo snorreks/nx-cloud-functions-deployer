@@ -28,7 +28,7 @@ import {
 	checksumsFolderPath,
 } from './utils/checksum';
 
-const isDeployableFunction = (
+export const isDeployableFunction = (
 	deployableFunction?: DeployFunctionData,
 ): deployableFunction is DeployFunctionData => !!deployableFunction;
 
@@ -164,6 +164,7 @@ export const getBaseOptions = async (
 		firebaseProjectId,
 		workspaceRoot,
 		projectRoot,
+		minify: options.minify,
 		outputDirectory,
 		temporaryDirectory,
 		flavor,

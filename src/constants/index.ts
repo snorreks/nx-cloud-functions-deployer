@@ -6,6 +6,7 @@ export const functionBuilders = [
 	'scheduler',
 	'storage',
 	'database',
+	'auth',
 ] as const;
 
 export const deployDirectories = [
@@ -13,6 +14,7 @@ export const deployDirectories = [
 	'https',
 	'callable',
 	'database',
+	'auth',
 	'firestore',
 	'scheduler',
 	'storage',

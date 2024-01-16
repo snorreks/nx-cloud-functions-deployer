@@ -92,6 +92,12 @@ const toRootFunction = (deployFunction: DeployFunction): FunctionBuilder => {
 		case 'onObjectFinalized':
 		case 'onObjectMetadataUpdated':
 			return 'storage';
+		case 'onAuthDelete':
+		case 'onAuthCreate':
+		case 'beforeAuthCreate':
+		case 'beforeAuthSignIn':
+			return 'auth';
+
 		default:
 			throw new Error('Invalid function type');
 	}

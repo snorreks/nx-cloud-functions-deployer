@@ -2,7 +2,7 @@
 	"name": "functions",
 	"type": "module",
 	"engines": {
-		"node": "16"
+		"node": "20"
 	},
 	"main": "src/index.js",
 	"dependencies": {},

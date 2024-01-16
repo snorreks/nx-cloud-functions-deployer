@@ -10,18 +10,29 @@
 					"development": "mailvideo-test",
 					"production": "example-production"
 				},
-				"packageManager": "global",
-				"pnpmFix": true,
-				"node": "18"
+				"node": "20",
+				"minify": false
 			}
 		},
 		"script": {
 			"executor": "../dist:script",
 			"options": {
 				"flavors": {
-					"development": "example-development",
+					"development": "mailvideo-test",
 					"production": "example-production"
 				}
+			}
+		},
+		"emulate": {
+			"executor": "../dist:emulate",
+			"options": {
+				"flavors": {
+					"development": "mailvideo-test",
+					"production": "example-production"
+				},
+				"only": ["functions"],
+				"packageManager": "global",
+				"minify": false
 			}
 		}
 	}

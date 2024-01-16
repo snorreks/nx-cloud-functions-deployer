@@ -10,6 +10,12 @@ This is an example on how to use the plugin.
 cd .. && pnpm i && pnpm build && cd example && pnpm i
 ```
 
+## Refreshing the example
+
+```bash
+cd .. && pnpm build && cd example && rm -rf node_modules/nx-cloud-functions-deployer && pnpm i
+```
+
 Go to
 
 ```bash

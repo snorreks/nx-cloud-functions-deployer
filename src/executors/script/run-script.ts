@@ -52,7 +52,7 @@ const handleScript = async (
 				`Running script ${chalk.bold(scriptFileName)} in ${chalk.bold(
 					firebaseProjectId,
 				)}...`,
-		  ).start()
+			).start()
 		: undefined;
 	try {
 		if (scriptConfigPath) {
@@ -84,9 +84,7 @@ const handleScript = async (
 		const script = await import(scriptImportPath);
 		const start = Date.now();
 
-
 		const scriptFunction = toScriptFunction(scriptFileName, script);
-
 
 		const response = await scriptFunction({
 			prompt: async (questions) => {
@@ -153,31 +151,39 @@ const handleScript = async (
 	}
 };
 
-const toScriptFunction = (scriptFileName:string, script: any): ScriptFunction =>{
-	if(typeof script.handler === 'function') {
+const toScriptFunction = (
+	scriptFileName: string,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	script: any,
+): ScriptFunction => {
+	if (typeof script.handler === 'function') {
 		return script;
 	}
 
 	const defaultScript = script.default;
 
-	if(!defaultScript) {
-		throw new Error(`Script ${scriptFileName} does not export a default function`);
+	if (!defaultScript) {
+		throw new Error(
+			`Script ${scriptFileName} does not export a default function`,
+		);
 	}
-	
-	if(typeof defaultScript === 'function') {
+
+	if (typeof defaultScript === 'function') {
 		return defaultScript;
 	}
 
-	if(typeof defaultScript.handler === 'function') {
+	if (typeof defaultScript.handler === 'function') {
 		return defaultScript.handler;
 	}
 
-	if(typeof defaultScript.default === 'function') {
+	if (typeof defaultScript.default === 'function') {
 		return defaultScript.default;
 	}
 
-	throw new Error(`Script ${scriptFileName} does not export a default function`);
-}
+	throw new Error(
+		`Script ${scriptFileName} does not export a default function`,
+	);
+};
 
 const askScriptFileName = async (
 	scriptsRoot: string,
