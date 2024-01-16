@@ -47,6 +47,11 @@
 			},
 			"description": "Only start emulator for specified services",
 			"aliases": ["o"]
+		},
+		"minify": {
+			"type": "boolean",
+			"default": true,
+			"description": "Will minify the functions"
 		}
 	},
 	"required": ["flavors"]

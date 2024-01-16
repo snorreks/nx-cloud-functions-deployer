@@ -30,6 +30,8 @@ From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 
         -   [Examples](#script-examples)
     -   [Delete](#delete)
         -   [Options](#delete-options)
+    -   [Emulate](#emulate)
+        -   [Options](#emulate-options)
     -   [Rules](#rules)
     -   [SAM](#sam)
 
@@ -43,6 +45,12 @@ From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 
 -   Configurable deploy options
 -   Deploy with Node 14/16/18/20 and esm
 -   Cloud functions v2 support
+-   Deploy rules and indexes
+-   Execute scripts locally
+-   Read env file and copy to clipboard
+-   Cloud cache support
+-   Run emulators locally
+-   AWS SAM: build, deploy and watch logs for lambda functions
 
 ## Install
 
@@ -287,13 +295,19 @@ The plugin will detect changes on the deployed functions locally. But it is also
 The file needs to export two function `fetch` and `update` which will be called by the plugin. Note you will also get the environments, so you can use process.env, if you want to hide production secrets for fetching/updating the cache.
 
 ```typescript
-import type { FunctionsCacheFetch, FunctionsCacheUpdate } from 'nx-cloud-functions-deployer';
+import type {
+	FunctionsCacheFetch,
+	FunctionsCacheUpdate,
+} from 'nx-cloud-functions-deployer';
 
 export const fetch: FunctionsCacheFetch = async ({ flavor }) => {
 	// fetch the cache from the cloud
 };
 
-export const update: FunctionsCacheUpdate = async ({ flavor, newFunctionsCache }) => {
+export const update: FunctionsCacheUpdate = async ({
+	flavor,
+	newFunctionsCache,
+}) => {
 	// update the cache in the cloud
 };
 ```
@@ -343,7 +357,8 @@ If you want to see metric for each function (like opentelemetry or sentry) , add
 | `packageManager`     | The package manager to use for deploying with firebase-tools. Either: `pnpm`, `npm`, `yarn` or `global`.                                                             | `pnpm`                            | `pm`             |
 | `dryRun`             | If true, then it will only build the function and not deploy them.                                                                                                   | `false`                           | `d`, `dry`       |
 | `functionsDirectory` | Relative path from the project root to the functions directory.                                                                                                      | `src/controllers`                 | `inputDirectory` |
-| `nodeVersion`        | The node version to use for the functions.                                                                                                                           | `16`                              | `node`           |
+| `nodeVersion`        | The node version to use for the functions.                                                                                                                           | `20`                              | `node`           |
+| `minify`             | Whether to minify the functions                                                                                                                                      | `true`                            |                  |
 
 #### deploy examples
 
@@ -474,6 +489,40 @@ The plugin provide support to delete unused function that are not in the project
 | `verbose`     | Whether to run the command with verbose logging.                                                 | `false`         | `v`        |
 | `deleteAll`   | Whether to delete all functions even if they are in your project.                                | `false`         |            |
 
+### emulate
+
+The plugin provide support to emulate functions locally. The plugin will emulate any functions that are in the `functions` directory.
+
+```json
+...
+ "targets": {
+  "emulate": {
+   "executor": "nx-cloud-functions-deployer:emulate",
+   "options": {
+    "flavors": {
+     	"development": "firebase-project-development-id",
+     	"production": "firebase-project-production-id"
+    },
+	"only": ["functions"],
+	"packageManager": "global",
+	"minify": false
+   }
+  },
+```
+
+#### emulate options
+
+| Option     | Description                                                                                                     | Default         | Alias      |
+| ---------- | --------------------------------------------------------------------------------------------------------------- | --------------- | ---------- |
+| `flavors`  | A object of the flavors to use, the key is the flavor name and value is the firebase project id.                | required        |            |
+| `flavor`   | The flavor to use, default will be the first key in the `flavors` object                                        |                 |            |
+| `envFiles` | the key is the flavor name and value is path to the env file, default is `.env.${flavor}`                       |                 |            |
+| `tsconfig` | The tsconfig file to use for the script in the project directory.                                               | `tsconfig.json` | `tsconfig` |
+| `silent`   | Whether to suppress all logs.                                                                                   | `false`         | `s`        |
+| `verbose`  | Whether to run the command with verbose logging.                                                                | `false`         | `v`        |
+| `only`     | Only emulate the given services separated by comma "auth", "functions","firestore","hosting","pubsub","storage" | undefined       | `o`        |
+| `minify`   | Whether to minify the functions                                                                                 | `true`          |            |
+
 ### read-env
 
 This will read your .env file in your selected flavor, copy it to the clipboard and print it in console. This is so you can use `envString` when you deploy your functions in CI.
@@ -509,3 +558,27 @@ See the example [here](https://github.com/snorreks/nx-cloud-functions-deployer/t
 ### sam
 
 There is now also support for aws sam to deploy and watch logs. You need the SAM CLI installed to use this feature. See the example [here](https://github.com/snorreks/nx-cloud-functions-deployer/tree/master/example/apps/aws).
+
+```json
+...
+		"deploy": {
+			"executor": "nx-cloud-functions-deployer:sam-deploy",
+			"options": {
+				"flavors": {
+					"development": "example-dev-test"
+				},
+				"bucket": "test"
+			}
+		},
+		"logs": {
+			"executor": "nx-cloud-functions-deployer:sam-logs",
+			"options": {
+				"flavors": {
+					"development": "example-dev-test"
+				},
+				"name": "ExampleFunction",
+				"tail": true
+			}
+		}
+
+```
