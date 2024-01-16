@@ -12,6 +12,7 @@ From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 
 -   [Prerequisites](#prerequisites)
 -   [Helper Functions](#helper-functions)
     -   [Schedule Example](#schedule-example)
+    -   [Auth Example](#auth-example)
     -   [Firestore Example](#firestore-example)
     -   [Https Example](#https-example)
     -   [Assets and external dependencies](#assets-and-external-dependencies)
@@ -97,6 +98,18 @@ export default onSchedule(
 		schedule: 'every day 00:00',
 	},
 );
+```
+
+### Auth Example
+
+Auth triggers have the following functions: `onAuthCreate`, `onAuthDeleted`,`beforeAuthCreate` and `beforeAuthDeleted`.
+
+```typescript
+import { onAuthCreate } from 'nx-cloud-functions-deployer';
+
+export default onAuthCreate(({ uid }) => {
+	console.log('New user created: uid', uid);
+});
 ```
 
 ### Firestore Example
@@ -222,6 +235,7 @@ It is recommend to have the following folder structure, but it is not required.
 │   │  │  ├── database
 │   │  │  ├── firestore
 │   │  │  ├── storage
+|   |  |  ├── auth
 │   │  │  ├── pubsub
 │   │  │  │  ├── schedule
 │   │  │  │  ├── topic
@@ -236,6 +250,7 @@ The folders in controllers will different deployment types:
 -   `database` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events)
 -   `schedule` - [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions)
 -   `storage` - [Cloud Storage triggers](https://firebase.google.com/docs/functions/gcp-storage-events)
+-   `auth` - [Auth triggers](https://firebase.google.com/docs/functions/auth-events)
 
 The default function names will be the path from the `api/callable/database/scheduler` folder to the file. For example, the function `controllers/api/stripe/webhook_endpoint.ts` will be deployed as `stripe_webhook_endpoint`.
 
