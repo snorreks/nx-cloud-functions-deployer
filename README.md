@@ -13,12 +13,13 @@ From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 
 -   [Helper Functions](#helper-functions)
     -   [Schedule Example](#schedule-example)
     -   [Auth Example](#auth-example)
+    -   [Database Example](#database-example)
     -   [Firestore Example](#firestore-example)
     -   [Https Example](#https-example)
     -   [Assets and external dependencies](#assets-and-external-dependencies)
     -   [Limitations](#limitations)
 -   [Folder Structure](#folder-structure)
-    -   [Database/Firestore Structure](#databasefirestore-structure)
+    -   [Firestore Structure](#firestore-structure)
     -   [Custom Structure](#custom-structure)
 -   [Cloud cache](#cloud-cache)
 -   [Logger](#logger)
@@ -110,6 +111,23 @@ import { onAuthCreate } from 'nx-cloud-functions-deployer';
 export default onAuthCreate(({ uid }) => {
 	console.log('New user created: uid', uid);
 });
+```
+
+### Database Example
+
+Database triggers have the following functions: `onValueCreated`, `onValueDeleted`, `onValueUpdated` and `onValueWritten`. You must always add the `ref` for each database function.
+
+```typescript
+import { onValueCreated } from 'nx-cloud-functions-deployer';
+
+export default onValueCreated(
+	({ uid }) => {
+		console.log('New user created: uid', event.id);
+	},
+	{
+		ref: '/user/{uid=*@gmail.com}',
+	},
+);
 ```
 
 ### Firestore Example
@@ -254,9 +272,9 @@ The folders in controllers will different deployment types:
 
 The default function names will be the path from the `api/callable/database/scheduler` folder to the file. For example, the function `controllers/api/stripe/webhook_endpoint.ts` will be deployed as `stripe_webhook_endpoint`.
 
-### Database/Firestore Structure
+### Firestore Structure
 
-The database/firestore structure is a little different. It is recommend the folder structure to match to structure in the database/firestore. For example, if you have a firestore structure like this:
+The firestore structure is a little different. It is recommend the folder structure to match to structure in the firestore. For example, if you have a firestore structure like this:
 
 ```bash
 ├── users # collection
@@ -268,7 +286,7 @@ The database/firestore structure is a little different. It is recommend the fold
 Then you would have the following folder structure:
 
 ```bash
-├── database/firestore
+├── firestore
 │  ├── users
 │  │  ├── [uid]
 │  │  │  ├── created.ts # will be called every time a user document is created.
