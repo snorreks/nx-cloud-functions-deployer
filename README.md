@@ -121,11 +121,11 @@ Database triggers have the following functions: `onValueCreated`, `onValueDelete
 import { onValueCreated } from 'nx-cloud-functions-deployer';
 
 export default onValueCreated(
-	({ uid }) => {
-		console.log('New user created: uid', event.id);
+	({ data }) => {
+		console.log('New gmail user created:', data.val());
 	},
 	{
-		ref: '/user/{uid=*@gmail.com}',
+		ref: '/user/{data.key=*@gmail.com}',
 	},
 );
 ```
