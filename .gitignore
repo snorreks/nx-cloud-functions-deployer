@@ -7,8 +7,6 @@ dist
 tsconfig.tsbuildinfo
 *.orig
 
-**/src/**/*.d.ts
-!**/src/**/schema.d.ts
 **/src/**/*.js
 **/src/**/*.js.map
 
@@ -44,5 +42,3 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
-tsconfig.types.tsbuildinfo
-
