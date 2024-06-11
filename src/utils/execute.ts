@@ -1,6 +1,5 @@
 import type { PackageManager } from '$types';
 import { logger } from './logger';
-
 type Environment = Record<string, string | undefined>;
 
 export const execute = async (options: {
@@ -81,7 +80,16 @@ export const runCommand = async (options: {
 		silent,
 	} = options;
 	try {
-		const { execa } = await import('execa');
+		// Dynamically import execa
+		const execaModule = await import('execa');
+		const execa = ((execaModule.default as unknown) ??
+			execaModule.execa) as typeof import('execa').execa;
+
+		if (typeof execa !== 'function') {
+			throw new Error(
+				'execa is not a function. Please check the import.',
+			);
+		}
 
 		const subprocess = execa(command, commandArguments, {
 			cwd,
