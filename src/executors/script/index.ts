@@ -114,14 +114,16 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 				runScriptEnvironment[key] = value;
 			}
 		}
-
-		await runFile({
-			cwd: projectRoot,
-			runScriptFilePath: runScriptFilePath,
-			environment: runScriptEnvironment,
-		});
-
-		return true;
+		try {
+			await runFile({
+				cwd: projectRoot,
+				runScriptFilePath: runScriptFilePath,
+				environment: runScriptEnvironment,
+			});
+			return true;
+		} catch (error) {
+			return false;
+		}
 	} catch (error) {
 		logger.error('runScript', error);
 		return false;

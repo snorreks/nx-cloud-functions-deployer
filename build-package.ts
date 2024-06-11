@@ -206,7 +206,7 @@ const buildProject = async (): Promise<void> => {
 };
 
 const addTypescriptDefinitions = async () => {
-	const { childProcess } = await nvexeca('18', 'pnpm', [
+	const { childProcess } = await nvexeca('20', 'pnpm', [
 		'tsc',
 		'--project',
 		'./tsconfig.types.json',

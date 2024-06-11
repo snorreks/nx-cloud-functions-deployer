@@ -1,6 +1,6 @@
 import type { PackageManager } from '$types';
-import { spawn } from 'cross-spawn';
 import { logger } from './logger';
+
 type Environment = Record<string, string | undefined>;
 
 export const execute = async (options: {
@@ -39,7 +39,7 @@ export const runFile = async (options: {
 	environment?: Environment;
 }) => {
 	logger.debug('runFile', options);
-	const { runScriptFilePath, cwd, tsconfigPath, environment } = options;
+	const { runScriptFilePath, tsconfigPath } = options;
 	const commandArguments: string[] = ['--no-warnings', '--import', 'tsx'];
 
 	if (tsconfigPath) {
@@ -50,9 +50,8 @@ export const runFile = async (options: {
 	await runCommand({
 		command: 'node',
 		commandArguments,
-		cwd,
-		environment,
 		silent: false,
+		...options,
 	});
 };
 
@@ -66,7 +65,7 @@ export const runFile = async (options: {
  * @returns the result of the command
  */
 
-export const runCommand = (options: {
+export const runCommand = async (options: {
 	command: string;
 	cwd?: string;
 	commandArguments?: string[];
@@ -81,53 +80,36 @@ export const runCommand = (options: {
 		environment,
 		silent,
 	} = options;
-	return new Promise((resolve, reject) => {
-		logger.debug(`Executing "${command} ${commandArguments.join(' ')}"...`);
-		const child = spawn(command, commandArguments, {
+	try {
+		const { execa } = await import('execa');
+
+		const subprocess = execa(command, commandArguments, {
 			cwd,
-			env: environment ?? process.env,
-			stdio: silent ? undefined : 'inherit',
+			env: environment,
+			stdio: silent ? 'pipe' : 'inherit',
 		});
-		child.on('close', (code) => {
-			if (code === 0) {
-				resolve();
-			} else {
-				reject(
-					new Error(
-						`Command "${command} ${commandArguments.join(
-							' ',
-						)}" failed with exit code ${code}`,
-					),
-				);
-			}
-		});
-		child.on('error', (error) => {
-			logger.error(error);
-			reject(error);
-		});
-		child.on('exit', (code) => {
-			if (code === 0) {
-				resolve();
-			} else {
-				reject(
-					new Error(
-						`Command "${command} ${commandArguments.join(
-							' ',
-						)}" failed with exit code ${code}`,
-					),
-				);
-			}
-		});
-		child.on('disconnect', () => {
-			reject(
-				new Error(
-					`Command "${command} ${commandArguments.join(
-						' ',
-					)}" disconnected`,
-				),
+
+		if (!silent) {
+			subprocess.stdout?.pipe(process.stdout);
+			subprocess.stderr?.pipe(process.stderr);
+		}
+
+		const { exitCode, stdout, stderr } = await subprocess;
+
+		if (silent) {
+			logger.debug(`stdout: ${stdout}`);
+			logger.debug(`stderr: ${stderr}`);
+		}
+
+		if (exitCode !== 0) {
+			throw new Error(
+				`Command "${command} ${commandArguments.join(' ')}" failed with exit code ${exitCode}`,
 			);
-		});
-	});
+		}
+	} catch (error) {
+		logger.debug('runCommand:error', error);
+		throw error;
+	}
 };
 /*
 

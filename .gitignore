@@ -9,6 +9,7 @@ tsconfig.tsbuildinfo
 
 **/src/**/*.js
 **/src/**/*.js.map
+.nx
 
 # dependencies
 node_modules
