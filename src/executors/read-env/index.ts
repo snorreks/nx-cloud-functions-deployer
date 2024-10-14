@@ -52,20 +52,25 @@ const readAndSortEnvFile = async (filePath: string): Promise<string> => {
 const executor: Executor<ReadEnvExecutorOptions> = async (options, context) => {
 	logger.setLogSeverity(options);
 
-	const { projectName, root: workspaceRoot, workspace } = context;
+	const {
+		projectName,
+		root: workspaceRoot,
+		projectsConfigurations,
+	} = context;
 
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
-	if (!workspace) {
-		throw new Error('Workspace is not defined');
+	if (!projectsConfigurations) {
+		throw new Error('projectsConfigurations is not defined');
 	}
 	const flavor = getFlavor(options);
 	const environmentFileName = getEnvironmentFileName({
 		flavor,
 		envFiles: options.envFiles,
 	});
-	const relativeProjectPath = workspace.projects[projectName].root;
+	const relativeProjectPath =
+		projectsConfigurations.projects[projectName].root;
 	const projectRoot = join(workspaceRoot, relativeProjectPath);
 
 	const envPath = join(projectRoot, environmentFileName);

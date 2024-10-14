@@ -23,13 +23,17 @@ const executor: Executor<DeployRulesOptions> = async (options, context) => {
 	logger.setLogSeverity(options);
 	logger.debug('getBaseOptions', options);
 
-	const { projectName, root: workspaceRoot, workspace } = context;
+	const {
+		projectName,
+		root: workspaceRoot,
+		projectsConfigurations,
+	} = context;
 
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
-	if (!workspace) {
-		throw new Error('Workspace is not defined');
+	if (!projectsConfigurations) {
+		throw new Error('projectsConfigurations is not defined');
 	}
 
 	const flavor = getFlavor(options);
@@ -47,7 +51,8 @@ const executor: Executor<DeployRulesOptions> = async (options, context) => {
 		);
 	}
 
-	const relativeProjectPath = workspace.projects[projectName].root;
+	const relativeProjectPath =
+		projectsConfigurations.projects[projectName].root;
 	const projectRoot = join(workspaceRoot, relativeProjectPath);
 	const packageManager = options.packageManager ?? 'pnpm';
 

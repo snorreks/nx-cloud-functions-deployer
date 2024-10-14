@@ -48,7 +48,11 @@ const getEnvironmentParameters = async ({
 const executor: Executor<ExecutorOptions> = async (options, context) => {
 	logger.setLogSeverity(options);
 
-	const { projectName, root: workspaceRoot, workspace } = context;
+	const {
+		projectName,
+		root: workspaceRoot,
+		projectsConfigurations,
+	} = context;
 
 	const { flavors, templateFile, bucket } = options;
 
@@ -57,8 +61,8 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
-	if (!workspace) {
-		throw new Error('Workspace is not defined');
+	if (!projectsConfigurations) {
+		throw new Error('projectsConfigurations is not defined');
 	}
 
 	const flavor = getFlavor(options);
@@ -68,7 +72,8 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 		throw new Error(`Stack name is not defined for flavor ${flavor}`);
 	}
 
-	const relativeProjectPath = workspace.projects[projectName].root;
+	const relativeProjectPath =
+		projectsConfigurations.projects[projectName].root;
 	const projectRoot = join(workspaceRoot, relativeProjectPath);
 	const commandArguments = [
 		'deploy',

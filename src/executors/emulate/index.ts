@@ -89,13 +89,10 @@ const executor: Executor<EmulateOptions> = async (options, context) => {
 		JSON.stringify(firebaseJson, undefined, 2),
 	);
 
-	const { projectName, workspace } = context;
+	const { projectName } = context;
 
 	if (!projectName) {
 		throw new Error('Project name is not defined');
-	}
-	if (!workspace) {
-		throw new Error('Workspace is not defined');
 	}
 
 	const flavor = getFlavor(options);

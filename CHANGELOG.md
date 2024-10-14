@@ -1,5 +1,12 @@
 # nx-cloud-functions-deployer
 
+## 3.0.0 (beta)
+
+### Changes
+
+-   Upgrade to nx 20
+-   Upgrade to firebase-functions v6
+
 ## 2.5.0
 
 ### Changes

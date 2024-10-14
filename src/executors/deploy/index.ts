@@ -90,14 +90,18 @@ export const getBaseOptions = async (
 	options: DeployExecutorOptions,
 	context: ExecutorContext,
 ): Promise<BaseDeployOptions> => {
-	const { projectName, root: workspaceRoot, workspace } = context;
+	const {
+		projectName,
+		root: workspaceRoot,
+		projectsConfigurations,
+	} = context;
 	logger.debug('getBaseOptions', options);
 
 	if (!projectName) {
 		throw new Error('Project name is not defined');
 	}
-	if (!workspace) {
-		throw new Error('Workspace is not defined');
+	if (!projectsConfigurations) {
+		throw new Error('projectsConfigurations is not defined');
 	}
 
 	const flavor = getFlavor(options);
@@ -115,7 +119,8 @@ export const getBaseOptions = async (
 		);
 	}
 
-	const relativeProjectPath = workspace.projects[projectName].root;
+	const relativeProjectPath =
+		projectsConfigurations.projects[projectName].root;
 	const projectRoot = join(workspaceRoot, relativeProjectPath);
 	const outputDirectory =
 		options.outputDirectory ??

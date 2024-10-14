@@ -82,6 +82,7 @@ export const runCommand = async (options: {
 	try {
 		// Dynamically import execa
 		const execaModule = await import('execa');
+		// @ts-expect-error execaModule
 		const execa = ((execaModule.default as unknown) ??
 			execaModule.execa) as typeof import('execa').execa;
 

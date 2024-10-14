@@ -9,16 +9,21 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	try {
 		logger.setLogSeverity(options);
 
-		const { projectName, root: workspaceRoot, workspace } = context;
+		const {
+			projectName,
+			root: workspaceRoot,
+			projectsConfigurations,
+		} = context;
 
 		if (!projectName) {
 			throw new Error('Project name is not defined');
 		}
-		if (!workspace) {
-			throw new Error('Workspace is not defined');
+		if (!projectsConfigurations) {
+			throw new Error('projectsConfigurations is not defined');
 		}
 
-		const relativeProjectPath = workspace.projects[projectName].root;
+		const relativeProjectPath =
+			projectsConfigurations.projects[projectName].root;
 		const projectRoot = join(workspaceRoot, relativeProjectPath);
 
 		const inputPath = join(

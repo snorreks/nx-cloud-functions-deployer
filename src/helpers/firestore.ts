@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { CoreData, DocumentOptions } from '$types';
 import type { ParamsOf } from 'firebase-functions/v2/core';
-import type {
+import {
 	Change,
-	DocumentSnapshot,
-	FirestoreEvent,
-	QueryDocumentSnapshot,
+	type DocumentSnapshot,
+	type FirestoreEvent,
+	type QueryDocumentSnapshot,
 } from 'firebase-functions/v2/firestore';
 
 /** Respond only to document creations. */
@@ -54,26 +54,40 @@ export const onDocumentWritten = <Document extends string = string>(
 
 /** Respond only to document creations. */
 export const onCreated = <T extends CoreData>(
-	handler: (event: FirestoreEvent<T>) => PromiseLike<unknown> | unknown,
+	handler: (
+		event: FirestoreEvent<T | undefined>,
+	) => PromiseLike<unknown> | unknown,
 	_options?: DocumentOptions,
 ) => {
-	return (event: FirestoreEvent<QueryDocumentSnapshot>) => {
+	return (
+		event: FirestoreEvent<
+			QueryDocumentSnapshot | undefined,
+			ParamsOf<string>
+		>,
+	) => {
 		return handler({
 			...event,
-			data: toCoreData<T>(event.data),
+			data: event.data ? toCoreData<T>(event.data) : undefined,
 		});
 	};
 };
 
 /** Respond only to document deletions. */
 export const onDeleted = <T extends CoreData>(
-	handler: (event: FirestoreEvent<T>) => PromiseLike<unknown> | unknown,
+	handler: (
+		event: FirestoreEvent<T | undefined>,
+	) => PromiseLike<unknown> | unknown,
 	_options?: DocumentOptions,
 ) => {
-	return (event: FirestoreEvent<QueryDocumentSnapshot>) => {
+	return (
+		event: FirestoreEvent<
+			QueryDocumentSnapshot | undefined,
+			ParamsOf<string>
+		>,
+	) => {
 		return handler({
 			...event,
-			data: toCoreData<T>(event.data),
+			data: event.data ? toCoreData<T>(event.data) : undefined,
 		});
 	};
 };
@@ -81,16 +95,28 @@ export const onDeleted = <T extends CoreData>(
 /** Respond only to document updates. */
 export const onUpdated = <T extends CoreData>(
 	handler: (
-		event: FirestoreEvent<Change<T>>,
+		event: FirestoreEvent<{
+			before?: T;
+			after?: T;
+		}>,
 	) => PromiseLike<unknown> | unknown,
 	_options?: DocumentOptions,
 ) => {
-	return (event: FirestoreEvent<Change<QueryDocumentSnapshot>>) => {
+	return (
+		event: FirestoreEvent<
+			Change<QueryDocumentSnapshot> | undefined,
+			ParamsOf<string>
+		>,
+	) => {
 		return handler({
 			...event,
 			data: {
-				before: toCoreData<T>(event.data.before),
-				after: toCoreData<T>(event.data.after),
+				before: event.data?.before
+					? toCoreData<T>(event.data.before)
+					: undefined,
+				after: event.data?.after
+					? toCoreData<T>(event.data.after)
+					: undefined,
 			},
 		});
 	};
@@ -101,19 +127,26 @@ export const onWritten = <T extends CoreData>(
 	handler: (
 		event: FirestoreEvent<{
 			before?: T;
-			after: T;
+			after?: T;
 		}>,
 	) => PromiseLike<unknown> | unknown,
 	_options?: DocumentOptions,
 ) => {
-	return (event: FirestoreEvent<Change<QueryDocumentSnapshot>>) => {
+	return (
+		event: FirestoreEvent<
+			Change<DocumentSnapshot> | undefined,
+			ParamsOf<string>
+		>,
+	) => {
 		return handler({
 			...event,
 			data: {
-				before: event.data.before?.exists
+				before: event.data?.before
 					? toCoreData<T>(event.data.before)
 					: undefined,
-				after: toCoreData<T>(event.data.after),
+				after: event.data?.after
+					? toCoreData<T>(event.data.after)
+					: undefined,
 			},
 		});
 	};

@@ -17,12 +17,16 @@ const getRunScriptOptions = (
 ): RunScriptOptions => {
 	try {
 		logger.debug('getRunScriptOptions', options);
-		const { projectName, root: workspaceRoot, workspace } = context;
+		const {
+			projectName,
+			root: workspaceRoot,
+			projectsConfigurations,
+		} = context;
 		if (!projectName) {
 			throw new Error('Project name is not defined');
 		}
-		if (!workspace) {
-			throw new Error('Workspace is not defined');
+		if (!projectsConfigurations) {
+			throw new Error('projectsConfigurations is not defined');
 		}
 		const flavor = getFlavor(options);
 
@@ -38,7 +42,8 @@ const getRunScriptOptions = (
 				}Id is required`,
 			);
 		}
-		const relativeProjectPath = workspace.projects[projectName].root;
+		const relativeProjectPath =
+			projectsConfigurations.projects[projectName].root;
 		const projectRoot = join(workspaceRoot, relativeProjectPath);
 		const scriptsRoot = join(projectRoot, options.scriptsRoot ?? 'scripts');
 		const envConfigPath = join(projectRoot, `.env.${flavor}`);
