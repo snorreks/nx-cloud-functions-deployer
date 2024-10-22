@@ -54,9 +54,7 @@ export const onDocumentWritten = <Document extends string = string>(
 
 /** Respond only to document creations. */
 export const onCreated = <T extends CoreData>(
-	handler: (
-		event: FirestoreEvent<T | undefined>,
-	) => PromiseLike<unknown> | unknown,
+	handler: (event: FirestoreEvent<T>) => PromiseLike<unknown> | unknown,
 	_options?: DocumentOptions,
 ) => {
 	return (
@@ -65,18 +63,20 @@ export const onCreated = <T extends CoreData>(
 			ParamsOf<string>
 		>,
 	) => {
+		if (!event.data) {
+			throw new Error('No data found in event');
+		}
+
 		return handler({
 			...event,
-			data: event.data ? toCoreData<T>(event.data) : undefined,
+			data: toCoreData<T>(event.data),
 		});
 	};
 };
 
 /** Respond only to document deletions. */
 export const onDeleted = <T extends CoreData>(
-	handler: (
-		event: FirestoreEvent<T | undefined>,
-	) => PromiseLike<unknown> | unknown,
+	handler: (event: FirestoreEvent<T>) => PromiseLike<unknown> | unknown,
 	_options?: DocumentOptions,
 ) => {
 	return (
@@ -85,9 +85,13 @@ export const onDeleted = <T extends CoreData>(
 			ParamsOf<string>
 		>,
 	) => {
+		if (!event.data) {
+			throw new Error('No data found in event');
+		}
+
 		return handler({
 			...event,
-			data: event.data ? toCoreData<T>(event.data) : undefined,
+			data: toCoreData<T>(event.data),
 		});
 	};
 };
@@ -96,8 +100,8 @@ export const onDeleted = <T extends CoreData>(
 export const onUpdated = <T extends CoreData>(
 	handler: (
 		event: FirestoreEvent<{
-			before?: T;
-			after?: T;
+			before: T;
+			after: T;
 		}>,
 	) => PromiseLike<unknown> | unknown,
 	_options?: DocumentOptions,
@@ -108,15 +112,15 @@ export const onUpdated = <T extends CoreData>(
 			ParamsOf<string>
 		>,
 	) => {
+		if (!event.data?.after || !event.data?.before) {
+			throw new Error('No data found in event');
+		}
+
 		return handler({
 			...event,
 			data: {
-				before: event.data?.before
-					? toCoreData<T>(event.data.before)
-					: undefined,
-				after: event.data?.after
-					? toCoreData<T>(event.data.after)
-					: undefined,
+				before: toCoreData<T>(event.data.before),
+				after: toCoreData<T>(event.data.after),
 			},
 		});
 	};
