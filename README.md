@@ -1,6 +1,6 @@
 # nx-cloud-functions-deployer<!-- omit in toc -->
 
-![npm (nx-cloud-functions-deployer)](https://img.shields.io/npm/v/nx-cloud-functions-deployer)
+[![npm (nx-cloud-functions-deployer)](https://img.shields.io/npm/v/nx-cloud-functions-deployer)](https://www.npmjs.com/package/nx-cloud-functions-deployer)
 
 This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud Functions for Firebase](https://firebase.google.com/products/functions?gclsrc=ds&gclsrc=ds&gclid=CNmq16LU-_kCFa5IwgodA9cF8A).
 
@@ -24,18 +24,13 @@ From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 
 -   [Cloud cache](#cloud-cache)
 -   [Logger](#logger)
 -   [Executors](#executors)
-    -   [Deploy](#deploy)
-        -   [Options](#deploy-options)
-        -   [Examples](#deploy-examples)
-    -   [Script](#script)
-        -   [Options](#script-options)
-        -   [Examples](#script-examples)
-    -   [Delete](#delete)
-        -   [Options](#delete-options)
-    -   [Emulate](#emulate)
-        -   [Options](#emulate-options)
-    -   [Rules](#rules)
-    -   [SAM](#sam)
+    -   [deploy](#deploy) - [deploy options](#deploy-options) - [deploy examples](#deploy-examples)
+    -   [script](#script) - [script options](#script-options) - [script examples](#script-examples)
+    -   [delete](#delete) - [delete options](#delete-options)
+    -   [emulate](#emulate) - [emulate options](#emulate-options)
+    -   [read-env](#read-env) - [read-env options](#read-env-options)
+    -   [rules](#rules)
+    -   [sam](#sam)
 
 ## Features
 
@@ -533,12 +528,12 @@ The plugin provide support to emulate functions locally. The plugin will emulate
    "executor": "nx-cloud-functions-deployer:emulate",
    "options": {
     "flavors": {
-     	"development": "firebase-project-development-id",
-     	"production": "firebase-project-production-id"
+      "development": "firebase-project-development-id",
+      "production": "firebase-project-production-id"
     },
-	"only": ["functions"],
-	"packageManager": "global",
-	"minify": false
+ "only": ["functions"],
+ "packageManager": "global",
+ "minify": false
    }
   },
 ```
@@ -594,24 +589,24 @@ There is now also support for aws sam to deploy and watch logs. You need the SAM
 
 ```json
 ...
-		"deploy": {
-			"executor": "nx-cloud-functions-deployer:sam-deploy",
-			"options": {
-				"flavors": {
-					"development": "example-dev-test"
-				},
-				"bucket": "test"
-			}
-		},
-		"logs": {
-			"executor": "nx-cloud-functions-deployer:sam-logs",
-			"options": {
-				"flavors": {
-					"development": "example-dev-test"
-				},
-				"name": "ExampleFunction",
-				"tail": true
-			}
-		}
+  "deploy": {
+   "executor": "nx-cloud-functions-deployer:sam-deploy",
+   "options": {
+    "flavors": {
+     "development": "example-dev-test"
+    },
+    "bucket": "test"
+   }
+  },
+  "logs": {
+   "executor": "nx-cloud-functions-deployer:sam-logs",
+   "options": {
+    "flavors": {
+     "development": "example-dev-test"
+    },
+    "name": "ExampleFunction",
+    "tail": true
+   }
+  }
 
 ```
