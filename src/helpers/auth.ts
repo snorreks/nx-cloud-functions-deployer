@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { AuthTriggerOptions } from '$types';
 import type { EventContext } from 'firebase-functions/v1';
 import type { UserRecord } from 'firebase-functions/v1/auth';

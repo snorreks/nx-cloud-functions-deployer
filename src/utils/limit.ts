@@ -73,7 +73,9 @@ const getConcurrencyLimiter = <ReturnType>(
 
 		if (queue.size > 0) {
 			const task = queue.dequeue();
-			task && task();
+			if (task) {
+				task();
+			}
 		}
 	};
 
@@ -99,12 +101,13 @@ const getConcurrencyLimiter = <ReturnType>(
 	) => {
 		queue.enqueue(executeConcurrentFunction.bind(undefined, fn, resolve));
 
-		(async () => {
+		// Use IIFE with void to fix no-unused-expressions
+		void (async () => {
 			await Promise.resolve();
 
 			if (activeCount < concurrency && queue.size > 0) {
 				const task = queue.dequeue();
-				task && task();
+				if (task) task();
 			}
 		})();
 	};

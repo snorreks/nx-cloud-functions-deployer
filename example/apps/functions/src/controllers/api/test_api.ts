@@ -6,7 +6,7 @@ import { flavor } from '$configs/environment';
 export default onRequest<RequestFunctions, 'test_api', { p: string }>(
 	(request, response) => {
 		console.log(`message ${request.body.message}`);
-		request.params.p;
+		console.log(`params ${request.params.p}`);
 
 		response.send({
 			flavor,

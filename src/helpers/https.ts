@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { CallableFunctions, RequestFunctions, HttpsOptions } from '$types';
 import type { CallableRequest } from 'firebase-functions/v2/https';
-import type { Response, Request } from 'express-serve-static-core';
+import type { Response, Request } from 'express';
 
 interface FirebaseRequest<
 	T extends Record<string, string> = Record<string, string>,

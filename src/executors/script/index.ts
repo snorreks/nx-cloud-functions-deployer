@@ -126,7 +126,7 @@ const runScript = async (options: RunScriptOptions): Promise<boolean> => {
 				environment: runScriptEnvironment,
 			});
 			return true;
-		} catch (error) {
+		} catch (_error) {
 			return false;
 		}
 	} catch (error) {

@@ -22,7 +22,7 @@ const copyToClipboard = async (text: string) => {
 			});
 		});
 		return true;
-	} catch (error) {
+	} catch (_error) {
 		return false;
 	}
 };

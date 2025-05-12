@@ -11,4 +11,4 @@ export const toCoreData = <T extends CoreData>(
 	({
 		...documentSnap.data(),
 		id: documentSnap.id,
-	} as T);
+	}) as T;

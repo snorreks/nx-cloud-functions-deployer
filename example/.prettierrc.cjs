@@ -6,9 +6,7 @@ const config = {
 	bracketSameLine: true,
 	endOfLine: 'auto',
 	jsdocCapitalizeDescription: false,
-	plugins: [
-		require('prettier-plugin-jsdoc'),
-	],
+	plugins: [require('prettier-plugin-jsdoc')],
 	semi: true,
 	singleQuote: true,
 	tabWidth: 4,

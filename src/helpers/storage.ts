@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { ObjectTriggerOptions } from '$types';
 import type { StorageEvent } from 'firebase-functions/v2/storage';
 

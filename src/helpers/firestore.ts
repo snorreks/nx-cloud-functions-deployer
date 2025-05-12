@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { CoreData, DocumentOptions } from '$types';
 import type { ParamsOf } from 'firebase-functions/v2/core';
 import {

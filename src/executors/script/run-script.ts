@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { readdir } from 'node:fs/promises';
-import inquirer from 'inquirer';
+import { input, select } from '@inquirer/prompts';
 import { createSpinner } from 'nanospinner';
 import open from 'open';
 import { resolve } from 'node:path';
@@ -89,7 +89,7 @@ const handleScript = async (
 		const response = await scriptFunction({
 			prompt: async (questions) => {
 				spinner?.stop();
-				const response = await inquirer.prompt(questions);
+				const response = await input(questions);
 				spinner?.start();
 				return response;
 			},
@@ -189,7 +189,7 @@ const askScriptFileName = async (
 	scriptsRoot: string,
 	defaultScript = 'test',
 ): Promise<string> => {
-	const answers = await inquirer.prompt({
+	const answer = await select<string>({
 		choices: (await readdir(scriptsRoot))
 			.filter((file) => file.endsWith('.ts'))
 			.map((file) => file.replace('.ts', '')),
@@ -197,11 +197,9 @@ const askScriptFileName = async (
 			return defaultScript;
 		},
 		message: 'Select script',
-		name: 'script',
-		type: 'rawlist',
 	});
 
-	return answers.script;
+	return answer;
 };
 
 const runScript = async () => {

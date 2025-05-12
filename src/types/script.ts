@@ -1,5 +1,18 @@
 import type { PackageManager } from '$types';
-import type { QuestionCollection } from 'inquirer';
+type InputConfig = {
+	message: string;
+	default?: string;
+	required?: boolean;
+	transformer?: (
+		value: string,
+		{
+			isFinal,
+		}: {
+			isFinal: boolean;
+		},
+	) => string;
+	validate?: (value: string) => boolean | string | Promise<string | boolean>;
+};
 
 export interface ScriptOpenURLResponse {
 	/** If this is defined, the value/url will be opened in the default browser */
@@ -9,9 +22,7 @@ export interface ScriptOpenURLResponse {
 export type ScriptResponse = ScriptOpenURLResponse | unknown;
 
 export type ScriptFunction = (options: {
-	prompt<T extends Record<string, unknown>>(
-		questions: QuestionCollection<T>,
-	): Promise<T>;
+	prompt(questions: InputConfig): Promise<string>;
 }) => Promise<ScriptResponse> | ScriptResponse;
 
 export interface ScriptExecutorOptions {

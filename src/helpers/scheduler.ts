@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { EventContext } from 'firebase-functions/v1';
 import type { ScheduleOptions } from '$types';
 
