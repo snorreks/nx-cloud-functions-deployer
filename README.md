@@ -6,48 +6,48 @@ This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud
 
 From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 support use version 1.2.2.
 
--   [Features](#features)
--   [Install](#install)
--   [Description](#description)
--   [Prerequisites](#prerequisites)
--   [Helper Functions](#helper-functions)
-    -   [Schedule Example](#schedule-example)
-    -   [Auth Example](#auth-example)
-    -   [Database Example](#database-example)
-    -   [Firestore Example](#firestore-example)
-    -   [Https Example](#https-example)
-    -   [Assets and external dependencies](#assets-and-external-dependencies)
-    -   [Limitations](#limitations)
--   [Folder Structure](#folder-structure)
-    -   [Firestore Structure](#firestore-structure)
-    -   [Custom Structure](#custom-structure)
--   [Cloud cache](#cloud-cache)
--   [Logger](#logger)
--   [Executors](#executors)
-    -   [deploy](#deploy) - [deploy options](#deploy-options) - [deploy examples](#deploy-examples)
-    -   [script](#script) - [script options](#script-options) - [script examples](#script-examples)
-    -   [delete](#delete) - [delete options](#delete-options)
-    -   [emulate](#emulate) - [emulate options](#emulate-options)
-    -   [read-env](#read-env) - [read-env options](#read-env-options)
-    -   [rules](#rules)
-    -   [sam](#sam)
+- [Features](#features)
+- [Install](#install)
+- [Description](#description)
+- [Prerequisites](#prerequisites)
+- [Helper Functions](#helper-functions)
+    - [Schedule Example](#schedule-example)
+    - [Auth Example](#auth-example)
+    - [Database Example](#database-example)
+    - [Firestore Example](#firestore-example)
+    - [Https Example](#https-example)
+    - [Assets and external dependencies](#assets-and-external-dependencies)
+    - [Limitations](#limitations)
+- [Folder Structure](#folder-structure)
+    - [Firestore Structure](#firestore-structure)
+    - [Custom Structure](#custom-structure)
+- [Cloud cache](#cloud-cache)
+- [Logger](#logger)
+- [Executors](#executors)
+    - [deploy](#deploy) - [deploy options](#deploy-options) - [deploy examples](#deploy-examples)
+    - [script](#script) - [script options](#script-options) - [script examples](#script-examples)
+    - [delete](#delete) - [delete options](#delete-options)
+    - [emulate](#emulate) - [emulate options](#emulate-options)
+    - [read-env](#read-env) - [read-env options](#read-env-options)
+    - [rules](#rules)
+    - [sam](#sam)
 
 ## Features
 
--   Auto alias support
--   Support for multiple [environments](https://firebase.google.com/docs/functions/config-env)
--   Esbuild for faster builds
--   Detect changes and only deploy changed functions
--   No longer export all functions in a index.ts file, but deploy each function individually for smaller bundles
--   Configurable deploy options
--   Deploy with Node 14/16/18/20 and esm
--   Cloud functions v2 support
--   Deploy rules and indexes
--   Execute scripts locally
--   Read env file and copy to clipboard
--   Cloud cache support
--   Run emulators locally
--   AWS SAM: build, deploy and watch logs for lambda functions
+- Auto alias support
+- Support for multiple [environments](https://firebase.google.com/docs/functions/config-env)
+- Esbuild for faster builds
+- Detect changes and only deploy changed functions
+- No longer export all functions in a index.ts file, but deploy each function individually for smaller bundles
+- Configurable deploy options
+- Deploy with Node 14/16/18/20/22 and esm
+- Cloud functions v2 support
+- Deploy rules and indexes
+- Execute scripts locally
+- Read env file and copy to clipboard
+- Cloud cache support
+- Run emulators locally
+- AWS SAM: build, deploy and watch logs for lambda functions
 
 ## Install
 
@@ -63,7 +63,7 @@ It uses esbuild to bundle your functions and then uses the [firebase-tools](http
 
 ## Prerequisites
 
--   You will need to have the [firebase-tools](https://www.npmjs.com/package/firebase-tools) installed. Either globally or locally in your project. If you install it globally you have to set `packageManager` option to `global`.
+- You will need to have the [firebase-tools](https://www.npmjs.com/package/firebase-tools) installed. Either globally or locally in your project. If you install it globally you have to set `packageManager` option to `global`.
 
 ```bash
 pnpm i -D firebase-tools
@@ -257,13 +257,13 @@ It is recommend to have the following folder structure, but it is not required.
 
 The folders in controllers will different deployment types:
 
--   `request` - [HTTP requests](https://firebase.google.com/docs/functions/http-events)
--   `callable` - [Callable functions](https://firebase.google.com/docs/functions/callable)
--   `firestore` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events)
--   `database` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events)
--   `schedule` - [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions)
--   `storage` - [Cloud Storage triggers](https://firebase.google.com/docs/functions/gcp-storage-events)
--   `auth` - [Auth triggers](https://firebase.google.com/docs/functions/auth-events)
+- `request` - [HTTP requests](https://firebase.google.com/docs/functions/http-events)
+- `callable` - [Callable functions](https://firebase.google.com/docs/functions/callable)
+- `firestore` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events)
+- `database` - [Cloud Firestore triggers](https://firebase.google.com/docs/functions/firestore-events)
+- `schedule` - [Scheduled functions](https://firebase.google.com/docs/functions/schedule-functions)
+- `storage` - [Cloud Storage triggers](https://firebase.google.com/docs/functions/gcp-storage-events)
+- `auth` - [Auth triggers](https://firebase.google.com/docs/functions/auth-events)
 
 The default function names will be the path from the `api/callable/database/scheduler` folder to the file. For example, the function `controllers/api/stripe/webhook_endpoint.ts` will be deployed as `stripe_webhook_endpoint`.
 

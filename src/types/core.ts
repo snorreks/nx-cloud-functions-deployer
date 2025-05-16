@@ -36,7 +36,7 @@ export interface ExecutorBaseBuildOptions extends ExecutorBaseOptions {
 	/**
 	 * The node version to target.
 	 *
-	 * @default '18'
+	 * @default '20'
 	 */
 	nodeVersion?: NodeVersion;
 

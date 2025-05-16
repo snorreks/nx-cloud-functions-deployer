@@ -43,7 +43,7 @@ const commonjs = {
   files: ['**/*.cjs'],
   languageOptions: {
     sourceType: 'commonjs',
-    ecmaVersion: 2020,
+    ecmaVersion: 2022,
     globals: {
       module: 'readonly',
       require: 'readonly',
@@ -54,28 +54,28 @@ const commonjs = {
 export default [
   // Add ignores (replacing .eslintignore)
   { ignores },
-  
+
   // Base config for all files
   {
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2022,
       sourceType: 'module',
     },
   },
-  
+
   // CommonJS specific configuration
   commonjs,
-  
+
   // Core ESLint recommended rules
   eslint.configs.recommended,
-  
+
   // TypeScript configuration
   ...typescript,
-  
+
   // Prettier integration
   prettierConfig,
   prettierPlugin,
-  
+
   // Custom rules for all files
   {
     rules: {

@@ -118,7 +118,7 @@ const compileTypescriptFiles = async () => {
 			treeShaking: true,
 			sourcemap: true,
 			plugins: [projectAlias, nodeExternalsPlugin()],
-			target: 'node20',
+			target: 'node22',
 		};
 
 		await Promise.all([
@@ -206,7 +206,7 @@ const buildProject = async (): Promise<void> => {
 };
 
 const addTypescriptDefinitions = async () => {
-	const { childProcess } = await nvexeca('20', 'pnpm', [
+	const { childProcess } = await nvexeca('22', 'pnpm', [
 		'tsc',
 		'--project',
 		'./tsconfig.types.json',

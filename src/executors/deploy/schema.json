@@ -125,7 +125,7 @@
 		},
 		"nodeVersion": {
 			"type": "string",
-			"enum": ["14", "16", "18", "20"],
+			"enum": ["14", "16", "18", "20", "22"],
 			"description": "The node version to use for the functions",
 			"aliases": ["node"]
 		},

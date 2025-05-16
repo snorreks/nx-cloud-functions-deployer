@@ -5,7 +5,7 @@ import type { ReferenceOptions as FBReferenceOptions } from 'firebase-functions/
 import type { StorageOptions } from 'firebase-functions/v2/storage';
 import type { ScheduleOptions as FBScheduleOptions } from 'firebase-functions/v2/scheduler';
 import type { GlobalOptions } from 'firebase-functions/v2/options';
-export type NodeVersion = '14' | '16' | '18' | '20';
+export type NodeVersion = '14' | '16' | '18' | '20' | '22';
 
 export interface BaseFunctionOptions<T extends string = string>
 	extends GlobalOptions {

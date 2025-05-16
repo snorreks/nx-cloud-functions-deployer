@@ -2,7 +2,7 @@
 	"name": "aws",
 	"type": "module",
 	"engines": {
-		"node": "20"
+		"node": "22"
 	},
 	"main": "src/index.js",
 	"dependencies": {},

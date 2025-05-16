@@ -56,7 +56,7 @@ const typescript = tseslint.config({
 const javascript = {
 	files: ['**/*.js', '**/*.jsx', '**/*.cjs', '**/*.mjs'],
 	languageOptions: {
-		ecmaVersion: 2020,
+		ecmaVersion: 2022,
 		sourceType: 'module',
 		globals: {
 			module: 'readonly',
@@ -84,7 +84,7 @@ export default [
 	// Base config for all files
 	{
 		languageOptions: {
-			ecmaVersion: 2020,
+			ecmaVersion: 2022,
 			sourceType: 'module',
 		},
 	},

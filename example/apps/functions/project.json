@@ -10,7 +10,7 @@
 					"development": "mailvideo-test",
 					"production": "example-production"
 				},
-				"node": "20",
+				"node": "22",
 				"minify": false
 			}
 		},
