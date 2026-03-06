@@ -222,6 +222,8 @@ const removeAllOtherOptions = (
 		'deubg',
 		'minify',
 		'useLogger',
+		'__dirnameFix',
+		'__filenameFix',
 	];
 
 	for (const key of keysToDelete) {

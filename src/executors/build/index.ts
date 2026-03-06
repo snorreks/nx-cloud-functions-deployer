@@ -27,10 +27,13 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 		const projectRoot = join(workspaceRoot, relativeProjectPath);
 
 		const inputPath = join(
-			projectRoot,
+			options.useWorkspaceRoot ? workspaceRoot : projectRoot,
 			options.inputPath ?? 'src/index.ts',
 		);
-		const outputRoot = join(projectRoot, options.outputRoot ?? 'dist');
+		const outputRoot = join(
+			options.useWorkspaceRoot ? workspaceRoot : projectRoot,
+			options.outputRoot ?? 'dist',
+		);
 
 		const setOutputDirectory = async () => {
 			if (options.clear === false) {
@@ -90,6 +93,7 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 					projectRoot,
 					options.tsconfig ?? 'tsconfig.json',
 				),
+				requireFix: options.requireFix ?? true,
 				inputPath,
 				outputPath: join(outputRoot, main),
 				external: options.external,

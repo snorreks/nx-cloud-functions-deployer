@@ -1,4 +1,4 @@
-import { getFlavor, logger, runCommand } from '$utils';
+import { getEnvironment, getFlavor, logger, runCommand } from '$utils';
 import type { Executor } from '@nx/devkit';
 import { join } from 'node:path';
 // See https://github.com/studds/nx-aws/blob/main/packages/sam/src/builders/cloudformation/deploy/deploy.ts
@@ -21,19 +21,26 @@ export interface ExecutorOptions {
 	 * are referenced in your template.
 	 */
 	bucket?: string;
+
+	/**
+	 * Stringify version of the environment. If this is set, .env files will be
+	 * ignored.
+	 *
+	 * This is useful when you want to deploy using CI/CD and don't want to
+	 * store the environment variables in a file.
+	 *
+	 * @default undefined
+	 */
+	envString?: string;
 }
 
-const getEnvironmentParameters = async ({
-	cwd,
-	flavor,
-}: {
-	cwd: string;
-	flavor?: string;
+const getEnvironmentParameters = async (options: {
+	flavor: string;
+	projectRoot: string;
+	envString?: string;
+	envFiles?: Record<string, string>;
 }): Promise<string | undefined> => {
-	const dotEnvironmentResult = (await import('dotenv')).config({
-		path: `${cwd}/.env.${flavor}`,
-	});
-	const environment = dotEnvironmentResult.parsed;
+	const environment = await getEnvironment(options);
 	if (!environment) {
 		return;
 	}
@@ -96,7 +103,8 @@ const executor: Executor<ExecutorOptions> = async (options, context) => {
 	}
 
 	const parameters = await getEnvironmentParameters({
-		cwd: projectRoot,
+		...options,
+		projectRoot,
 		flavor,
 	});
 	if (parameters) {

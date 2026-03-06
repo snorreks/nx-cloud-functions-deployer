@@ -1,4 +1,4 @@
-import { build } from 'esbuild';
+import { build, type BuildOptions, type SameShape } from 'esbuild';
 import { dirname as _dirname } from 'node:path';
 import type { NodeVersion } from '$types';
 import { logger } from '$utils';
@@ -15,8 +15,9 @@ export const executeEsbuild = async (options: {
 	sourcemap?: boolean;
 	tsconfig: string;
 	minify?: boolean;
+	__dirnameFix?: boolean;
+	__filenameFix?: boolean;
 }): Promise<void> => {
-	logger.debug('executeEsbuild', options);
 	const {
 		inputPath,
 		outputPath,
@@ -24,24 +25,34 @@ export const executeEsbuild = async (options: {
 		sourceRoot,
 		keepNames,
 		footer,
-		requireFix,
 		sourcemap,
 		tsconfig,
+		requireFix = true,
 		minify = true,
+		__dirnameFix = true,
+		__filenameFix = true,
 	} = options;
+	let banner: { js: string } | undefined;
+	if (__dirnameFix || __filenameFix || requireFix) {
+		const dirname = _dirname(inputPath).replace(/\\/g, '\\\\');
+		const filename = inputPath.replace(/\\/g, '\\\\');
+		let js = '';
+		if (__dirnameFix) {
+			js += `const __dirname='${dirname}';`;
+		}
+		if (__filenameFix) {
+			js += `const __filename='${filename}';`;
+		}
+		if (requireFix) {
+			js +=
+				"import {createRequire} from 'module';const require=createRequire(import.meta.url);";
+		}
+		banner = {
+			js,
+		};
+	}
 
-	const dirname = _dirname(inputPath).replace(/\\/g, '\\\\');
-	const filename = inputPath.replace(/\\/g, '\\\\');
-
-	const banner = {
-		js:
-			`const __dirname='${dirname}';const __filename='${filename}';` +
-			(requireFix
-				? "import {createRequire} from 'module';const require=createRequire(import.meta.url);"
-				: ''),
-	};
-
-	const result = await build({
+	const esbuildOptions: SameShape<BuildOptions, BuildOptions> = {
 		banner,
 		footer: footer ? { js: footer } : undefined,
 		bundle: true,
@@ -57,7 +68,11 @@ export const executeEsbuild = async (options: {
 		target: `node${options.nodeVersion}`,
 		keepNames,
 		sourceRoot,
-	});
+	} as const;
+
+	logger.debug('executeEsbuild:build', esbuildOptions);
+
+	const result = await build(esbuildOptions);
 
 	if (result.errors?.length) {
 		throw new Error(result.errors[0].text);

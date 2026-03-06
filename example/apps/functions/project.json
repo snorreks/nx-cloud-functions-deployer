@@ -7,11 +7,12 @@
 			"executor": "../dist:deploy",
 			"options": {
 				"flavors": {
-					"development": "mailvideo-test",
+					"development": "bilverdi-dev",
 					"production": "example-production"
 				},
 				"node": "22",
-				"minify": false
+				"minify": true,
+				"sourcemap": false
 			}
 		},
 		"script": {

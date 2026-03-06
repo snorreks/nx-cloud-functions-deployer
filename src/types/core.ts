@@ -47,5 +47,24 @@ export interface ExecutorBaseBuildOptions extends ExecutorBaseOptions {
 	 */
 	sourcemap?: boolean;
 
+	/**
+	 * Whether to add require at the top of the esbuild output file.
+	 *
+	 * @default true
+	 */
 	requireFix?: boolean;
+
+	/**
+	 * Whether to add __filename at the top of the esbuild output file.
+	 *
+	 * @default true
+	 */
+	__filenameFix?: boolean;
+
+	/**
+	 * Whether to add __dirname at the top of the esbuild output file.
+	 *
+	 * @default true
+	 */
+	__dirnameFix?: boolean;
 }

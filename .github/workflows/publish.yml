@@ -1,5 +1,4 @@
 name: Build & Publish
-concurrency: master
 
 on:
     push:
@@ -7,35 +6,31 @@ on:
             - master
 
 jobs:
-    version:
+    publish:
         runs-on: ubuntu-latest
         timeout-minutes: 30
+
+        # Required permissions for NPM OIDC authentication
+        permissions:
+            contents: read
+            id-token: write
+
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
-            - name: Setup node 18
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 18
+              uses: actions/checkout@v4
+
             - name: Install pnpm
-              uses: pnpm/action-setup@v2
-              id: pnpm-install
+              uses: pnpm/action-setup@v3
               with:
                   version: latest
-                  run_install: false
 
-            - name: Get pnpm store directory
-              id: pnpm-cache
-              run: |
-                  echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
-
-            - name: Setup pnpm cache
-              uses: actions/cache@v3
+            - name: Setup Node.js 24
+              uses: actions/setup-node@v4
               with:
-                  path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-                  key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-pnpm-store-
+                  node-version: 24
+                  cache: 'pnpm'
+                  # Defining the registry URL is recommended when publishing
+                  registry-url: 'https://registry.npmjs.org'
 
             - name: Install dependencies
               run: pnpm install
@@ -43,8 +38,7 @@ jobs:
             - name: Build
               run: pnpm build
 
-            - name: Publish
+            - name: Publish to npmjs (OIDC)
               working-directory: dist
-              run: pnpm publish
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              # npm publish automatically uses the OIDC token when --provenance is passed
+              run: npm publish --access public --provenance

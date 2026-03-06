@@ -145,7 +145,7 @@ const toExecuteFetchCode = ({
 	return `
         import { fetch } from '${toImportPath(fetchFilePath, executeDirectory)}'
         import { writeFile } from 'node:fs/promises';
-        
+
         const execute = async () => {
             const code = await fetch({ flavor: '${flavor}'});
             await writeFile('${jsonFileName}', JSON.stringify(code ?? {}, null, 2));

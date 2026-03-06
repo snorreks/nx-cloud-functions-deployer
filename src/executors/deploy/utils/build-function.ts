@@ -9,6 +9,7 @@ import {
 } from './create-deploy-metadata';
 import { mkdir } from 'node:fs/promises';
 import { createTemporaryIndexFunctionFile } from './create-deploy-index';
+import { exists } from 'fs-extra';
 
 /**
  * Build the function with esbuild
@@ -57,9 +58,9 @@ export const buildFunction = async (
 					footer: shouldImportLogger
 						? 'import "./logger.js";'
 						: undefined,
-					requireFix: true,
-					sourcemap: true,
-					minify: buildFunctionData.minify,
+					requireFix: buildFunctionData.requireFix ?? true,
+					sourcemap: buildFunctionData.sourcemap ?? true,
+					minify: buildFunctionData.minify ?? true,
 				});
 				await createEnvironmentFile(buildFunctionData);
 			})(),
@@ -98,6 +99,14 @@ const buildLoggerFile = async (
 			buildFunctionData.projectRoot,
 			buildFunctionData.includeFilePath ?? 'src/logger.ts',
 		);
+
+		const loggerFileExists = await exists(inputPath);
+
+		if (!loggerFileExists) {
+			logger.debug('buildLoggerFile', 'Logger file does not exist');
+			return false;
+		}
+
 		const outputPath = join(buildFunctionData.outputRoot, 'src/logger.js');
 
 		await executeEsbuild({

@@ -241,13 +241,20 @@ const executor: Executor<DeployExecutorOptions> = async (options, context) => {
 	const concurrency = options.concurrency ?? 5;
 
 	if (onlineChecksum) {
+		let onlineCheckSumFound = false;
 		for (const [functionName, checksum] of Object.entries(onlineChecksum)) {
 			const deployableFunction = buildableFiles.find(
 				(file) => file.functionName === functionName,
 			);
 			if (deployableFunction) {
+				onlineCheckSumFound = true;
 				deployableFunction.checksum = checksum;
 			}
+		}
+		if (onlineCheckSumFound) {
+			logger.info('Online checksum found');
+		} else {
+			logger.info('No online checksum found');
 		}
 	} else if (!options.force) {
 		logger.info('No online checksum found');

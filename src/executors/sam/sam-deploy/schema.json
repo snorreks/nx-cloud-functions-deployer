@@ -34,6 +34,11 @@
 		"bucket": {
 			"type": "string",
 			"description": "The bucket to use for deployment"
+		},
+		"envString": {
+			"type": "string",
+			"description": "Stringify version of the environment.",
+			"aliases": ["ciEnv"]
 		}
 	},
 	"required": ["flavors"]

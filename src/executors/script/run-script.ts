@@ -193,9 +193,7 @@ const askScriptFileName = async (
 		choices: (await readdir(scriptsRoot))
 			.filter((file) => file.endsWith('.ts'))
 			.map((file) => file.replace('.ts', '')),
-		default() {
-			return defaultScript;
-		},
+		default: defaultScript,
 		message: 'Select script',
 	});
 

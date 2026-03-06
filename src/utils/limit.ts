@@ -9,9 +9,9 @@ class Node<ValueType extends () => unknown = () => unknown> {
 	}
 }
 
-class Queue<ValueType extends () => unknown = () => unknown>
-	implements Iterable<ValueType>
-{
+class Queue<
+	ValueType extends () => unknown = () => unknown,
+> implements Iterable<ValueType> {
 	private _head?: Node<ValueType>;
 	private _tail?: Node<ValueType>;
 	private _size = 0;

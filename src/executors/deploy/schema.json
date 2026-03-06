@@ -48,7 +48,17 @@
 		},
 		"requireFix": {
 			"type": "boolean",
-			"description": "To fix require for esm modules",
+			"description": "Add require at the top of the file",
+			"default": true
+		},
+		"__dirnameFix": {
+			"type": "boolean",
+			"description": "Add __dirname at the top of the file",
+			"default": true
+		},
+		"__filenameFix": {
+			"type": "boolean",
+			"description": "Add __filename at the top of the file",
 			"default": true
 		},
 		"dryRun": {

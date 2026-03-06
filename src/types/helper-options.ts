@@ -7,8 +7,9 @@ import type { ScheduleOptions as FBScheduleOptions } from 'firebase-functions/v2
 import type { GlobalOptions } from 'firebase-functions/v2/options';
 export type NodeVersion = '14' | '16' | '18' | '20' | '22';
 
-export interface BaseFunctionOptions<T extends string = string>
-	extends GlobalOptions {
+export interface BaseFunctionOptions<
+	T extends string = string,
+> extends GlobalOptions {
 	/**
 	 * The name of the function. If not provided, the name of the function is
 	 * the path from the root of the {@link DeployDirectory} directory to the
@@ -45,11 +46,13 @@ export interface BaseFunctionOptions<T extends string = string>
 }
 
 export interface HttpsOptions<T extends string | number | symbol = string>
-	extends Omit<BaseFunctionOptions<Extract<T, string>>, 'region'>,
+	extends
+		Omit<BaseFunctionOptions<Extract<T, string>>, 'region'>,
 		FirebaseHttpsOptions {}
 
 export interface DocumentOptions
-	extends Omit<BaseFunctionOptions, 'enforceAppCheck'>,
+	extends
+		Omit<BaseFunctionOptions, 'enforceAppCheck'>,
 		Omit<FBDocumentOptions, 'document'> {
 	/**
 	 * The document path where the function will listen for changed in firestore
@@ -67,14 +70,12 @@ export interface DocumentOptions
 }
 
 export interface ReferenceOptions
-	extends Omit<BaseFunctionOptions, 'enforceAppCheck'>,
-		FBReferenceOptions {
+	extends Omit<BaseFunctionOptions, 'enforceAppCheck'>, FBReferenceOptions {
 	ref: string;
 }
 
 export interface ScheduleOptions
-	extends BaseFunctionOptions,
-		FBScheduleOptions {
+	extends BaseFunctionOptions, FBScheduleOptions {
 	/**
 	 * When to execute the function. If the function is a scheduled function,
 	 * this property is required.
@@ -87,8 +88,7 @@ export interface ScheduleOptions
 }
 
 export interface ObjectTriggerOptions
-	extends Omit<BaseFunctionOptions, 'region'>,
-		StorageOptions {}
+	extends Omit<BaseFunctionOptions, 'region'>, StorageOptions {}
 
 export type AuthTriggerOptions = Omit<BaseFunctionOptions, 'region'>;
 

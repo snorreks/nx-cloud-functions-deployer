@@ -2,6 +2,16 @@
 
 [![npm (nx-cloud-functions-deployer)](https://img.shields.io/npm/v/nx-cloud-functions-deployer)](https://www.npmjs.com/package/nx-cloud-functions-deployer)
 
+> **⚠️ DEPRECATION NOTICE ⚠️**
+>
+> I have stopped working on this package and moved development to a new tool: [**Firestack**](https://github.com/snorreks/firestack) ([@snorreks/firestack on npm](https://www.npmjs.com/package/@snorreks/firestack)).
+>
+> **Firestack** is a standalone CLI tool. It works entirely outside of Nx, meaning you can use it in standard projects, standalone setups, or any other monorepo tool. It also features top-tier support for running the Firebase emulator natively.
+>
+> _Note:_ AWS features have been removed in Firestack, as my workflow is now exclusively built around GCP.
+
+---
+
 This is a plugin for [Nx](https://nx.dev) that adds support for deploying [Cloud Functions for Firebase](https://firebase.google.com/products/functions?gclsrc=ds&gclsrc=ds&gclid=CNmq16LU-_kCFa5IwgodA9cF8A).
 
 From version 2.0.0 this plugin only supports cloud functions v2, if you want v1 support use version 1.2.2.

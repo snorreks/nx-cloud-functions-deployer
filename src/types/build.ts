@@ -60,4 +60,11 @@ export interface BuildExecutorOptions extends ExecutorBaseBuildOptions {
 	minify?: boolean;
 
 	extension?: 'js' | 'mjs' | 'cjs';
+
+	/**
+	 * Whether to use the workspace root for the paths.
+	 *
+	 * @default false
+	 */
+	useWorkspaceRoot?: boolean;
 }
