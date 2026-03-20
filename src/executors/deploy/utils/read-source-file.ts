@@ -1,24 +1,24 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import chalk from 'chalk';
 import type {
-	BuildFunctionData,
 	BaseFunctionOptions,
-	DocumentOptions,
+	BuildFunctionData,
 	BuildFunctionLiteData,
-	ScheduleOptions,
 	DeployFunction,
-	ReferenceOptions,
+	DocumentOptions,
 	HttpsOptions,
+	ReferenceOptions,
+	ScheduleOptions,
 } from '$types';
 import {
+	isDatabaseFunction,
 	isFirestoreFunction,
 	isHttpsFunction,
 	isStorageFunction,
-	isDatabaseFunction,
 	logger,
 	toSnakeCase,
 } from '$utils';
-import chalk from 'chalk';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 
 export const getDeployableFileData = async (
 	deployableFileLiteData: BuildFunctionLiteData,
@@ -56,7 +56,7 @@ export const getDeployableFileData = async (
 		nodeVersion:
 			deployOptions?.nodeVersion ??
 			deployableFileLiteData.nodeVersion ??
-			'20',
+			'22',
 		rootFunctionBuilder,
 		region: (deployOptions?.region as string | undefined) ?? defaultRegion,
 		outputRoot: join(outputDirectory, functionName),

@@ -1,9 +1,9 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { Executor } from '@nx/devkit';
+import { emptyDir } from 'fs-extra';
 import type { BuildExecutorOptions } from '$types';
 import { executeEsbuild, logger, runCommand, validateProject } from '$utils';
-import { emptyDir } from 'fs-extra';
-import { join } from 'node:path';
-import { writeFile, mkdir } from 'node:fs/promises';
 
 const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 	try {
@@ -98,7 +98,7 @@ const executor: Executor<BuildExecutorOptions> = async (options, context) => {
 				outputPath: join(outputRoot, main),
 				external: options.external,
 				sourceRoot: projectRoot,
-				nodeVersion: options.nodeVersion ?? '20',
+				nodeVersion: options.nodeVersion ?? '22',
 			}),
 			createPackageJson(),
 		]);

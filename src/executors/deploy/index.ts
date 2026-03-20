@@ -1,32 +1,32 @@
-import type { Executor, ExecutorContext } from '@nx/devkit';
 import { mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { Executor, ExecutorContext } from '@nx/devkit';
 import type {
 	BaseDeployOptions,
 	DeployExecutorOptions,
 	DeployFunctionData,
 	SentryLiteData,
 } from '$types';
-import { deployFunction } from './utils/deploy-function';
-import { buildFunction } from './utils/build-function';
-import { getBuildableFiles } from './utils/read-project';
 import {
+	getEnvironment,
+	getFirebaseProjectId,
+	getFlavor,
 	logger,
 	runFunctions,
-	getEnvironment,
-	getFlavor,
-	getFirebaseProjectId,
 	validateProject,
 } from '$utils';
-import {
-	getOnlineChecksum,
-	updateOnlineChecksum,
-} from './utils/online-checksum';
+import { buildFunction } from './utils/build-function';
 import {
 	cacheChecksumLocal,
 	checkForChanges,
 	checksumsFolderPath,
 } from './utils/checksum';
+import { deployFunction } from './utils/deploy-function';
+import {
+	getOnlineChecksum,
+	updateOnlineChecksum,
+} from './utils/online-checksum';
+import { getBuildableFiles } from './utils/read-project';
 
 export const isDeployableFunction = (
 	deployableFunction?: DeployFunctionData,
